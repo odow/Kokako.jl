@@ -476,3 +476,50 @@ JuMP.variable_type(model::JuMP.Model, ::Type{State}) = State
 function JuMP.value(state::State{JuMP.VariableRef})
     return State(JuMP.value(state.in), JuMP.value(state.out))
 end
+
+# ==============================================================================
+
+struct ObjectiveState{N}
+    state::NTuple{N, Float64}
+    μ::NTuple{N, JuMP.VariableRef}
+end
+
+function add_objective_state(subproblem::JuMP.Model; initial_value, lower_bound,
+                             upper_bound, lipschitz)
+    return add_objective_state(subproblem;
+        initial_value = (initial_value,),
+        lower_bound = (lower_bound,),
+        upper_bound = (upper_bound,),
+        lipschitz = (lipschitz,)
+    )
+end
+
+function add_objective_state(subproblem::JuMP.Model;
+                             initial_value::NTuple{Float64, N},
+                             lower_bound::NTuple{Float64, N},
+                             upper_bound::NTuple{Float64, N},
+                             lipschitz::NTuple{Float64, N}) where {N}
+    if haskey(subproblem.ext[:kokako_objective_state])
+        error("Can only add one objective state :(")
+    end
+    μ = @variable(subproblem, [i = 1:N],
+        lower_bound = -lipschitz[i], upper_bound = lipschitz[i])
+    return ObjectiveState(initial_value, tuple(μ...))
+end
+
+"""
+    objective_state(update, subproblem::JuMP.Model)
+
+    new_objective_state = objective_state(subproblem::JuMP.Model) do current_objective_state
+        # ... calculations ...
+        return new_objective_state
+    end
+"""
+function objective_state(update::Function, subproblem::JuMP.Model)
+    if !haskey(subproblem.ext[:kokako_objective_state])
+        error("No objective state defined.")
+    end
+    objective_state = subproblem.ext[:kokako_objective_state]
+    objective_state.state = update(objective_state.state)
+    return objective_state.state
+end
