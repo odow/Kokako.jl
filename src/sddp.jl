@@ -175,12 +175,19 @@ end
 # Internal function: set the objective of node to the stage objective, plus the
 # cost/value-to-go term.
 function set_objective(graph::PolicyGraph{T}, node::Node{T}) where T
+    objective_state_component = get_objective_state_component(node)
+    if objective_state_component != JuMP.AffExpr(0.0)
+        node.stage_objective_set = false
+    end
+    if !node.stage_objective_set
+        JuMP.set_objective(
+            node.subproblem,
+            graph.objective_sense,
+            node.stage_objective + objective_state_component +
+                bellman_term(node.bellman_function)
+        )
+    end
     node.stage_objective_set = true
-    JuMP.set_objective(
-        node.subproblem,
-        graph.objective_sense,
-        node.stage_objective + bellman_term(node.bellman_function)
-    )
 end
 
 # Internal function: overload for the case where JuMP.value fails on a
@@ -203,10 +210,7 @@ function solve_subproblem(graph::PolicyGraph{T},
     # the user calls set_stage_objective in the parameterize function.
     set_incoming_state(node, state)
     node.parameterize(noise)
-    # Only call it if the stage-objective changes.
-    if !node.stage_objective_set
-        set_objective(graph, node)
-    end
+    set_objective(graph, node)
     JuMP.optimize!(node.subproblem)
     # Test for primal feasibility.
     primal_status = JuMP.primal_status(node.subproblem)
@@ -254,9 +258,20 @@ function forward_pass(graph::PolicyGraph{T}, options::Options) where T
     incoming_state_value = copy(options.initial_state)
     # A cumulator for the stage-objectives.
     cumulative_value = 0.0
+    if haskey(node.subproblem.ext, :kokako_objective_state)
+        first_node = scenario_path[1][1]
+        objective_state = first_node.subproblem.ext[:kokako_objective_state]
+        objective_state_vector = objective_state.initial_state
+    else
+        objective_state_vector = nothing
+    end
     # Iterate down the scenario.
     for (node_index, noise) in scenario_path
         node = graph[node_index]
+        if haskey(node.subproblem.ext, :kokako_objective_state)
+            objective_state = node.subproblem.ext[:kokako_objective_state]
+            objective_state.state = objective_state_vector
+        end
         # ===== Begin: starting state for infinite horizon =====
         starting_states = options.starting_states[node_index]
         if length(starting_states) > 0

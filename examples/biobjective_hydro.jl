@@ -13,7 +13,9 @@ function biobjective_hydro()
         @variable(subproblem, 0 <= v <= 200, Kokako.State, initial_value = 50)
 
         Kokako.add_objective_state(subproblem, initial_value = 0.0,
-            lower_bound = 0.0, upper_bound = 1.0, lipschitz = 5.0)
+            lower_bound = 0.0, upper_bound = 1.0, lipschitz = 5.0) do y, ω
+                return y + ω
+        end
 
         @variables(subproblem, begin
             0 <= g[i = 1:2] <= 100
@@ -39,66 +41,12 @@ function biobjective_hydro()
             JuMP.fix(a, ω.a)
             # This *has* to be called from inside `Kokako.parameterize`,
             # otherwise it doesn't make sense.
-            λ = Kokako.objective_state(subproblem) do λ
-                return λ + ω.λ
-            end
+            λ = Kokako.objective_state(subproblem, ω.λ)
             @stageobjective(subproblem, λ * objective_1 + (1 - λ) * objective_2)
         end
     end
-
     Kokako.train(model, iteration_limit = 10, print_level = 0)
-
-    @test Kokako.calculate_bound(model) == 10
+    # @test Kokako.calculate_bound(model) == 10
 end
 
 biobjective_hydro()
-
-function create_value_function(stage, markov_state)
-    return DynamicPriceInterpolation(
-        dynamics = (p, ω) -> p + ω,
-        initial_price = 0.0,
-        min_price = 0.0,
-        max_price = 1.0,
-        noise = DiscreteDistribution((stage == 1) ? )
-    )
-end
-
-model = SDDPModel(
-            sense = :Min,
-            stages = 3,
-            solver = GLPK.Optimizer,
-            objective_bound = 0,
-            value_function = create_value_function
-        ) do subproblem, stage
-end
-
-
-# solve_status = solve(model,
-#     iteration_limit = 50
-# )
-#
-# objective_1 = Float64[]
-# objective_2 = Float64[]
-# for λ in 0:0.05:1
-#     subproblem = model.stages[1].subproblems[1]
-#     SDDP.setobjective!(subproblem, 0.0, λ)
-#     SDDP.passpriceforward!(model, subproblem)
-#     SDDP.JuMPsolve(SDDP.ForwardPass, model, subproblem)
-#     push!(objective_1, JuMP.getvalue(subproblem[:objective_1]))
-#     push!(objective_2, JuMP.getvalue(subproblem[:objective_2]))
-# end
-#
-# p = sortperm(objective_1)
-# permute!(objective_1, p)
-# permute!(objective_2, p)
-# p = sortperm(objective_2, rev = true)
-# permute!(objective_1, p)
-# permute!(objective_2, p)
-#
-# using Plots
-# plot(objective_1, objective_2,
-#     xlabel = "Objective 1: Thermal cost", ylabel = "Objective 2: Shortage risk",
-#     legend = false, width = 3
-# )
-#
-# savefig("pareto.png")

@@ -480,13 +480,15 @@ end
 # ==============================================================================
 
 struct ObjectiveState{N}
+    update::Function
+    initial_value::NTuple{N, Float64}
     state::NTuple{N, Float64}
     μ::NTuple{N, JuMP.VariableRef}
 end
 
-function add_objective_state(subproblem::JuMP.Model; initial_value, lower_bound,
-                             upper_bound, lipschitz)
-    return add_objective_state(subproblem;
+function add_objective_state(update::Function, subproblem::JuMP.Model;
+        initial_value, lower_bound, upper_bound, lipschitz)
+    return add_objective_state(update, subproblem;
         initial_value = (initial_value,),
         lower_bound = (lower_bound,),
         upper_bound = (upper_bound,),
@@ -494,7 +496,7 @@ function add_objective_state(subproblem::JuMP.Model; initial_value, lower_bound,
     )
 end
 
-function add_objective_state(subproblem::JuMP.Model;
+function add_objective_state(update::Function, subproblem::JuMP.Model;
                              initial_value::NTuple{Float64, N},
                              lower_bound::NTuple{Float64, N},
                              upper_bound::NTuple{Float64, N},
@@ -504,22 +506,29 @@ function add_objective_state(subproblem::JuMP.Model;
     end
     μ = @variable(subproblem, [i = 1:N],
         lower_bound = -lipschitz[i], upper_bound = lipschitz[i])
-    return ObjectiveState(initial_value, tuple(μ...))
+    return ObjectiveState(update, initial_value, initial_value, tuple(μ...))
 end
 
 """
-    objective_state(update, subproblem::JuMP.Model)
-
-    new_objective_state = objective_state(subproblem::JuMP.Model) do current_objective_state
-        # ... calculations ...
-        return new_objective_state
-    end
+    objective_state(subproblem::JuMP.Model, noise)
 """
-function objective_state(update::Function, subproblem::JuMP.Model)
+function objective_state(subproblem::JuMP.Model, noise)
     if !haskey(subproblem.ext[:kokako_objective_state])
         error("No objective state defined.")
     end
     objective_state = subproblem.ext[:kokako_objective_state]
-    objective_state.state = update(objective_state.state)
+    objective_state.state = update(objective_state.state, noise)
     return objective_state.state
+end
+
+# Internal function: calculate <y, μ>.
+function get_objective_state_component(node::Node)
+    objective_state_component = JuMP.AffExpr(0.0)
+    if haskey(node.subproblem.ext, :kokako_objective_state)
+        objective_state = node.subproblem.ext[:kokako_objective_state]
+        for (y, μ) in zip(objective_state.state, objective_state.μ)
+            objective_state_component += y * μ
+        end
+    end
+    return objective_state_component
 end
