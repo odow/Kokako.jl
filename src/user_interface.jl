@@ -486,21 +486,45 @@ struct ObjectiveState{N}
     μ::NTuple{N, JuMP.VariableRef}
 end
 
+"""
+    add_objective_state(update::Function, subproblem::JuMP.Model; kwargs...)
+
+Add an objective state variable to `subproblem`. Required `kwargs` are:
+ - `initial_value`: The initial value of the objective state variable at the
+    root node.
+ - `lower_bound`: A valid lower bound for the objective state variable. Can be
+    `-Inf`.
+ - `upper_bound`: A valid upper bound for the objective state variable. Can be
+    `+Inf`.
+ - `lipschitz`: The lipschitz constant of the objective state variable.
+
+If the objective state is one-dimensional, each keyword argument can either be a
+`Float64` or a tuple with length 1. For example `initial_value = 0.0` or
+`initial_value = (0.0,)`.
+
+If the objective state is `N`-dimensional, each keyword argument must be an
+`NTuple{N, Float64}`. For example, `initial_value = (0.0, 1.0)`.
+"""
 function add_objective_state(update::Function, subproblem::JuMP.Model;
-        initial_value, lower_bound, upper_bound, lipschitz)
-    return add_objective_state(update, subproblem;
-        initial_value = (initial_value,),
-        lower_bound = (lower_bound,),
-        upper_bound = (upper_bound,),
-        lipschitz = (lipschitz,)
-    )
+                             initial_value, lower_bound, upper_bound, lipschitz)
+    return add_objective_state(
+        update, subproblem, initial_value, lower_bound, upper_bound, lipschitz)
 end
 
-function add_objective_state(update::Function, subproblem::JuMP.Model;
-                             initial_value::NTuple{Float64, N},
-                             lower_bound::NTuple{Float64, N},
-                             upper_bound::NTuple{Float64, N},
-                             lipschitz::NTuple{Float64, N}) where {N}
+# Internal function: add_objective_state with positional Float64 arguments.
+function add_objective_state(update::Function, subproblem::JuMP.Model,
+                             initial_value::Float64, lower_bound::Float64,
+                             upper_bound::Float64, lipschitz::Float64)
+    return add_objective_state(update, subproblem, (initial_value,),
+        (lower_bound,), (upper_bound,), (lipschitz,))
+end
+
+# Internal function: add_objective_state with positional NTuple arguments.
+function add_objective_state(update::Function, subproblem::JuMP.Model,
+                             initial_value::NTuple{N, Float64},
+                             lower_bound::NTuple{N, Float64},
+                             upper_bound::NTuple{N, Float64},
+                             lipschitz::NTuple{N, Float64}) where {N}
     if haskey(subproblem.ext[:kokako_objective_state])
         error("Can only add one objective state :(")
     end

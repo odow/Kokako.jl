@@ -258,8 +258,8 @@ function forward_pass(graph::PolicyGraph{T}, options::Options) where T
     incoming_state_value = copy(options.initial_state)
     # A cumulator for the stage-objectives.
     cumulative_value = 0.0
-    if haskey(node.subproblem.ext, :kokako_objective_state)
-        first_node = scenario_path[1][1]
+    first_node = graph[scenario_path[1][1]]
+    if haskey(first_node.subproblem.ext, :kokako_objective_state)
         objective_state = first_node.subproblem.ext[:kokako_objective_state]
         objective_state_vector = objective_state.initial_state
     else
