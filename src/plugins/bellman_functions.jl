@@ -109,7 +109,51 @@ function initialize_bellman_function(factory::BellmanFactory{AverageCut},
     else
         @variable(node.subproblem, lower_bound = 0, upper_bound = 0)
     end
+    if haskey(node.subproblem.ext, :kokako_objective_state)
+        add_initial_bounds(node.subproblem, bellman_variable)
+    end
     return AverageCut(bellman_variable, cut_improvement_tolerance)
+end
+
+# Internal function: helper used in add_objective_state_constraint.
+function _dot(y::NTuple{N, Float64}, μ::NTuple{N, JuMP.VariableRef}) where {N}
+    return sum(y[i] * μ[i] for i in 1:N)
+end
+
+# Internal function: helper used in add_initial_bounds.
+function add_objective_state_constraint(subproblem, y, μ, θ)
+    lower_bound = JuMP.lower_bound(θ)
+    upper_bound = JuMP.upper_bound(θ)
+    if lower_bound > -Inf
+        @constraint(subproblem, _dot(y, μ) + θ >= lower_bound)
+    end
+    if upper_bound < Inf
+        @constraint(subproblem, _dot(y, μ) + θ <= upper_bound)
+    end
+    if lower_bound ≈ upper_bound ≈ 0.0
+        @constraint(subproblem, [i=1:length(μ)], μ[i] == 0.0)
+    end
+    return
+end
+
+# Internal function: When created, θ has bounds of [-M, M], but, since we are
+# adding these μ terms, we really want to bound <y, μ> + θ ∈ [-M, M]. We need to
+# consider all possible values for `y`. Because the domain of `y` is
+# rectangular, we want to add a constraint at each extreme point. This involves
+# adding 2^N constraints where N = |μ|. This is only feasible for
+# low-dimensional problems, e.g., N < 5.
+function add_initial_bounds(subproblem::JuMP.Model, θ::JuMP.VariableRef)
+    obj_state = subproblem.ext[:kokako_objective_state]
+    if length(obj_state.μ) < 5
+        for y in Base.product(zip(obj_state.lower_bound, obj_state.upper_bound)...)
+            add_objective_state_constraint(subproblem, y, obj_state.μ, θ)
+        end
+    else
+        add_objective_state_constraint(
+            subproblem, obj_state.lower_bound, obj_state.μ, θ)
+        add_objective_state_constraint(
+            subproblem, obj_state.upper_bound, obj_state.μ, θ)
+    end
 end
 
 bellman_term(bellman::AverageCut) = bellman.variable

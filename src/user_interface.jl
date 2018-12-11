@@ -198,6 +198,10 @@ struct PolicyGraph{T}
     end
 end
 
+function Base.show(io::IO, graph::PolicyGraph)
+    println(io, "A policy graph with $(length(graph.nodes)) nodes.")
+end
+
 # So we can query nodes in the graph as graph[node].
 function Base.getindex(graph::PolicyGraph{T}, index::T) where T
     return graph.nodes[index]
@@ -479,10 +483,12 @@ end
 
 # ==============================================================================
 
-struct ObjectiveState{N}
+mutable struct ObjectiveState{N}
     update::Function
     initial_value::NTuple{N, Float64}
     state::NTuple{N, Float64}
+    lower_bound::NTuple{N, Float64}
+    upper_bound::NTuple{N, Float64}
     μ::NTuple{N, JuMP.VariableRef}
 end
 
@@ -525,24 +531,30 @@ function add_objective_state(update::Function, subproblem::JuMP.Model,
                              lower_bound::NTuple{N, Float64},
                              upper_bound::NTuple{N, Float64},
                              lipschitz::NTuple{N, Float64}) where {N}
-    if haskey(subproblem.ext[:kokako_objective_state])
+    if haskey(subproblem.ext, :kokako_objective_state)
         error("Can only add one objective state :(")
     end
     μ = @variable(subproblem, [i = 1:N],
         lower_bound = -lipschitz[i], upper_bound = lipschitz[i])
-    return ObjectiveState(update, initial_value, initial_value, tuple(μ...))
+    subproblem.ext[:kokako_objective_state] =
+        ObjectiveState(update, initial_value, initial_value, lower_bound, upper_bound, tuple(μ...))
+    return
 end
 
 """
-    objective_state(subproblem::JuMP.Model, noise)
+    objective_state(subproblem::JuMP.Model)
 """
-function objective_state(subproblem::JuMP.Model, noise)
-    if !haskey(subproblem.ext[:kokako_objective_state])
+function objective_state(subproblem::JuMP.Model)
+    if haskey(subproblem.ext, :kokako_objective_state)
+        objective_state = subproblem.ext[:kokako_objective_state]
+        if length(objective_state.state) == 1
+            return objective_state.state[1]
+        else
+            return objective_state.state
+        end
+    else
         error("No objective state defined.")
     end
-    objective_state = subproblem.ext[:kokako_objective_state]
-    objective_state.state = update(objective_state.state, noise)
-    return objective_state.state
 end
 
 # Internal function: calculate <y, μ>.
