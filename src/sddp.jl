@@ -243,6 +243,25 @@ function solve_subproblem(graph::PolicyGraph{T},
            JuMP.objective_value(node.subproblem)  # C(x, u, ω) + θ
 end
 
+# Internal function to get the objective state at the root node.
+function initialize_objective_state(first_node::Node)
+    objective_state = first_node.objective_state
+    if objective_state !== nothing
+        initial_objective_state = objective_state.initial_value
+        return initial_objective_state, length(initial_objective_state)
+    else
+        return nothing, 0
+    end
+end
+
+# Internal function: update the objective state given incoming `current_state`
+# and `noise`.
+update_objective_state(obj_state::Nothing, current_state, noise) = nothing
+function update_objective_state(obj_state, current_state, noise)
+    obj_state.state = obj_state.update(current_state, noise)
+    return obj_state.state
+end
+
 # Internal function: perform a single forward pass of the SDDP algorithm given
 # options.
 function forward_pass(graph::PolicyGraph{T}, options::Options) where T
@@ -261,24 +280,17 @@ function forward_pass(graph::PolicyGraph{T}, options::Options) where T
     # A cumulator for the stage-objectives.
     cumulative_value = 0.0
     # Objective state interpolation.
-    objective_state = graph[scenario_path[1][1]].objective_state
-    if objective_state !== nothing
-        objective_state_vector = objective_state.initial_value
-        N = length(objective_state_vector)
-    else
-        objective_state_vector = nothing
-        N = 0
-    end
+    objective_state_vector, N = initialize_objective_state(
+        graph[scenario_path[1][1]])
     objective_states = NTuple{N, Float64}[]
     # Iterate down the scenario.
     for (node_index, noise) in scenario_path
         node = graph[node_index]
         # Objective state interpolation.
-        objective_state = node.objective_state
-        if objective_state !== nothing
-            objective_state.state = objective_state_vector =
-                objective_state.update(objective_state_vector, noise)::NTuple{N, Float64}
-            push!(objective_states, objective_state.state)
+        objective_state_vector = update_objective_state(node.objective_state,
+            objective_state_vector, noise)
+        if objective_state_vector !== nothing
+            push!(objective_states, objective_state_vector)
         end
         # ===== Begin: starting state for infinite horizon =====
         starting_states = options.starting_states[node_index]
@@ -399,9 +411,11 @@ function backward_pass(graph::PolicyGraph{T},
         for child in node.children
             child_node = graph[child.term]
             for noise in child_node.noise_terms
-                obj_state = child_node.objective_state
-                if obj_state !== nothing
-                    obj_state.state = obj_state.update(objective_states[index], noise.term)
+                # There are multiple ways to check this. Here is one. Another
+                # could be that |objective_state| = |scenario_path|.
+                if child_node.objective_state !== nothing
+                    update_objective_state(child_node.objective_state,
+                        objective_states[index], noise.term)
                 end
                 TimerOutputs.@timeit SDDP_TIMER "solve_subproblem" begin
                     (new_outgoing_state, duals, stage_objective, obj) =
@@ -475,9 +489,9 @@ function calculate_bound(graph::PolicyGraph,
     for child in graph.root_children
         node = graph[child.term]
         for noise in node.noise_terms
-            obj_state = node.objective_state
-            if obj_state !== nothing
-                obj_state.state = obj_state.update(obj_state.initial_value, noise.term)
+            if node.objective_state !== nothing
+                update_objective_state(node.objective_state,
+                    node.objective_state.initial_value, noise.term)
             end
             (outgoing_state, duals, stage_objective, obj) =
                 solve_subproblem(graph, node, root_state, noise.term)
@@ -619,23 +633,16 @@ function _simulate(graph::PolicyGraph,
     cumulative_value = 0.0
 
     # Objective state interpolation.
-    objective_state = graph[scenario_path[1][1]].objective_state
-    if objective_state !== nothing
-        objective_state_vector = objective_state.initial_value
-        N = length(objective_state_vector)
-    else
-        objective_state_vector = nothing
-        N = 0
-    end
+    objective_state_vector, N = initialize_objective_state(
+        graph[scenario_path[1][1]])
     objective_states = NTuple{N, Float64}[]
     for (node_index, noise) in scenario_path
         node = graph[node_index]
         # Objective state interpolation.
-        objective_state = node.objective_state
-        if objective_state !== nothing
-            objective_state.state = objective_state_vector =
-                objective_state.update(objective_state_vector, noise)::NTuple{N, Float64}
-            push!(objective_states, objective_state.state)
+        objective_state_vector = update_objective_state(node.objective_state,
+            objective_state_vector, noise)
+        if objective_state_vector !== nothing
+            push!(objective_states, objective_state_vector)
         end
         # Solve the subproblem.
         outgoing_state, duals, stage_objective, objective = solve_subproblem(
