@@ -261,22 +261,21 @@ function forward_pass(graph::PolicyGraph{T}, options::Options) where T
     # A cumulator for the stage-objectives.
     cumulative_value = 0.0
     # Objective state interpolation.
-    first_node = graph[scenario_path[1][1]]
-    N = 0
-    if haskey(first_node.subproblem.ext, :kokako_objective_state)
-        objective_state = first_node.subproblem.ext[:kokako_objective_state]
+    objective_state = graph[scenario_path[1][1]].objective_state
+    if objective_state !== nothing
         objective_state_vector = objective_state.initial_value
         N = length(objective_state_vector)
     else
         objective_state_vector = nothing
+        N = 0
     end
     objective_states = NTuple{N, Float64}[]
     # Iterate down the scenario.
     for (node_index, noise) in scenario_path
         node = graph[node_index]
         # Objective state interpolation.
-        if haskey(node.subproblem.ext, :kokako_objective_state)
-            objective_state = node.subproblem.ext[:kokako_objective_state]
+        objective_state = node.objective_state
+        if objective_state !== nothing
             objective_state.state = objective_state_vector =
                 objective_state.update(objective_state_vector, noise)::NTuple{N, Float64}
             push!(objective_states, objective_state.state)
@@ -400,7 +399,7 @@ function backward_pass(graph::PolicyGraph{T},
         for child in node.children
             child_node = graph[child.term]
             for noise in child_node.noise_terms
-                obj_state = get(child_node.subproblem.ext, :kokako_objective_state, nothing)
+                obj_state = child_node.objective_state
                 if obj_state !== nothing
                     obj_state.state = obj_state.update(objective_states[index], noise.term)
                 end
@@ -476,8 +475,8 @@ function calculate_bound(graph::PolicyGraph,
     for child in graph.root_children
         node = graph[child.term]
         for noise in node.noise_terms
-            if haskey(node.subproblem.ext, :kokako_objective_state)
-                obj_state = node.subproblem.ext[:kokako_objective_state]
+            obj_state = node.objective_state
+            if obj_state !== nothing
                 obj_state.state = obj_state.update(obj_state.initial_value, noise.term)
             end
             (outgoing_state, duals, stage_objective, obj) =
@@ -620,22 +619,20 @@ function _simulate(graph::PolicyGraph,
     cumulative_value = 0.0
 
     # Objective state interpolation.
-    first_node = graph[scenario_path[1][1]]
-    N = 0
-    if haskey(first_node.subproblem.ext, :kokako_objective_state)
-        objective_state = first_node.subproblem.ext[:kokako_objective_state]
+    objective_state = graph[scenario_path[1][1]].objective_state
+    if objective_state !== nothing
         objective_state_vector = objective_state.initial_value
         N = length(objective_state_vector)
     else
         objective_state_vector = nothing
+        N = 0
     end
     objective_states = NTuple{N, Float64}[]
-
     for (node_index, noise) in scenario_path
         node = graph[node_index]
         # Objective state interpolation.
-        if haskey(node.subproblem.ext, :kokako_objective_state)
-            objective_state = node.subproblem.ext[:kokako_objective_state]
+        objective_state = node.objective_state
+        if objective_state !== nothing
             objective_state.state = objective_state_vector =
                 objective_state.update(objective_state_vector, noise)::NTuple{N, Float64}
             push!(objective_states, objective_state.state)

@@ -109,9 +109,9 @@ function initialize_bellman_function(factory::BellmanFactory{AverageCut},
     else
         @variable(node.subproblem, lower_bound = 0, upper_bound = 0)
     end
-    if haskey(node.subproblem.ext, :kokako_objective_state)
-        add_initial_bounds(node.subproblem, bellman_variable)
-    end
+    # Initialize bounds for the objective states. If objective_state==nothing,
+    # this check will be skipped by dispatch.
+    add_initial_bounds(node.objective_state, node.subproblem, bellman_variable)
     return AverageCut(bellman_variable, cut_improvement_tolerance)
 end
 
@@ -142,8 +142,8 @@ end
 # rectangular, we want to add a constraint at each extreme point. This involves
 # adding 2^N constraints where N = |μ|. This is only feasible for
 # low-dimensional problems, e.g., N < 5.
-function add_initial_bounds(subproblem::JuMP.Model, θ::JuMP.VariableRef)
-    obj_state = subproblem.ext[:kokako_objective_state]
+add_initial_bounds(obj_state::Nothing, subproblem, θ) = nothing
+function add_initial_bounds(obj_state::ObjectiveState, subproblem, θ)
     if length(obj_state.μ) < 5
         for y in Base.product(zip(obj_state.lower_bound, obj_state.upper_bound)...)
             add_objective_state_constraint(subproblem, y, obj_state.μ, θ)

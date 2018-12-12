@@ -156,6 +156,15 @@ struct State{T}
     out::T
 end
 
+mutable struct ObjectiveState{N}
+    update::Function
+    initial_value::NTuple{N, Float64}
+    state::NTuple{N, Float64}
+    lower_bound::NTuple{N, Float64}
+    upper_bound::NTuple{N, Float64}
+    μ::NTuple{N, JuMP.VariableRef}
+end
+
 mutable struct Node{T}
     # The index of the node in the policy graph.
     index::T
@@ -175,6 +184,8 @@ mutable struct Node{T}
     stage_objective_set::Bool
     # Bellman function
     bellman_function  # TODO(odow): make this a concrete type?
+    # For dynamic interpolation of objective states.
+    objective_state::Union{Nothing, ObjectiveState}
 end
 
 struct PolicyGraph{T}
@@ -285,6 +296,8 @@ function PolicyGraph(builder::Function, graph::Graph{T};
             # Delay initializing the bellman function until later so that it can
             # use information about the children and number of
             # stagewise-independent noise realizations.
+            nothing,
+            # Likewise for the objective states.
             nothing
 
         )
@@ -483,15 +496,6 @@ end
 
 # ==============================================================================
 
-mutable struct ObjectiveState{N}
-    update::Function
-    initial_value::NTuple{N, Float64}
-    state::NTuple{N, Float64}
-    lower_bound::NTuple{N, Float64}
-    upper_bound::NTuple{N, Float64}
-    μ::NTuple{N, JuMP.VariableRef}
-end
-
 """
     add_objective_state(update::Function, subproblem::JuMP.Model; kwargs...)
 
@@ -513,8 +517,8 @@ If the objective state is `N`-dimensional, each keyword argument must be an
 """
 function add_objective_state(update::Function, subproblem::JuMP.Model;
                              initial_value, lower_bound, upper_bound, lipschitz)
-    return add_objective_state(
-        update, subproblem, initial_value, lower_bound, upper_bound, lipschitz)
+    return add_objective_state(update, subproblem, initial_value, lower_bound,
+        upper_bound, lipschitz)
 end
 
 # Internal function: add_objective_state with positional Float64 arguments.
@@ -531,13 +535,14 @@ function add_objective_state(update::Function, subproblem::JuMP.Model,
                              lower_bound::NTuple{N, Float64},
                              upper_bound::NTuple{N, Float64},
                              lipschitz::NTuple{N, Float64}) where {N}
-    if haskey(subproblem.ext, :kokako_objective_state)
+    node = get_node(subproblem)
+    if node.objective_state !== nothing
         error("Can only add one objective state :(")
     end
     μ = @variable(subproblem, [i = 1:N],
         lower_bound = -lipschitz[i], upper_bound = lipschitz[i])
-    subproblem.ext[:kokako_objective_state] =
-        ObjectiveState(update, initial_value, initial_value, lower_bound, upper_bound, tuple(μ...))
+    node.objective_state = ObjectiveState(update, initial_value, initial_value,
+        lower_bound, upper_bound, tuple(μ...))
     return
 end
 
@@ -545,8 +550,8 @@ end
     objective_state(subproblem::JuMP.Model)
 """
 function objective_state(subproblem::JuMP.Model)
-    if haskey(subproblem.ext, :kokako_objective_state)
-        objective_state = subproblem.ext[:kokako_objective_state]
+    objective_state = get_node(subproblem).objective_state
+    if objective_state !== nothing
         if length(objective_state.state) == 1
             return objective_state.state[1]
         else
@@ -560,8 +565,8 @@ end
 # Internal function: calculate <y, μ>.
 function get_objective_state_component(node::Node)
     objective_state_component = JuMP.AffExpr(0.0)
-    if haskey(node.subproblem.ext, :kokako_objective_state)
-        objective_state = node.subproblem.ext[:kokako_objective_state]
+    objective_state = node.objective_state
+    if objective_state !== nothing
         for (y, μ) in zip(objective_state.state, objective_state.μ)
             objective_state_component += y * μ
         end
