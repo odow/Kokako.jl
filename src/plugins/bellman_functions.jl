@@ -195,7 +195,7 @@ function refine_bellman_function(graph::PolicyGraph{T},
     # No cut selection if there is objective-state interpolation :(.
     if objective_state_component == JuMP.AffExpr(0.0)
         levelone_update(bellman_function, cut, outgoing_state, is_minimization)
-        purge_cuts(node, bellman_fuction)
+        purge_cuts(node, bellman_function)
     end
     add_new_cut(node, bellman_function.variable, cut,
                 objective_state_component, is_minimization)
