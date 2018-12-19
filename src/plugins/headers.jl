@@ -3,6 +3,59 @@
 #  v. 2.0. If a copy of the MPL was not distributed with this file, You can
 #  obtain one at http://mozilla.org/MPL/2.0/.
 
+# ================================ risk_measures ============================= #
+
+"""
+    AbstractRiskMeasure
+
+The abstract type for the risk measure interface.
+
+You need to define the following methods:
+ - Kokako.adjust_probability
+"""
+abstract type AbstractRiskMeasure end
+
+"""
+    adjust_probability(measure::Expectation
+                       risk_adjusted_probability::Vector{Float64},
+                       original_probability::Vector{Float64},
+                       noise_support::Vector{Noise{T}},
+                       objective_realizations::Vector{Float64},
+                       is_minimization::Bool) where T
+"""
+function adjust_probability end
+
+# ============================== sampling_schemes ============================ #
+
+"""
+    AbstractSamplingScheme
+
+The abstract type for the sampling-scheme interface.
+
+You need to define the following methods:
+ - Kokako.sample_scenario
+"""
+abstract type AbstractSamplingScheme end
+
+"""
+    sample_scenario(graph::PolicyGraph{T}, ::AbstractSamplingScheme) where T
+
+Sample a scenario from the policy graph `graph` based on the sampling scheme.
+
+Returns `::Tuple{Vector{Tuple{T, <:Any}}, Bool}`, where the first element is the
+scenario, and the second element is a Boolean flag indicating if the scenario
+was terminated due to the detection of a cycle.
+
+The scenario is a list of tuples (type `Vector{Tuple{T, <:Any}}`) where the
+first component of each tuple is the index of the node, and the second component
+is the stagewise-independent noise term observed in that node.
+"""
+function sample_scenario(graph::PolicyGraph{T},
+                         sampling_scheme::AbstractSamplingScheme) where T
+    error("You need to overload the function Kokako.sample_scenario for the " *
+          "sampling scheme (sampling_scheme).")
+end
+
 # ============================== bellman_functions =========================== #
 
 """
@@ -63,59 +116,6 @@ Return a JuMP expression representing the Bellman function.
 """
 function bellman_term(bellman::AbstractBellmanFunction)
     error("Kokako.bellman term not implemented for $(bellman).")
-end
-
-# ================================ risk_measures ============================= #
-
-"""
-    AbstractRiskMeasure
-
-The abstract type for the risk measure interface.
-
-You need to define the following methods:
- - Kokako.adjust_probability
-"""
-abstract type AbstractRiskMeasure end
-
-"""
-    adjust_probability(measure::Expectation
-                       risk_adjusted_probability::Vector{Float64},
-                       original_probability::Vector{Float64},
-                       noise_support::Vector{Noise{T}},
-                       objective_realizations::Vector{Float64},
-                       is_minimization::Bool) where T
-"""
-function adjust_probability end
-
-# ============================== sampling_schemes ============================ #
-
-"""
-    AbstractSamplingScheme
-
-The abstract type for the sampling-scheme interface.
-
-You need to define the following methods:
- - Kokako.sample_scenario
-"""
-abstract type AbstractSamplingScheme end
-
-"""
-    sample_scenario(graph::PolicyGraph{T}, ::AbstractSamplingScheme) where T
-
-Sample a scenario from the policy graph `graph` based on the sampling scheme.
-
-Returns `::Tuple{Vector{Tuple{T, <:Any}}, Bool}`, where the first element is the
-scenario, and the second element is a Boolean flag indicating if the scenario
-was terminated due to the detection of a cycle.
-
-The scenario is a list of tuples (type `Vector{Tuple{T, <:Any}}`) where the
-first component of each tuple is the index of the node, and the second component
-is the stagewise-independent noise term observed in that node.
-"""
-function sample_scenario(graph::PolicyGraph{T},
-                         sampling_scheme::AbstractSamplingScheme) where T
-    error("You need to overload the function Kokako.sample_scenario for the " *
-          "sampling scheme (sampling_scheme).")
 end
 
 # =============================== stopping_rules ============================= #
