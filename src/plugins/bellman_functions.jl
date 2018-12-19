@@ -33,6 +33,8 @@ struct AverageCut <: AbstractBellmanFunction
     states::Vector{SampledState}
     # Storage for cuts that can be purged.
     cuts_to_be_deleted::Vector{Cut}
+    # Minimum number of cuts to purge before activating JuMP.delete.
+    deletion_minimum::Int
 end
 
 # Internal struct: this struct is just a cache for arguments until we can build
@@ -44,21 +46,31 @@ struct BellmanFactory{T}
 end
 
 """
-    AverageCut(; lower_bound = -Inf, upper_bound = Inf)
+    AverageCut(; lower_bound = -Inf, upper_bound = Inf, deletion_minimum = 1)
 
 The AverageCut Bellman function. Provide a `lower_bound` if minimizing, or an
 `upper_bound` if maximizing.
+
+This Bellman function also implements Level-One cut selection. This requires a
+solver that supports constraint deletion. If the solver doesn't support
+constraint deletion (e.g., Ipopt), JuMP must be used in Automatic mode instead
+of direct mode. In automatic mode, constraint deletion incurs a high cost
+because a new model is copied to the solver with every change. Thus, it is
+possible to cache constraint deletions until `deletion_minimum` are ready to
+improve performance. Cut selection can be "turned off" by setting
+`deletion_minimum` to a very large positive integer.
 """
-function AverageCut(; lower_bound = -Inf, upper_bound = Inf)
-    return BellmanFactory{AverageCut}(
-        lower_bound = lower_bound, upper_bound = upper_bound
-    )
+function AverageCut(; lower_bound = -Inf, upper_bound = Inf,
+                    deletion_minimum::Int = 1)
+    return BellmanFactory{AverageCut}(lower_bound = lower_bound,
+        upper_bound = upper_bound, deletion_minimum = deletion_minimum)
 end
 
 function initialize_bellman_function(factory::BellmanFactory{AverageCut},
                                      graph::PolicyGraph{T},
                                      node::Node{T}) where {T}
     lower_bound, upper_bound = -Inf, Inf
+    deletion_minimum = 0
     if length(factory.args) > 0
         error("Positional arguments $(factory.args) ignored in AverageCut.")
     end
@@ -67,6 +79,8 @@ function initialize_bellman_function(factory::BellmanFactory{AverageCut},
             lower_bound = value
         elseif kw == :upper_bound
             upper_bound = value
+        elseif kw == :deletion_minimum
+            deletion_minimum = value
         else
             error("Keyword $(kw) not recognised as argument to AverageCut.")
         end
@@ -79,7 +93,9 @@ function initialize_bellman_function(factory::BellmanFactory{AverageCut},
     # Initialize bounds for the objective states. If objective_state==nothing,
     # this check will be skipped by dispatch.
     add_initial_bounds(node.objective_state, node.subproblem, bellman_variable)
-    return AverageCut(bellman_variable, Cut[], SampledState[], Cut[])
+    return AverageCut(
+        bellman_variable, Cut[], SampledState[], Cut[], deletion_minimum
+    )
 end
 
 # Internal function: helper used in add_objective_state_constraint.
@@ -179,25 +195,20 @@ function refine_bellman_function(graph::PolicyGraph{T},
     # No cut selection if there is objective-state interpolation :(.
     if objective_state_component == JuMP.AffExpr(0.0)
         levelone_update(bellman_function, cut, outgoing_state, is_minimization)
+        purge_cuts(node, bellman_fuction)
     end
-
-    if length(bellman_function.cuts_to_be_deleted) == 0
-        add_new_cut(node, bellman_function.variable, cut,
-                    objective_state_component, is_minimization)
-    else
-        existing_cut = pop!(bellman_function.cuts_to_be_deleted)
-        replace_existing_cut(existing_cut, node, bellman_function.variable,
-                             cut, objective_state_component, is_minimization)
-    end
+    add_new_cut(node, bellman_function.variable, cut,
+                objective_state_component, is_minimization)
     return
 end
 
-# Internal function: over-write an existing cut.
-function replace_existing_cut(existing_cut::Cut, node::Node,
-                              theta::JuMP.VariableRef, cut::Cut,
-                              objective_state, is_minimization::Bool)
-    JuMP.delete(node.subproblem, existing_cut.constraint_ref)
-    add_new_cut(node, theta, cut, objective_state, is_minimization)
+# Internal function: delete dominated cuts.
+function purge_cuts(node::Node, bellman::AverageCut)
+    if length(bellman.cuts_to_be_deleted) >= bellman.deletion_minimum
+        for existing_cut in bellman.cuts_to_be_deleted
+            JuMP.delete(node.subproblem, existing_cut.constraint_ref)
+        end
+    end
     return
 end
 
