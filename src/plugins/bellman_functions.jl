@@ -183,22 +183,19 @@ function refine_bellman_function(graph::PolicyGraph{T},
     for (name, value) in outgoing_state
         intercept -= coefficients[name] * value
     end
-
     # Coefficients in the objective state dimension.
     objective_state_component = get_objective_state_component(node)
-
     # Initialize the cut struct. It gets initialized with a non_dominated_count
     # of 1 because if there is cut selection, it dominates at the most recent
     # point (`outgoing_state`).
     cut = Cut(intercept, coefficients, 1, nothing)
-
     # No cut selection if there is objective-state interpolation :(.
     if objective_state_component == JuMP.AffExpr(0.0)
         levelone_update(bellman_function, cut, outgoing_state, is_minimization)
         purge_cuts(node, bellman_function)
     end
-    add_new_cut(node, bellman_function.variable, cut,
-                objective_state_component, is_minimization)
+    add_new_cut(node, bellman_function.variable, cut, objective_state_component,
+                is_minimization)
     return
 end
 
@@ -208,6 +205,7 @@ function purge_cuts(node::Node, bellman::AverageCut)
         for existing_cut in bellman.cuts_to_be_deleted
             JuMP.delete(node.subproblem, existing_cut.constraint_ref)
         end
+        empty!(bellman.cuts_to_be_deleted)
     end
     return
 end
@@ -215,16 +213,17 @@ end
 # Internal function: add a new cut to the model.
 function add_new_cut(node::Node, theta::JuMP.VariableRef, cut::Cut,
                      objective_state, is_minimization::Bool)
-    constraint_ref = if is_minimization
-        @constraint(node.subproblem, theta + objective_state >=
-            cut.intercept + sum(cut.coefficients[name] * state.out
-                for (name, state) in node.states))
+    if is_minimization
+        cut.constraint_ref = @constraint(node.subproblem,
+            theta + objective_state >= cut.intercept +
+                sum(cut.coefficients[name] * state.out
+                    for (name, state) in node.states))
     else
-        @constraint(node.subproblem, theta + objective_state <=
-            cut.intercept + sum(cut.coefficients[name] * state.out
-                for (name, state) in node.states))
+        cut.constraint_ref = @constraint(node.subproblem,
+            theta + objective_state <= cut.intercept +
+                sum(cut.coefficients[name] * state.out
+                    for (name, state) in node.states))
     end
-    cut.constraint_ref = constraint_ref
     return
 end
 
@@ -272,6 +271,9 @@ function levelone_update(bellman_function::AverageCut, cut::Cut,
         # model, so it can't be better than the one we just found.
         if old_cut.constraint_ref !== nothing
             continue
+        elseif !JuMP.is_valid(old_cut.constraint_ref)
+            old_cut.constraint_ref = nothing
+            continue
         end
         height = eval_height(old_cut, state)
         if dominates(height, sampled_state.best_objective, is_minimization)
@@ -280,8 +282,8 @@ function levelone_update(bellman_function::AverageCut, cut::Cut,
                 push!(bellman_function.cuts_to_be_deleted,
                     sampled_state.dominating_cut)
             end
-            old_cut.non_dominating_count += 1
-            sampled_state.cominating_cut = old_cut
+            old_cut.non_dominated_count += 1
+            sampled_state.dominating_cut = old_cut
             sampled_state.best_objective = height
         end
     end
