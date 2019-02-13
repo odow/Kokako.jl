@@ -188,7 +188,7 @@ mutable struct Node{T}
     objective_state::Union{Nothing, ObjectiveState}
 end
 
-struct PolicyGraph{T}
+mutable struct PolicyGraph{T}
     # Must be MOI.MIN_SENSE or MOI.MAX_SENSE
     objective_sense::MOI.OptimizationSense
     # Children of the root node. child => probability.
@@ -245,6 +245,21 @@ function construct_subproblem(optimizer_factory::Nothing, direct_mode::Bool)
 end
 
 """
+    LinearPolicyGraph(builder::Function; stages::Int, kwargs...)
+
+Create a linear policy graph with `stages` number of stages.
+
+See [`PolicyGraph`](@ref) for the other keyword arguments.
+"""
+function LinearPolicyGraph(builder::Function; stages::Int, kwargs...)
+    if stages < 1
+        error("You must create a LinearPolicyGraph with `stages >= 1`.")
+    end
+    return PolicyGraph(builder, LinearGraph(stages); kwargs...)
+end
+
+
+"""
     PolicyGraph(builder::Function, graph::Graph{T};
                 bellman_function = AverageCut,
                 optimizer = nothing,
@@ -274,10 +289,24 @@ Or, using the Julia `do ... end` syntax:
 """
 function PolicyGraph(builder::Function, graph::Graph{T};
                      sense = :Min,
-                     bellman_function, # = AverageCut(),
+                     bellman_function = nothing,
+                     lower_bound = -Inf,
+                     upper_bound = Inf,
                      optimizer = nothing,
                      direct_mode = true) where T
     policy_graph = PolicyGraph(T, sense)
+
+    # Create a Bellman function if one is not given.
+    if bellman_function === nothing
+        if lower_bound === -Inf && upper_bound === Inf
+            error("You must specify a bound on the objective value, through " *
+                  "`lower_bound` if minimizing, or `upper_bound` if maximizing.")
+        else
+            bellman_function = AverageCut(
+                lower_bound = lower_bound, upper_bound = upper_bound)
+        end
+    end
+
     # Initialize nodes.
     for (node_index, children) in graph.nodes
         if node_index == graph.root_node

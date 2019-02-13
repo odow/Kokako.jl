@@ -103,11 +103,19 @@ version = "0.20.0"
 
 [[JuMP]]
 deps = ["Calculus", "DataStructures", "ForwardDiff", "LinearAlgebra", "MathOptInterface", "NaNMath", "Random", "SparseArrays", "Statistics", "Test"]
-git-tree-sha1 = "bd95887cda846b7a3d815634ebd6ff02592be7d2"
+git-tree-sha1 = "205bce386c5647adfac47f9b60de715748aabd20"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaOpt/JuMP.jl.git"
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
 version = "0.18.5+"
+
+[[Kokako]]
+deps = ["GLPK", "JSON", "JuMP", "Printf", "Random", "RecipesBase", "Reexport", "Statistics", "TimerOutputs"]
+git-tree-sha1 = "9d4e506b5064c322086c46c811bafba573086636"
+repo-rev = "od/docs"
+repo-url = ".."
+uuid = "f4570300-c277-11e8-125c-4912f86ce65d"
+version = "0.0.0"
 
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
