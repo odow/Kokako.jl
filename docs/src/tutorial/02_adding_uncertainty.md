@@ -138,4 +138,6 @@ Lower bound: 8333.33
 ```
 
 
-This concludes our second tutorial for `Kokako.jl`.
+This concludes our second tutorial for `Kokako.jl`. In the next tutorial,
+[Tutorial Three: objective noise](@ref), we extend the uncertainty to the fuel
+cost.
