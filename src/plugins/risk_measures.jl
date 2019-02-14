@@ -271,3 +271,59 @@ function adjust_probability(measure::DRO,
     p[end] = 1.0
     return
 end
+
+# ================================= Wasserstein ============================== #
+
+"""
+    Wasserstein(solver_factory; alpha::Float64)
+
+A distributionally-robust risk measure based on the Wasserstein distance.
+
+As `alpha` increases, the measure becomes more risk-averse. When `alpha=0`, the
+measure is equivalent to the expectation operator. As `alpha` increases, the
+measure approaches the Worst-case risk measure.
+"""
+struct Wasserstein{T, F} <: AbstractRiskMeasure
+    alpha::Float64
+    solver_factory::T
+    norm::F
+    function Wasserstein(norm::Function, solver_factory; alpha::Float64)
+        if alpha < 0.0
+            error("alpha cannot be $(alpha) as it must be in the range [0, ∞).")
+        end
+        return new{typeof(solver_factory), typeof(norm)}(alpha, solver_factory, norm)
+    end
+end
+
+function adjust_probability(measure::Wasserstein,
+                            risk_adjusted_probability::Vector{Float64},
+                            original_probability::Vector{Float64},
+                            noise_support::Vector,
+                            objective_realizations::Vector{Float64},
+                            is_minimization::Bool)
+    N = length(objective_realizations)
+    wasserstein = JuMP.Model(measure.solver_factory)
+    @variable(wasserstein, z[1:N, 1:N] >= 0)
+    @variable(wasserstein, p[1:N] >= 0)
+    for i in 1:N
+        @constraint(wasserstein, sum(z[:, i]) == original_probability[i])
+        @constraint(wasserstein, sum(z[i, :]) == p[i])
+    end
+    @constraint(
+        wasserstein,
+        sum(measure.norm(noise_support[i], noise_support[j]) * z[i, j]
+            for i in 1:N, j in 1:N) <= measure.alpha
+    )
+    objective_sense = is_minimization ? MOI.MAX_SENSE : MOI.MIN_SENSE
+    @objective(
+        wasserstein,
+        objective_sense,
+        sum(objective_realizations[i] * p[i] for i in 1:N)
+    )
+    JuMP.optimize!(wasserstein)
+    if JuMP.primal_status(wasserstein) != MOI.FEASIBLE_POINT
+        error("Unable to solver Wasserstein subproblem. Status: ", JuMP.termination_status(wassserstein))
+    end
+    copyto!(risk_adjusted_probability, JuMP.value.(p))
+    return
+end

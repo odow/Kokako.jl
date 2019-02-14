@@ -5,6 +5,8 @@
 
 using Kokako, Test
 
+using GLPK  # Required for Wasserstein.
+
 @testset "Expectation" begin
     risk_adjusted_probability = Vector{Float64}(undef, 5)
     Kokako.adjust_probability(
@@ -219,5 +221,80 @@ end
             [-2.0, -1.0, -3.0, -4.0, -5.0],
             true)
         @test risk_adjusted_probability ≈ [0, 1.0, 0, 0, 0]
+    end
+end
+
+@testset "Wasserstein" begin
+    function default_wasserstein(alpha)
+        return Kokako.Wasserstein(with_optimizer(GLPK.Optimizer); alpha = alpha) do x, y
+            return abs(x - y)
+        end
+    end
+    @test_throws Exception default_wasserstein(-1.0)
+    @testset ":Max Worst case" begin
+        risk_adjusted_probability = Vector{Float64}(undef, 4)
+        Kokako.adjust_probability(
+            default_wasserstein(10.0),
+            risk_adjusted_probability,
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.3, 0.6, 0.4],
+            [1.1, 1.2, 0.6, 1.3],
+            false)
+        @test risk_adjusted_probability ≈ [0, 0, 1.0, 0]
+    end
+    @testset ":Min Worst case" begin
+        risk_adjusted_probability = Vector{Float64}(undef, 4)
+        Kokako.adjust_probability(
+            default_wasserstein(10.0),
+            risk_adjusted_probability,
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.3, 0.6, 0.4],
+            [1.1, 1.2, 0.6, 1.3],
+            true)
+        @test risk_adjusted_probability ≈ [0, 0, 0, 1.0]
+    end
+    @testset ":Max Expectation" begin
+        risk_adjusted_probability = Vector{Float64}(undef, 4)
+        Kokako.adjust_probability(
+            default_wasserstein(0.0),
+            risk_adjusted_probability,
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.3, 0.6, 0.4],
+            [1.1, 1.2, 0.6, 1.3],
+            false)
+        @test risk_adjusted_probability ≈ [0.1, 0.2, 0.3, 0.4]
+    end
+    @testset ":Min Expectation" begin
+        risk_adjusted_probability = Vector{Float64}(undef, 4)
+        Kokako.adjust_probability(
+            default_wasserstein(0.0),
+            risk_adjusted_probability,
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.3, 0.6, 0.4],
+            [1.1, 1.2, 0.6, 1.3],
+            true)
+        @test risk_adjusted_probability ≈ [0.1, 0.2, 0.3, 0.4]
+    end
+    @testset ":Max Intermediate" begin
+        risk_adjusted_probability = Vector{Float64}(undef, 4)
+        Kokako.adjust_probability(
+            default_wasserstein(0.1),
+            risk_adjusted_probability,
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.3, 0.6, 0.4],
+            [1.1, 1.2, 0.6, 1.3],
+            false)
+        @test risk_adjusted_probability ≈ [0.0, 1/6, 5/6, 0.0]
+    end
+    @testset ":Min Intermediate" begin
+        risk_adjusted_probability = Vector{Float64}(undef, 4)
+        Kokako.adjust_probability(
+            default_wasserstein(0.1),
+            risk_adjusted_probability,
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.3, 0.6, 0.4],
+            -[1.1, 1.2, 0.6, 1.3],
+            true)
+        @test risk_adjusted_probability ≈ [0.0, 1/6, 5/6, 0.0]
     end
 end
