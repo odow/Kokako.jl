@@ -82,6 +82,8 @@ end
 
 Kokako.train(model, iteration_limit = 5)
 
+println("Finished training!")
+
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
@@ -94,6 +96,7 @@ Kokako.train(model, iteration_limit = 5)
          3 |     3.500  |     3.500  |     0.004
          4 |     3.500  |     3.500  |     0.004
          5 |     3.500  |     3.500  |     0.005
+Finished training!
 ```
 
 Now consider the case when we set the `lower_bound` to `10.0`:
@@ -115,7 +118,9 @@ model = Kokako.LinearPolicyGraph(
     @stageobjective(subproblem, t * v)
 end
 
-Kokako.train(model, iteration_limit = 5);
+Kokako.train(model, iteration_limit = 5)
+
+println("Finished training!")
 
 # output
 
@@ -129,10 +134,16 @@ Kokako.train(model, iteration_limit = 5);
          3 |     5.500  |    11.000  |     0.002
          4 |     5.500  |    11.000  |     0.003
          5 |     5.500  |    11.000  |     0.006
+Finished training!
 ```
 
 How do we tell which is more appropriate? There are a few clues that you should
-look out for.
+look out for.    m = Model(with_optimizer(Ipopt.Optimizer, tol=1E-24, dual_inf_tol=1E-24,
+        constr_viol_tol=1E-24, compl_inf_tol=1E-24, print_level=0))
+    @variable(m, newvarvec[i=1:numvars] >= 0)
+    obj = @expression(m, sum(newvarvec[i] for i=1:numvars))
+    @objective(m, Min, obj)
+    JuMP.optimize!(m)
 
 - The bound converges to a value above (if minimizing) the simulated cost of the
   policy. In this case, the problem is deterministic, so it is easy to tell. But
