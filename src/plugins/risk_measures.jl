@@ -262,17 +262,11 @@ function uniform_dro(
         objective_realizations::Vector{Float64},
         is_minimization::Bool)
     m = length(objective_realizations)
-    # Sort future costs/rewards
-    if is_minimization
-        perm = sortperm(objective_realizations)
-        z = -objective_realizations[perm]
-    else
-        perm = sortperm(objective_realizations, rev = true)
-        z = objective_realizations[perm]
-    end
     # Take a permuted view of `risk_adjusted_probability` so we can refer to
     # `p[i]` instead of `risk_adjusted_probability[perm[i]]`.
+    perm = sortperm(objective_realizations, rev = !is_minimization)
     p = view(risk_adjusted_probability, perm)
+    z = view(objective_realizations, perm)
     # Compute the new probabilities according to Algorithm (2) of the Philpott
     # et al. paper.
     # Step (1):
@@ -289,10 +283,20 @@ function uniform_dro(
         if k > 0
             p[k] = 0.0
         end
-        @inbounds for i in (k+1):m
-            # TODO(lkapelevich): in the paper, it suggests that it should be
-            # p[i] = term_1 + term_2 * (z[i] - z_bar)
-            p[i] = term_1 + term_2 * (z_bar - z[i])
+        if is_minimization
+            @inbounds for i in (k+1):m
+                p[i] = term_1 + term_2 * (z[i] - z_bar)
+            end
+        else
+            # Okay, here's the rub: we should have converted
+            # objective_realizations (rewards) into costs by negating them. This
+            # would have required a copy. This means that z_bar is in fact the
+            # -ve of what it should be. `s` is fine since it is a difference of
+            # squares. Thus, all we have to do is negate both z[i] and z_bar
+            # here.
+            @inbounds for i in (k+1):m
+                p[i] = term_1 + term_2 * (z_bar - z[i])
+            end
         end
         # Step (1c)
         if p[k+1] >= 0.0
