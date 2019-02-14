@@ -14,10 +14,11 @@ makedocs(
             "tutorial/01_first_steps.md",
             "tutorial/02_adding_uncertainty.md",
             "tutorial/03_objective_uncertainty.md",
-            "tutorial/04_markov_uncertainty.md"
-            # "tutorial/05_risk.md",
+            "tutorial/04_markov_uncertainty.md",
+            "tutorial/05_plotting.md",
+            "tutorial/06_warnings.md"
+            # "tutorial/05_plotting.md",
             # "tutorial/06_cut_selection.md",
-            # "tutorial/07_plotting.md",
             # "tutorial/08_odds_and_ends.md",
             # "tutorial/09_nonlinear.md",
             # "tutorial/10_parallel.md",

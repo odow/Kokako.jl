@@ -163,4 +163,6 @@ simulations = Kokako.simulate(
  (3, 1)
 ```
 
-This concludes our fourth tutorial for `Kokako.jl`.
+This concludes our fourth tutorial for `Kokako.jl`. In the next tutorial,
+[Basics V: plotting](@ref) we discuss the plotting utilities included in
+`Kokako.jl`.
