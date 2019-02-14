@@ -1,4 +1,4 @@
-# Tutorial One: first steps
+# Basics I: first steps
 
 Hydrothermal scheduling is the most common application of stochastic dual
 dynamic programming. To illustrate some of the basic functionality of
@@ -280,5 +280,5 @@ MWh of thermal and 50 Wh of hydro. In the third and final stage, use 0 MWh of
 thermal and 150 MWh of  hydro.
 
 This concludes our first very simple tutorial for `Kokako.jl`. In the next
-tutorial, [Tutorial Two: adding uncertainty](@ref), we will extend this problem
+tutorial, [Basics II: adding uncertainty](@ref), we will extend this problem
 by adding uncertainty.

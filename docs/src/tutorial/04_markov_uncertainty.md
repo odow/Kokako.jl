@@ -1,8 +1,8 @@
-# Tutorial Four: Markov uncertainty
+# Basics IV: Markov uncertainty
 
-In our three tutorials ([Tutorial One: first steps](@ref),
-[Tutorial Two: adding uncertainty](@ref), and
-[Tutorial Three: objective uncertainty](@ref)), we formulated a simple
+In our three tutorials ([Basics I: first steps](@ref),
+[Basics II: adding uncertainty](@ref), and
+[Basics III: objective uncertainty](@ref)), we formulated a simple
 hydrothermal scheduling problem with stagewise-independent noise in the
 right-hand side of the constraints and in the objective function. Now, in this
 tutorial, we introduce some *stagewise-dependent* uncertainty using a Markov
