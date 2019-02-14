@@ -218,10 +218,6 @@ function adjust_probability(measure::DRO,
                             noise_support::Vector,
                             objective_realizations::Vector{Float64},
                             is_minimization::Bool)
-    m = length(objective_realizations)
-    if !(original_probability ≈ fill(1.0 / m, m))
-        error("Current implementation of DRO assumes a uniform nominal distriution.")
-    end
     if abs(measure.radius) < 1e-9 ||
             Statistics.std(objective_realizations, corrected=false) < 1e-9
         # Don't do any DRO reweighting if the radius is small or the variance
@@ -230,6 +226,42 @@ function adjust_probability(measure::DRO,
            Expectation(), risk_adjusted_probability, original_probability,
            noise_support, objective_realizations, is_minimization)
    end
+   m = length(objective_realizations)
+   if all(x-> x ≈ 1 / m, original_probability)
+       uniform_dro(measure, risk_adjusted_probability, original_probability,
+                   objective_realizations, is_minimization)
+   else
+       non_uniform_dro(measure, risk_adjusted_probability, original_probability,
+                       objective_realizations, is_minimization)
+   end
+   return
+end
+
+"""
+Algorithm (1) of Philpott et al. Assumes that the nominal distribution is _not_
+uniform.
+"""
+function non_uniform_dro(
+        measure::DRO,
+        risk_adjusted_probability::Vector{Float64},
+        original_probability::Vector{Float64},
+        objective_realizations::Vector{Float64},
+        is_minimization::Bool)
+    error("Current implementation of DRO assumes that the nominal " *
+          "distribution is uniform.")
+end
+
+"""
+Algorithm (2) of Philpott et al. Assumes that the nominal distribution is
+uniform.
+"""
+function uniform_dro(
+        measure::DRO,
+        risk_adjusted_probability::Vector{Float64},
+        original_probability::Vector{Float64},
+        objective_realizations::Vector{Float64},
+        is_minimization::Bool)
+    m = length(objective_realizations)
     # Sort future costs/rewards
     if is_minimization
         perm = sortperm(objective_realizations)
