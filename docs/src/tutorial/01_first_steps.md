@@ -1,7 +1,3 @@
-```@meta
-CurrentModule = Kokako
-```
-
 # Tutorial One: first steps
 
 Hydrothermal scheduling is the most common application of stochastic dual
@@ -45,7 +41,7 @@ periods
 
 So, we have three stages: `t = 1, 2, 3`. Here is a picture:
 
-TODO: add a picture of a linear policy graph.
+![Linear policy graph](assets/deterministic_linear_policy_graph.png)
 
 Notice that the boxes form a _linear graph_. This will be important when we get
 to the code. (We'll get to more complicated graphs in future tutorials.)
@@ -153,6 +149,7 @@ end
 # output
 
 A policy graph with 3 nodes.
+ Node indices: 1, 2, 3
 ```
 
 Wasn't that easy! Let's walk through some of the non-obvious features.

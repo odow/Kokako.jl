@@ -6,12 +6,6 @@ julia:
 branches:
   only:
     - master
-notifications:
-    email: false
-sudo: false
-addons:
-  apt_packages:
-    - gfortran
 jobs:
   include:
     - stage: "Documentation"

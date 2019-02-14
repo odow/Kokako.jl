@@ -1,10 +1,6 @@
-```@meta
-CurrentModule = Kokako
-```
-
 # Tutorial Three: objective uncertainty
 
-In the previous tutorial, [Tutorial One: adding uncertainty](@ref), we created a
+In the previous tutorial, [Tutorial Two: adding uncertainty](@ref), we created a
 stochastic hydro-thermal scheduling model. In this tutorial, we extend the
 problem by adding uncertainty to the fuel costs.
 
@@ -54,8 +50,6 @@ model = Kokako.LinearPolicyGraph(
         volume.out == volume.in + inflow - hydro_generation - hydro_spill
         thermal_generation + hydro_generation == 150.0
     end)
-    # Define the objective for each stage `t`. Note that we can use `t` as an
-    # index for t = 1, 2, 3.
     fuel_cost = [50.0, 100.0, 150.0]
     # Parameterize the subproblem.
     Ω = [
@@ -73,11 +67,12 @@ end
 # output
 
 A policy graph with 3 nodes.
+ Node indices: 1, 2, 3
 ```
 
 ## Training and simulating the policy
 
-As in the previous two tutorials, we can train the policy:
+As in the previous two tutorials, we train the policy:
 ```jldoctest tutorial_two; filter=[r"\|.+?\n", r"Confidence interval.+?\n"]
 training_results = Kokako.train(model; iteration_limit = 10, print_level = 1)
 
@@ -119,4 +114,6 @@ Confidence interval: 11342.5 ± 753.02
 Lower bound: 10625.0
 ```
 
-This concludes our third tutorial for `Kokako.jl`.
+This concludes our third tutorial for `Kokako.jl`. In the next tutorial,
+[Tutorial Four: Markov uncertainty](@ref), we add stagewise-dependence to the
+inflows using a Markov chain.

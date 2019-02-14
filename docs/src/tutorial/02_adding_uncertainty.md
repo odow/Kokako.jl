@@ -1,7 +1,3 @@
-```@meta
-CurrentModule = Kokako
-```
-
 # Tutorial Two: adding uncertainty
 
 In the previous tutorial, [Tutorial One: first steps](@ref), we created a
@@ -27,6 +23,8 @@ dynamics to include `inflow`:
 
 `volume.out = volume.in + inflow - hydro_generation - hydro_spill`
 
+
+![Linear policy graph](assets/stochastic_linear_policy_graph.png)
 
 ## Creating a Kokako model
 
@@ -71,6 +69,7 @@ end
 # output
 
 A policy graph with 3 nodes.
+ Node indices: 1, 2, 3
 ```
 
 Note how we use the JuMP function `JuMP.fix` to set the value of the `inflow`
@@ -82,7 +81,7 @@ variable to `ω`.
 
 ## Training and simulating the policy
 
-As in [Tutorial One: first steps](@ref), we can train the policy:
+As in [Tutorial One: first steps](@ref), we train the policy:
 ```jldoctest tutorial_two; filter=r"\|.+?\n"
 training_results = Kokako.train(model; iteration_limit = 10, print_level = 1)
 
@@ -107,6 +106,10 @@ println("Termination status is: ", Kokako.termination_status(training_results))
         10 |     5.000K |     8.333K |     0.016
 Termination status is: iteration_limit
 ```
+
+!!! note
+    Since SDDP is a stochastic algorithm, you might get slightly different
+    numerical results.
 
 We can also simulate the policy. Note that this time, the simulation is
 stochastic. One common approach to quantify the quality of the policy is to
@@ -137,7 +140,6 @@ Confidence interval: 8400.00 ± 409.34
 Lower bound: 8333.33
 ```
 
-
 This concludes our second tutorial for `Kokako.jl`. In the next tutorial,
-[Tutorial Three: objective noise](@ref), we extend the uncertainty to the fuel
-cost.
+[Tutorial Three: objective uncertainty](@ref), we extend the uncertainty to the
+fuel cost.

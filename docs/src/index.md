@@ -1,6 +1,7 @@
 ```@meta
 CurrentModule = Kokako
 ```
+
 # Kokako.jl
 
 !!! note

@@ -12,9 +12,9 @@ makedocs(
         "Home" => "index.md",
         "Tutorials" => Any[
             "tutorial/01_first_steps.md",
-            "tutorial/02_adding_uncertainty.md"
-            # "tutorial/03_objective_noise.md",
-            # "tutorial/04_markovian_policygraphs.md",
+            "tutorial/02_adding_uncertainty.md",
+            "tutorial/03_objective_uncertainty.md",
+            "tutorial/04_markov_uncertainty.md"
             # "tutorial/05_risk.md",
             # "tutorial/06_cut_selection.md",
             # "tutorial/07_plotting.md",
@@ -28,6 +28,9 @@ makedocs(
         "Reference" => "apireference.md"
     ],
     assets = [
+        "deterministic_linear_policy_graph.png",
+        "stochastic_linear_policy_graph.png",
+        "stochastic_markovian_policy_graph.png"
     ]
 )
 

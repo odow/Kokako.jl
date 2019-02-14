@@ -209,8 +209,17 @@ mutable struct PolicyGraph{T}
     end
 end
 
+# Helper utilities to sort the nodes for printing. This helps linear and
+# Markovian policy graphs where the nodes might be stored in an unusual ordering
+# in the dictionary.
+sort_nodes(nodes::Vector{Int}) = sort!(nodes)
+sort_nodes(nodes::Vector{Tuple{Int, Int}}) = sort!(nodes)
+sort_nodes(nodes) = nodes
+
 function Base.show(io::IO, graph::PolicyGraph)
     println(io, "A policy graph with $(length(graph.nodes)) nodes.")
+    println(io, " Node indices: ",
+        join(sort_nodes(collect(keys(graph.nodes))), ", "))
 end
 
 # So we can query nodes in the graph as graph[node].
@@ -258,6 +267,19 @@ function LinearPolicyGraph(builder::Function; stages::Int, kwargs...)
     return PolicyGraph(builder, LinearGraph(stages); kwargs...)
 end
 
+"""
+    MarkovianPolicyGraph(builder::Function;
+        transition_matrices::Vector{Array{Float64, 2}}, kwargs...)
+
+Create a Markovian policy graph based on the transition matrices given in
+`transition_matrices`.
+
+See [`PolicyGraph`](@ref) for the other keyword arguments.
+"""
+function MarkovianPolicyGraph(builder::Function;
+        transition_matrices::Vector{Array{Float64, 2}}, kwargs...)
+    return PolicyGraph(builder, MarkovianGraph(transition_matrices); kwargs...)
+end
 
 """
     PolicyGraph(builder::Function, graph::Graph{T};
@@ -423,6 +445,15 @@ function set_stage_objective(subproblem::JuMP.Model, stage_objective)
     return
 end
 
+"""
+    @stageobjective(subproblem, expr)
+
+Set the stage-objective of `subproblem` to `expr`.
+
+### Example
+
+    @stageobjective(subproblem, 2x + y)
+"""
 macro stageobjective(subproblem, expr)
     code = quote
         set_stage_objective(
