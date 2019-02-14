@@ -117,7 +117,7 @@ println("Termination status is: ", Kokako.termination_status(training_results))
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                         Kokako - © Oscar Dowson, 2018.
+                        Kokako - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
