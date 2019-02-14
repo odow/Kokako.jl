@@ -195,15 +195,14 @@ gives the incoming value of the state variable in the first stage.
 
 Kokako models can be trained using the [`Kokako.train`](@ref) function. It
 accepts a number of keyword arguments. `iteration_limit` terminates the training
-after the provided number of iterations, and `print_level` prints a log of the
-training progress to the screen.
+after the provided number of iterations.
 
 [`Kokako.train`](@ref) returns a `TrainingResults` object. You can query the
 reason that the training stopped by calling [`Kokako.termination_status`](@ref)
 on this  object.
 
 ```jldoctest tutorial_one; filter=r"\|\s+?\d\.\d+?\n"
-training_results = Kokako.train(model; iteration_limit = 3, print_level = 1)
+training_results = Kokako.train(model; iteration_limit = 3)
 
 println("Termination status is: ", Kokako.termination_status(training_results))
 

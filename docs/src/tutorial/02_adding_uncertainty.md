@@ -90,7 +90,7 @@ variable to `ω`.
 
 As in [Tutorial One: first steps](@ref), we train the policy:
 ```jldoctest tutorial_two; filter=r"\|.+?\n"
-training_results = Kokako.train(model; iteration_limit = 10, print_level = 1)
+training_results = Kokako.train(model; iteration_limit = 10)
 
 println("Termination status is: ", Kokako.termination_status(training_results))
 

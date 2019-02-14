@@ -546,7 +546,7 @@ function train(graph::PolicyGraph;
                stopping_rules = AbstractStoppingRule[],
                risk_measure = Kokako.Expectation(),
                sampling_scheme = Kokako.InSampleMonteCarlo(),
-               print_level = 0,
+               print_level = 1,
                cycle_discretization_delta = 0.0,
                refine_at_similar_nodes = true,
                log_file = "kokako.log"

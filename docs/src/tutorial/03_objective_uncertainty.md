@@ -74,7 +74,7 @@ A policy graph with 3 nodes.
 
 As in the previous two tutorials, we train the policy:
 ```jldoctest tutorial_two; filter=[r"\|.+?\n", r"Confidence interval.+?\n"]
-training_results = Kokako.train(model; iteration_limit = 10, print_level = 1)
+training_results = Kokako.train(model; iteration_limit = 10)
 
 println("Termination status is: ", Kokako.termination_status(training_results))
 
