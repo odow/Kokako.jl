@@ -11,9 +11,9 @@ var documenterSearchIndex = {"docs": [
 {
     "location": "#Kokako.jl-1",
     "page": "Home",
-    "title": "Kokako.jl",
+    "title": "Kōkako.jl",
     "category": "section",
-    "text": "note: Note\nSDDP.jl is currently undergoing a re-write in this repository under the name Kokako.jl. Once completed, this package will be renamed back to SDDP.jl.Kokako.jl is a package for solving large multistage convex stochastic programming problems using stochastic dual dynamic programming. In this manual, we\'re going to assume a reasonable amount of background knowledge about stochastic optimization, the SDDP algorithm, Julia, and JuMP."
+    "text": "note: Note\nSDDP.jl is currently undergoing a re-write in this repository under the name Kōkako.jl. Once completed, this package will be renamed back to SDDP.jl.Kōkako.jl is a package for solving large multistage convex stochastic programming problems using stochastic dual dynamic programming. In this manual, we\'re going to assume a reasonable amount of background knowledge about stochastic optimization, the SDDP algorithm, Julia, and JuMP."
 },
 
 {
@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Installation",
     "category": "section",
-    "text": "You can install Kokako.jl as follows:import Pkg\nPkg.add(\"https://github.com/odow/Kokako.jl.git\")Once you\'ve got Kokako installed, you should read some tutorials, beginning with Tutorial One: first steps."
+    "text": "You can install Kōkako.jl as follows:import Pkg\nPkg.add(\"https://github.com/odow/Kokako.jl.git\")Once you\'ve got Kōkako installed, you should read some tutorials, beginning with Tutorial One: first steps."
 },
 
 {
@@ -30,6 +30,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Citing SDDP.jl",
     "category": "section",
     "text": "If you use SDDP.jl, we ask that you please cite the following paper:@article{dowson_sddp.jl,\n	title = {{SDDP}.jl: a {Julia} package for stochastic dual dynamic programming},\n	url = {http://www.optimization-online.org/DB_HTML/2017/12/6388.html},\n	journal = {Optimization Online},\n	author = {Dowson, Oscar and Kapelevich, Lea},\n	year = {2017}\n}"
+},
+
+{
+    "location": "#Photo-credit-1",
+    "page": "Home",
+    "title": "Photo credit",
+    "category": "section",
+    "text": "Image of a Kōkako by Matt Binns."
 },
 
 {
@@ -45,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Tutorial One: first steps",
     "title": "Tutorial One: first steps",
     "category": "section",
-    "text": "Hydrothermal scheduling is the most common application of stochastic dual dynamic programming. To illustrate some of the basic functionality of Kokako.jl, we implement a very simple model of the hydrothermal scheduling problem.We consider the problem of scheduling electrical generation over three time periods in order to meet a known demand of 150 MWh in each period.There are two generators: a thermal generator, and a hydro generator. The thermal generator has a short-run marginal cost of \\$50/MWh in the first stage, \\$100/MWh in the second stage, and \\$150/MWh in the third stage. The hydro generator has a short-run marginal cost of \\$0/MWh.The hydro generator draws water from a reservoir which has a maximum capacity of 200 units. We assume that at the start of the first time period, the reservoir is full. In addition to the ability to generate electricity by passing water through the hydroelectric turbine, the hydro generator can also spill water down a spillway (bypassing the turbine) in order to prevent the water from over-topping the dam. We assume that there is no cost of spillage.The objective of the optimization is to minimize the expected cost of generation over the three time periods."
+    "text": "Hydrothermal scheduling is the most common application of stochastic dual dynamic programming. To illustrate some of the basic functionality of Kōkako.jl, we implement a very simple model of the hydrothermal scheduling problem.We consider the problem of scheduling electrical generation over three time periods in order to meet a known demand of 150 MWh in each period.There are two generators: a thermal generator, and a hydro generator. The thermal generator has a short-run marginal cost of \\$50/MWh in the first stage, \\$100/MWh in the second stage, and \\$150/MWh in the third stage. The hydro generator has a short-run marginal cost of \\$0/MWh.The hydro generator draws water from a reservoir which has a maximum capacity of 200 units. We assume that at the start of the first time period, the reservoir is full. In addition to the ability to generate electricity by passing water through the hydroelectric turbine, the hydro generator can also spill water down a spillway (bypassing the turbine) in order to prevent the water from over-topping the dam. We assume that there is no cost of spillage.The objective of the optimization is to minimize the expected cost of generation over the three time periods."
 },
 
 {
