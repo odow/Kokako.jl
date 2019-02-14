@@ -18,13 +18,20 @@ distribution with the three outcomes given in the following table:
 | ---- | --- | --- | --- |
 | P(ω) | 1/3 | 1/3 | 1/3 |
 
+The value of the noise (the random variable) is observed by the agent at the
+start of each stage. This makes the problem a _wait-and-see_ or
+_hazard-decision_ formulation.
+
+To represent this, we can draw the following picture. The wavy lines denote the
+uncertainty arriving into the start of each stage (node).
+
+![Linear policy graph](../assets/stochastic_linear_policy_graph.png)
+
 In addition to adding this uncertainty to the model, we also need to modify the
 dynamics to include `inflow`:
 
 `volume.out = volume.in + inflow - hydro_generation - hydro_spill`
 
-
-![Linear policy graph](assets/stochastic_linear_policy_graph.png)
 
 ## Creating a Kokako model
 

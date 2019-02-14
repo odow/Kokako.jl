@@ -41,7 +41,7 @@ periods
 
 So, we have three stages: `t = 1, 2, 3`. Here is a picture:
 
-![Linear policy graph](assets/deterministic_linear_policy_graph.png)
+![Linear policy graph](../assets/deterministic_linear_policy_graph.png)
 
 Notice that the boxes form a _linear graph_. This will be important when we get
 to the code. (We'll get to more complicated graphs in future tutorials.)

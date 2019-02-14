@@ -22,26 +22,20 @@ starts in the wet climate state.
 
 Here is a picture of the model we're going to implement.
 
-![Markovian policy graph](assets/stochastic_markovian_policy_graph.png)
+![Markovian policy graph](../assets/stochastic_markovian_policy_graph.png)
+
+There are five nodes in our graph. Each node is named by a tuple `(t, i)`, where
+`t` is the stage for `t=1,2,3`, and `i` is the Markov state for `i=1,2`. As
+before, the wavy lines denote the stagewise-independent random variable.
 
 For each stage, we need to provide a Markov transition matrix. This is an
 `M`x`N` matrix, where the element `A[i, j]` gives the probability of
 transitioning from Markov state `i` in the previous stage to Markov state `j` in
 the current stage. The first stage is special because we assume there is a
-"zero'th" stage which has one Markov state. Furthermore, the number of columns
+"zero'th" stage which has one Markov state (the round node in the graph above). Furthermore, the number of columns
 in the transition matrix of a stage (i.e. the number of Markov states) must
 equal the number of rows in the next stage's transition matrix. For our example,
 the vector of Markov transition matrices is given by:
-```julia
-T = Array{Float64, 2}[
-    [ 1.0 0.0 ],
-    [ 0.75 0.25 ; 0.25 0.75 ],
-    [ 0.75 0.25 ; 0.25 0.75 ]
-]
-```
-However, note that we never sample the dry Markov state in stage one. Therefore,
-we can drop that Markov state so that there is only one Markov state in stage 1.
-We also need to modify the transition matrix in stage 2 to account for this:
 ```julia
 T = Array{Float64, 2}[
     [ 1.0 ]',
