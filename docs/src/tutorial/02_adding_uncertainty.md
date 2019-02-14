@@ -61,7 +61,7 @@ model = Kokako.LinearPolicyGraph(
     # Define the constraints
     @constraints(subproblem, begin
         volume.out == volume.in + inflow - hydro_generation - hydro_spill
-        thermal_generation + hydro_generation == 150.0
+        demand_constraint, thermal_generation + hydro_generation == 150.0
     end)
     # Define the objective for each stage `t`. Note that we can use `t` as an
     # index for t = 1, 2, 3.
@@ -145,6 +145,32 @@ println("Lower bound: ", round(Kokako.calculate_bound(model), digits = 2))
 
 Confidence interval: 8400.00 ± 409.34
 Lower bound: 8333.33
+```
+
+In addition to simulating the primal values of variables, we can also pass
+`Kokako.jl` custom recorder functions. Each of these functions takes one
+argument, the JuMP subproblem, and returns anything you can compute. For example,
+the dual of the demand constraint (which we named `demand_constraint`)
+corresponds to the price we should charge for electricity, since it represents
+the cost of each additional unit of demand. To calculate this, we can go
+
+```jldoctest tutorial_two
+simulations = Kokako.simulate(
+    model,
+    1,
+    custom_recorders = Dict{Symbol, Function}(
+        :price => (sp) -> JuMP.dual(sp[:demand_constraint])
+    )
+)
+
+electricity_price = [stage[:price] for stage in simulations[1]]
+
+# output
+
+3-element Array{Float64,1}:
+  50.0
+ 100.0
+  -0.0
 ```
 
 This concludes our second tutorial for `Kokako.jl`. In the next tutorial,
