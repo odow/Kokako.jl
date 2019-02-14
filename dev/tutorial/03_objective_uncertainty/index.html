@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial Three: objective uncertainty · SDDP.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SDDP.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../01_first_steps/">Tutorial One: first steps</a></li><li><a class="toctext" href="../02_adding_uncertainty/">Tutorial Two: adding uncertainty</a></li><li class="current"><a class="toctext" href>Tutorial Three: objective uncertainty</a><ul class="internal"><li><a class="toctext" href="#Creating-a-Kokako-model-1">Creating a Kokako model</a></li><li><a class="toctext" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></li></ul></li><li><a class="toctext" href="../04_markov_uncertainty/">Tutorial Four: Markov uncertainty</a></li></ul></li><li><a class="toctext" href="../../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li><a href>Tutorial Three: objective uncertainty</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/tutorial/03_objective_uncertainty.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Tutorial Three: objective uncertainty</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Tutorial-Three:-objective-uncertainty-1" href="#Tutorial-Three:-objective-uncertainty-1">Tutorial Three: objective uncertainty</a></h1><p>In the previous tutorial, <a href="../02_adding_uncertainty/#Tutorial-Two:-adding-uncertainty-1">Tutorial Two: adding uncertainty</a>, we created a stochastic hydro-thermal scheduling model. In this tutorial, we extend the problem by adding uncertainty to the fuel costs.</p><p>Previously, we assumed that the fuel cost was deterministic: \$50/MWh in the first stage, \$100/MWh in the second stage, and \$150/MWh in the third stage. For this tutorial, we assume that in addition to these base costs, the actual fuel cost is correlated with the inflows.</p><p>Our new model for the uncertinty is given by the following table:</p><table><tr><th>ω</th><th>1</th><th>2</th><th>3</th></tr><tr><td>P(ω)</td><td>1/3</td><td>1/3</td><td>1/3</td></tr><tr><td>inflow</td><td>0</td><td>50</td><td>100</td></tr><tr><td>fuel_multiplier</td><td>1.5</td><td>1.0</td><td>0.75</td></tr></table><p>In stage <code>t</code>, the objective is not to minimize</p><p><code>fuel_multiplier * fuel_cost[t] * thermal_generation</code></p><h2><a class="nav-anchor" id="Creating-a-Kokako-model-1" href="#Creating-a-Kokako-model-1">Creating a Kokako model</a></h2><p>To add an uncertain objective, we can simply call <a href="../../apireference/#Kokako.@stageobjective"><code>@stageobjective</code></a> from inside the <a href="../../apireference/#Kokako.parameterize"><code>Kokako.parameterize</code></a> function.</p><pre><code class="language-julia">using Kokako, GLPK
+
+model = Kokako.LinearPolicyGraph(
+            stages = 3,
+            sense = :Min,
+            lower_bound = 0.0,
+            optimizer = with_optimizer(GLPK.Optimizer)
+        ) do subproblem, t
+    # Define the state variable.
+    @variable(subproblem, 0 &lt;= volume &lt;= 200, Kokako.State, initial_value = 200)
+    # Define the control variables.
+    @variables(subproblem, begin
+        thermal_generation &gt;= 0
+        hydro_generation   &gt;= 0
+        hydro_spill        &gt;= 0
+        inflow
+    end)
+    # Define the constraints
+    @constraints(subproblem, begin
+        volume.out == volume.in + inflow - hydro_generation - hydro_spill
+        thermal_generation + hydro_generation == 150.0
+    end)
+    fuel_cost = [50.0, 100.0, 150.0]
+    # Parameterize the subproblem.
+    Ω = [
+        (inflow = 0.0, fuel_multiplier = 1.5),
+        (inflow = 50.0, fuel_multiplier = 1.0),
+        (inflow = 100.0, fuel_multiplier = 0.75)
+    ]
+    Kokako.parameterize(subproblem, Ω, [1/3, 1/3, 1/3]) do ω
+        JuMP.fix(inflow, ω.inflow)
+        @stageobjective(subproblem,
+            ω.fuel_multiplier * fuel_cost[t] * thermal_generation)
+    end
+end
+
+# output
+
+A policy graph with 3 nodes.
+ Node indices: 1, 2, 3</code></pre><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in the previous two tutorials, we train the policy:</p><pre><code class="language-julia">training_results = Kokako.train(model; iteration_limit = 10)
+
+println(&quot;Termination status is: &quot;, Kokako.termination_status(training_results))
+
+simulations = Kokako.simulate(model, 500)
+
+objective_values = [
+    sum(stage[:stage_objective] for stage in sim) for sim in simulations
+]
+
+using Statistics
+
+μ = round(mean(objective_values), digits = 2)
+ci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)
+
+println(&quot;Confidence interval: &quot;, μ, &quot; ± &quot;, ci)
+println(&quot;Lower bound: &quot;, round(Kokako.calculate_bound(model), digits = 2))
+
+# output
+
+———————————————————————————————————————————————————————————————————————————————
+                         Kokako - © Oscar Dowson, 2018.
+———————————————————————————————————————————————————————————————————————————————
+ Iteration | Simulation |      Bound |   Time (s)
+———————————————————————————————————————————————————————————————————————————————
+         1 |     7.500K |     8.173K |     0.046
+         2 |    13.654K |    10.506K |     0.047
+         3 |    31.607K |    10.625K |     0.049
+         4 |    22.500K |    10.625K |     0.051
+         5 |     1.875K |    10.625K |     0.053
+         6 |     1.875K |    10.625K |     0.054
+         7 |    24.375K |    10.625K |     0.055
+         8 |    27.500K |    10.625K |     0.058
+         9 |    11.250K |    10.625K |     0.060
+        10 |    11.250K |    10.625K |     0.061
+Termination status is: iteration_limit
+Confidence interval: 11342.5 ± 753.02
+Lower bound: 10625.0</code></pre><p>This concludes our third tutorial for <code>Kokako.jl</code>. In the next tutorial, <a href="../04_markov_uncertainty/#Tutorial-Four:-Markov-uncertainty-1">Tutorial Four: Markov uncertainty</a>, we add stagewise-dependence to the inflows using a Markov chain.</p><footer><hr/><a class="previous" href="../02_adding_uncertainty/"><span class="direction">Previous</span><span class="title">Tutorial Two: adding uncertainty</span></a><a class="next" href="../04_markov_uncertainty/"><span class="direction">Next</span><span class="title">Tutorial Four: Markov uncertainty</span></a></footer></article></body></html>
