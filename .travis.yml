@@ -6,9 +6,7 @@ julia:
 branches:
   only:
     - master
-after_success:
-  - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate(); Pkg.add("Coverage")';
-  - julia --project=test/coverage -e 'using Coverage; Codecov.submit(Codecov.process_folder())';
+codecov: true
 jobs:
   include:
     - stage: "Documentation"
