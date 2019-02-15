@@ -1,5 +1,11 @@
 # Intermediate I: risk
 
+```@meta
+DocTestSetup = begin
+    using Kokako, GLPK
+end
+```
+
 ## Risk measures
 
 To illustrate the risk-measures included in `Kokako.jl`, we'll consider a
@@ -112,7 +118,24 @@ risk_adjusted_probability
 ### Average value at risk (AV@R)
 
 ```jldoctest intermediate_risk
-julia> risk_measure = Kokako.AVaR(0.5)
+Kokako.adjust_probability(
+    Kokako.AVaR(0.5),
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+risk_adjusted_probability
+
+# output
+
+4-element Array{Float64,1}:
+ 0.2
+ 0.2
+ 0.6
+ 0.0
 ```
 
 ### Convex combination of risk measures
@@ -121,7 +144,26 @@ Using the axioms of coherent risk measures, it is easy to show that any convex
 combination of coherent risk measures is also a coherent risk measure.
 
 ```jldoctest intermediate_risk
-julia> risk_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()
+risk_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()
+
+Kokako.adjust_probability(
+    risk_measure,
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+risk_adjusted_probability
+
+# output
+
+4-element Array{Float64,1}:
+ 0.05
+ 0.1
+ 0.65
+ 0.2
 ```
 
 As a special case, the [`Kokako.EAVaR`](@ref) risk-measure is a convex
@@ -137,22 +179,101 @@ This is short-hand for
 
 ### Distributionally robust
 
+[`Kokako.DRO`](@ref)
+
 ```jldoctest intermediate_risk
-julia> risk_measure = Kokako.DRO(0.5)
+Kokako.adjust_probability(
+    Kokako.DRO(0.5),
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+risk_adjusted_probability
+
+# output
+
+4-element Array{Float64,1}:
+ 0.05
+ 0.1
+ 0.65
+ 0.2
 ```
 
 ### Wasserstein
 
-```jldoctest intermediate_risk
-julia> risk_measure = Kokako.Wasserstein(
-           (x, y) -> abs(x - y),
-           with_optimizer(GLPK.Optimizer);
-           alpha = 1
-      )
-```
+[`Kokako.Wasserstein`](@ref)
+
 
 ```jldoctest intermediate_risk
-julia> Kokako.Wasserstein(with_optimizer(GLPK.Optimizer); alpha = 1) do x, y
-           return abs(x - y)
-       end
+risk_measure = Kokako.Wasserstein(
+        with_optimizer(GLPK.Optimizer); alpha=0.5) do x, y
+   return abs(x - y)
+end
+
+Kokako.adjust_probability(
+    risk_measure,
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+risk_adjusted_probability
+
+# output
+
+4-element Array{Float64,1}:
+ 0.1
+ 0.1
+ 0.8
+ 0.0
+```
+
+## Training a risk-averse model
+
+```julia
+Kokako.train(
+    model,
+    risk_measure = Kokako.WorstCase(),
+    iteration_limit = 10
+)
+```
+
+```julia
+Kokako.train(
+    model,
+    risk_measure = Dict(
+        1 => Kokako.Expectation(),
+        2 => Kokako.WorstCase()
+    ),
+    iteration_limit = 10
+)
+```
+
+```julia
+Kokako.train(
+    model,
+    risk_measure = (node_index) -> begin
+        if node_index == 1
+            return Kokako.Expectation()
+        else
+            return Kokako.WorstCase()
+        end
+    end,
+    iteration_limit = 10
+)
+```
+
+!!! note
+    If you simulate the policy, the simulated value is the risk-neutral value of
+    the policy.
+
+This concludes our first intermediate tutorial.
+
+```@meta
+DocTestSetup = nothing
 ```
