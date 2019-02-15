@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basics V: plotting · Kokako.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../../logo.ico" rel="icon" type="image/x-icon"/></head><body><nav class="toc"><a href="../../index.html"><img class="logo" src="../../assets/logo.png" alt="Kokako.jl logo"/></a><h1>Kokako.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../01_first_steps/">Basics I: first steps</a></li><li><a class="toctext" href="../02_adding_uncertainty/">Basics II: adding uncertainty</a></li><li><a class="toctext" href="../03_objective_uncertainty/">Basics III: objective uncertainty</a></li><li><a class="toctext" href="../04_markov_uncertainty/">Basics IV: Markov uncertainty</a></li><li class="current"><a class="toctext" href>Basics V: plotting</a><ul class="internal"><li><a class="toctext" href="#Preliminaries-1">Preliminaries</a></li><li><a class="toctext" href="#Spaghetti-plots-1">Spaghetti plots</a></li><li><a class="toctext" href="#Publication-plots-1">Publication plots</a></li></ul></li><li><a class="toctext" href="../06_warnings/">Basics VI: words of warning</a></li></ul></li><li><a class="toctext" href="../../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li><a href>Basics V: plotting</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/tutorial/05_plotting.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basics V: plotting</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basics-V:-plotting-1" href="#Basics-V:-plotting-1">Basics V: plotting</a></h1><p>In our previous tutorials, we formulated, solved, and simulated multistage stochastic optimization problems. However, we haven&#39;t really investigated what the solution looks like. Luckily, <code>Kokako.jl</code> includes a number of plotting tools to help us do that. In this tutorial, we explain the tools and make some pretty pictures.</p><h2><a class="nav-anchor" id="Preliminaries-1" href="#Preliminaries-1">Preliminaries</a></h2><p>First, we need to create a policy and simulate some trajectories. So, let&#39;s take the model from  <a href="../04_markov_uncertainty/#Basics-IV:-Markov-uncertainty-1">Basics IV: Markov uncertainty</a>, train it for 20 iterations, and then simulate 100 Monte Carlo realizations of the policy.</p><pre><code class="language-julia">using Kokako, GLPK
+Ω = [
+    (inflow = 0.0, fuel_multiplier = 1.5),
+    (inflow = 50.0, fuel_multiplier = 1.0),
+    (inflow = 100.0, fuel_multiplier = 0.75)
+]
+model = Kokako.MarkovianPolicyGraph(
+            transition_matrices = Array{Float64, 2}[
+                [1.0]&#39;, [0.75 0.25], [0.75 0.25 ; 0.25 0.75]],
+            sense = :Min, lower_bound = 0.0,
+            optimizer = with_optimizer(GLPK.Optimizer)
+        ) do subproblem, node
+    t, markov_state = node
+    @variable(subproblem, 0 &lt;= volume &lt;= 200, Kokako.State, initial_value = 200)
+    @variable(subproblem, thermal_generation &gt;= 0)
+    @variable(subproblem, hydro_generation &gt;= 0)
+    @variable(subproblem, hydro_spill &gt;= 0)
+    @variable(subproblem, inflow)
+    @constraint(subproblem,
+        volume.out == volume.in + inflow - hydro_generation - hydro_spill)
+    @constraint(subproblem, thermal_generation + hydro_generation == 150.0)
+    probability = markov_state == 1 ? [1/6, 1/3, 1/2] : [1/2, 1/3, 1/6]
+    fuel_cost = [50.0, 100.0, 150.0]
+    Kokako.parameterize(subproblem, Ω, probability) do ω
+        JuMP.fix(inflow, ω.inflow)
+        @stageobjective(subproblem,
+            ω.fuel_multiplier * fuel_cost[t] * thermal_generation)
+    end
+end
+
+Kokako.train(model, iteration_limit = 20)
+
+simulations = Kokako.simulate(
+    model, 100,
+    [:volume, :thermal_generation, :hydro_generation, :hydro_spill])
+
+println(&quot;Completed $(length(simulations)) simulations.&quot;)
+
+# output
+
+———————————————————————————————————————————————————————————————————————————————
+                        Kokako - © Oscar Dowson, 2018-19.
+———————————————————————————————————————————————————————————————————————————————
+ Iteration | Simulation |      Bound |   Time (s)
+———————————————————————————————————————————————————————————————————————————————
+         1 |    33.750K |     5.329K |     0.034
+         2 |     5.000K |     7.975K |     0.036
+         3 |    13.125K |     8.073K |     0.038
+         4 |     5.000K |     8.073K |     0.039
+         5 |     1.875K |     8.073K |     0.041
+         6 |     1.875K |     8.073K |     0.042
+         7 |    16.250K |     8.073K |     0.044
+         8 |     1.875K |     8.073K |     0.045
+         9 |     1.875K |     8.073K |     0.048
+        10 |     1.875K |     8.073K |     0.049
+        11 |     1.875K |     8.073K |     0.051
+        12 |     1.875K |     8.073K |     0.053
+        13 |    33.750K |     8.073K |     0.054
+        14 |     9.375K |     8.073K |     0.056
+        15 |     5.000K |     8.073K |     0.059
+        16 |     5.000K |     8.073K |     0.061
+        17 |    11.250K |     8.073K |     0.063
+        18 |     5.000K |     8.073K |     0.065
+        19 |     1.875K |     8.073K |     0.066
+        20 |    11.250K |     8.073K |     0.069
+Completed 100 simulations.</code></pre><p>Great! Now we have some data in <code>simulations</code> to visualize.</p><h2><a class="nav-anchor" id="Spaghetti-plots-1" href="#Spaghetti-plots-1">Spaghetti plots</a></h2><p>The first plotting utility we discuss is a <em>spaghetti</em> plot (you&#39;ll understand the name when you see the graph).</p><p>To create a spaghetti plot, begin by creating a new <a href="../../apireference/#Kokako.SpaghettiPlot"><code>Kokako.SpaghettiPlot</code></a> instance as follows:</p><pre><code class="language-julia-repl">julia&gt; plt = Kokako.SpaghettiPlot(stages = 3, scenarios = 100)
+A spaghetti plot with 3 stages and 100 scenarios.</code></pre><p>The keyword <code>stages</code> gives the number of stages in the problem (in this case, 3) and the keyword <code>scenarios</code> gives the number of trajectories that you want to plot (in this case, 100, since that is how many Monte Carlo replications we conducted).</p><p>Next, we can add plots to <code>plt</code> using the <a href="../../apireference/#Kokako.add_spaghetti"><code>Kokako.add_spaghetti</code></a> function.</p><pre><code class="language-julia-repl">julia&gt; Kokako.add_spaghetti(plt; title = &quot;Reservoir volume&quot;) do scenario, stage
+           return simulations[scenario][stage][:volume].out
+       end</code></pre><p>The return value of each <code>do ... end</code> block is a <code>Float64</code> for the y-value of the <code>scenario</code>&#39;th line in stage <code>stage</code>.</p><p>You don&#39;t have just return values from the simulation, you can compute things too.</p><pre><code class="language-julia-repl">julia&gt; Kokako.add_spaghetti(plt;
+               title = &quot;Fuel cost&quot;, ymin = 0, ymax = 250) do scenario, stage
+           if simulations[scenario][stage][:thermal_generation] &gt; 0
+               return simulations[scenario][stage][:stage_objective] /
+                   simulations[scenario][stage][:thermal_generation]
+           else  # No thermal generation, so return 0.0.
+               return 0.0
+           end
+       end</code></pre><p>Note that there are many keyword arguments in addition to <code>title</code>. For example, we fixed the minimum and maximum values of the y-axis using <code>ymin</code> and <code>ymax</code>. See the <a href="../../apireference/#Kokako.add_spaghetti"><code>Kokako.add_spaghetti</code></a> documentation for all the arguments.</p><p>Having built the plot, we now need to display it.</p><pre><code class="language-julia-repl">julia&gt; Kokako.save(plt, &quot;spaghetti_plot.html&quot;, open = true)</code></pre><p>This should open a webpage that looks like <a href="../../assets/spaghetti_plot.html">this one</a>.</p><p>Using the mouse, you can highlight individual trajectories by hovering over them. This makes it possible to visualize a single trajectory across multiple dimensions.</p><p>If you click on the plot, then trajectories that are close to the mouse pointer are shown darker and those further away are shown lighter.</p><h2><a class="nav-anchor" id="Publication-plots-1" href="#Publication-plots-1">Publication plots</a></h2><p>Instead of the interactive Javascript plots, you can also create some publication ready plots using the <code>Kokako.publicationplot</code> function.</p><p>!!!info     You need to install the <a href="https://github.com/JuliaPlots/Plots">Plots.jl</a>     package for this to work. We used the <code>GR</code> backend (<code>gr()</code>), but any     <code>Plots.jl</code> backend should work.</p><pre><code class="language-julia">    import Pkg
+    Pkg.add(&quot;Plots&quot;)
+    Pkg.add(&quot;GR&quot;)
+    ```
+
+This function implements a plot recipe to create ribbon plots of each variable
+against the stages. The first argument is the vector of simulation dictionaries
+and the second argument is the dictionary key that you want to plot. Standard
+Plots.jl keyword arguments such as `title` and `xlabel` can be used to modify
+the look of each plot. By default, the plot displays ribbons of the 0-100,
+10-90, and 25-75 percentiles. The dark, solid line in the middle is the median
+(i.e. 50&#39;th percentile).
+</code></pre><p>julia using Plots plot(     Kokako.publicationplot(         simulations,         data -&gt; data[:volume].out,         title = &quot;Outgoing volume&quot;     ),     Kokako.publicationplot(         simulations,         data -&gt; data[:thermal<em>generation],         title = &quot;Thermal generation&quot;     ),     xlabel = &quot;Stage&quot;,     ylims = (0, 200),     layout = (1, 2),     margin</em>bottom = 5,     size = (1000, 300) )</p><pre><code class="language-none">
+This should open a plot window with a plot that looks like:
+
+![publication plot](../assets/publication_plot.png)
+
+You can save this plot as a PDF using the `Plots.jl` function `savefig`:</code></pre><p>julia Plots.savefig(&quot;my_picture.pdf&quot;) ```</p><p>This concludes our fifth tutorial for <code>Kokako.jl</code>. In our final <em>Basics</em> tutorial, <a href="../06_warnings/#Basics-VI:-words-of-warning-1">Basics VI: words of warning</a> we discuss some of the issues that you should be aware of when creating your own models.</p><footer><hr/><a class="previous" href="../04_markov_uncertainty/"><span class="direction">Previous</span><span class="title">Basics IV: Markov uncertainty</span></a><a class="next" href="../06_warnings/"><span class="direction">Next</span><span class="title">Basics VI: words of warning</span></a></footer></article></body></html>

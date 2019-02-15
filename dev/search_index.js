@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Kōkako.jl",
     "category": "section",
-    "text": "note: Note\nSDDP.jl is currently undergoing a re-write in this repository under the name Kōkako.jl. Once completed, this package will be renamed back to SDDP.jl.Kōkako.jl is a package for solving large multistage convex stochastic programming problems using stochastic dual dynamic programming. In this manual, we\'re going to assume a reasonable amount of background knowledge about stochastic optimization, the SDDP algorithm, Julia, and JuMP."
+    "text": "note: Note\nSDDP.jl is currently undergoing a re-write in this repository under the name Kōkako.jl. Once completed, this package will be renamed back to SDDP.jl.Kōkako.jl is a package for solving large multistage convex stochastic programming problems using stochastic dual dynamic programming. In this manual, we\'re going to assume a reasonable amount of background knowledge about stochastic optimization, the SDDP algorithm, Julia, and JuMP.info: Info\nIf you haven\'t used JuMP before, we recommend that you read the JuMP documentation and try building and solving JuMP models before trying Kokako.jl."
 },
 
 {
@@ -21,7 +21,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Installation",
     "category": "section",
-    "text": "You can install Kōkako.jl as follows:import Pkg\nPkg.add(\"https://github.com/odow/Kokako.jl.git\")Once you\'ve got Kōkako installed, you should read some tutorials, beginning with Tutorial One: first steps."
+    "text": "You can install Kōkako.jl as follows:import Pkg\nPkg.add(\"https://github.com/odow/Kokako.jl.git\")"
+},
+
+{
+    "location": "#Tutorials-1",
+    "page": "Home",
+    "title": "Tutorials",
+    "category": "section",
+    "text": "Once you\'ve got Kōkako installed, you should read some tutorials, beginning with Basics I: first steps."
 },
 
 {
@@ -42,23 +50,23 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#",
-    "page": "Tutorial One: first steps",
-    "title": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
+    "title": "Basics I: first steps",
     "category": "page",
     "text": ""
 },
 
 {
-    "location": "tutorial/01_first_steps/#Tutorial-One:-first-steps-1",
-    "page": "Tutorial One: first steps",
-    "title": "Tutorial One: first steps",
+    "location": "tutorial/01_first_steps/#Basics-I:-first-steps-1",
+    "page": "Basics I: first steps",
+    "title": "Basics I: first steps",
     "category": "section",
     "text": "Hydrothermal scheduling is the most common application of stochastic dual dynamic programming. To illustrate some of the basic functionality of Kōkako.jl, we implement a very simple model of the hydrothermal scheduling problem.We consider the problem of scheduling electrical generation over three time periods in order to meet a known demand of 150 MWh in each period.There are two generators: a thermal generator, and a hydro generator. The thermal generator has a short-run marginal cost of \\$50/MWh in the first stage, \\$100/MWh in the second stage, and \\$150/MWh in the third stage. The hydro generator has a short-run marginal cost of \\$0/MWh.The hydro generator draws water from a reservoir which has a maximum capacity of 200 units. We assume that at the start of the first time period, the reservoir is full. In addition to the ability to generate electricity by passing water through the hydroelectric turbine, the hydro generator can also spill water down a spillway (bypassing the turbine) in order to prevent the water from over-topping the dam. We assume that there is no cost of spillage.The objective of the optimization is to minimize the expected cost of generation over the three time periods."
 },
 
 {
     "location": "tutorial/01_first_steps/#Mathematical-formulation-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Mathematical formulation",
     "category": "section",
     "text": "Let\'s take the problem described above and form a mathematical model. In any multistage stochastic programming problem, we need to identify five key features:The stages\nThe state variables\nThe control variables\nThe dynamics\nThe stage-objective"
@@ -66,7 +74,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#Stages-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Stages",
     "category": "section",
     "text": "We consider the problem of scheduling electrical generation over three timeperiodsSo, we have three stages: t = 1, 2, 3. Here is a picture:(Image: Linear policy graph)Notice that the boxes form a linear graph. This will be important when we get to the code. (We\'ll get to more complicated graphs in future tutorials.)"
@@ -74,7 +82,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#State-variables-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "State variables",
     "category": "section",
     "text": "State variables capture the information that flows between stages. These can be harder to identify. However, in our model, the state variable is the volume of water stored in the reservoir over time.In the model below, we\'re going to call the state variable volume.Each stage t is an interval in time. Thus, we need to record the value of the state variable in each stage at two points in time: at the beginning of the stage, which we  refer to as the incoming value of the state variable; and at the end of the  state, which we refer to as the outgoing state variable.We\'re going to refer to the incoming value of volume by volume.in and the outgoing value by volume.out.Note that volume.out when t=1 is equal to volume.in when t=2.The problem description also mentions some constraints on the volume of water in the reservoir. It cannot be negative, and the maximum level is 200 units. Thus, we have 0 <= volume <= 200. Also, the description says that the initial value of water in the reservoir (i.e., volume.in when t = 1) is 200."
@@ -82,7 +90,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#Control-variables-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Control variables",
     "category": "section",
     "text": "Control variables are the actions that the agent can take during a stage to change the value of the state variables. (Hence the name control.)There are three control variables in our problem.The quantity of thermal generation, which we\'re going to call thermal_generation.\nThe quantity of hydro generation, which we\'re going to call hydro_generation.\nThe quatity of water to spill, which we\'re going to call hydro_spill.All of these variables are non-negative."
@@ -90,7 +98,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#The-dynamics-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "The dynamics",
     "category": "section",
     "text": "The dynamics of a problem describe how the state variables evolve through time in response to the controls chosen by the agent.For our problem, the state variable is the volume of water in the reservoir. The volume of water decreases in response to water being used for hydro generation and spillage. So the dynamics for our problem are:volume.out = volume.in - hydro_generation - hydro_spillWe can also put constraints on the values of the state and control variables. For example, in our problem, there is also a constraint that the total generation must meet the demand of 150 MWh in each stage. So, we have a constraint that: hydro_generation + thermal_generation = 150."
@@ -98,7 +106,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#The-stage-objective-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "The stage-objective",
     "category": "section",
     "text": "The agent\'s objective is to minimize the cost of generation. So in each stage, the agent wants to minimize the quantity of thermal generation multiplied by the short-run marginal cost of thermal generation.In stage t, they want to minimize fuel_cost[t] * thermal_generation, where fuel_cost[t] is \\$50 when t=1, \\$100 when t=2, and \\$150 when t=3.We\'re now ready to construct a Kokako model. Since Kokako is intended to be very user-friendly, we\'re going to give the full code first, and then walk through some of the details. However, you should be able to read through and understand most of what is happening."
@@ -106,7 +114,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#Creating-a-Kokako-model-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Creating a Kokako model",
     "category": "section",
     "text": "using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    # Define the objective for each stage `t`. Note that we can use `t` as an\n    # index for t = 1, 2, 3.\n    fuel_cost = [50.0, 100.0, 150.0]\n    @stageobjective(subproblem, fuel_cost[t] * thermal_generation)\nend\n\n# output\n\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3Wasn\'t that easy! Let\'s walk through some of the non-obvious features."
@@ -114,7 +122,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#The-keywords-in-the-[Kokako.LinearPolicyGraph](@ref)-constructor-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "The keywords in the Kokako.LinearPolicyGraph constructor",
     "category": "section",
     "text": "Hopefully stages and sense are obvious. However, the other two are not so clear.lower_bound: you must supply a valid bound on the objective. For our problem, we know that we cannot incur a negative cost so \\$0 is a valid lower bound.optimizer: This is borrowed directly from JuMP\'s Model constructor:using JuMP\nmodel = Model(with_optimizer(GLPK.Optimizer))"
@@ -122,7 +130,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#Creating-state-variables-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Creating state variables",
     "category": "section",
     "text": "State variables can be created like any other JuMP variables. Think of them as another type of variable like binary or integer. For example, to create a binary variable in JuMP, you go:@variable(subproblem, x, Bin)whereas to create a state variable you go@variable(subproblem, x, Kokako.State)Also note that you have to pass a keyword argument called initial_value that gives the incoming value of the state variable in the first stage."
@@ -130,79 +138,79 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/01_first_steps/#Defining-the-stage-objective-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Defining the stage-objective",
     "category": "section",
-    "text": "@objective(subproblem, Min, fuel_cost[t] * thermal_generation)"
+    "text": "In a JuMP model, we can set the objective using @objective. For example:@objective(subproblem, Min, fuel_cost[t] * thermal_generation)Since we only need to define the objective for each stage, rather than the whole problem, we use the Kokako-provided @stageobjective.@stageobjective(subproblem, fuel_cost[t] * thermal_generation)Note that we don\'t have to specify the optimization sense (Max of Min) since this is done via the sense keyword argument of Kokako.LinearPolicyGraph."
 },
 
 {
     "location": "tutorial/01_first_steps/#Training-a-Kokako-policy-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Training a Kokako policy",
     "category": "section",
-    "text": "Kokako models can be trained using the Kokako.train function. It accepts a number of keyword arguments. iteration_limit terminates the training after the provided number of iterations.Kokako.train returns a TrainingResults object. You can query the reason that the training stopped by calling Kokako.termination_status on this  object.training_results = Kokako.train(model; iteration_limit = 3)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                         Kokako - © Oscar Dowson, 2018.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |    32.500K |    15.000K |     0.001\n         2 |    17.500K |    17.500K |     0.002\n         3 |    17.500K |    17.500K |     0.002\nTermination status is: iteration_limit"
+    "text": "Kokako models can be trained using the Kokako.train function. It accepts a number of keyword arguments. iteration_limit terminates the training after the provided number of iterations.Kokako.train returns a TrainingResults object. You can query the reason that the training stopped by calling Kokako.termination_status on this  object.training_results = Kokako.train(model; iteration_limit = 3)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |    32.500K |    15.000K |     0.001\n         2 |    17.500K |    17.500K |     0.002\n         3 |    17.500K |    17.500K |     0.002\nTermination status is: iteration_limit"
 },
 
 {
     "location": "tutorial/01_first_steps/#Simulating-the-policy-1",
-    "page": "Tutorial One: first steps",
+    "page": "Basics I: first steps",
     "title": "Simulating the policy",
     "category": "section",
-    "text": "Once you have a trained policy, you can simulate it using Kokako.simulate. The return value from simulate is a vector with one element for each replication. Each element is itself a vector, with one element for each stage. Each element, corresponding to a particular stage in a particular replication, is a dictionary that records information from the simulation.simulations = Kokako.simulate(\n    # The trained model to simulate.\n    model,\n    # The number of replications.\n    1,\n    # A list of names to record the values of.\n    [:volume, :thermal_generation, :hydro_generation, :hydro_spill]\n)\n\nreplication = 1\nstage = 2\nsimulations[replication][stage]\n\n# output\n\nDict{Symbol,Any} with 9 entries:\n  :volume             => State{Float64}(200.0, 150.0)\n  :hydro_spill        => 0.0\n  :bellman_term       => 0.0\n  :noise_term         => nothing\n  :node_index         => 2\n  :stage_objective    => 10000.0\n  :objective_state    => nothing\n  :thermal_generation => 100.0\n  :hydro_generation   => 50.0Ignore many of the entries for now. They will be relevant later. Of interest is :volume and :thermal_generation.julia> outgoing_volume = [stage[:volume].out for stage in simulations[1]]\n3-element Array{Float64,1}:\n 200.0\n 150.0\n   0.0\n\njulia> thermal_generation = [stage[:thermal_generation] for stage in simulations[1]]\n3-element Array{Float64,1}:\n 150.0\n 100.0\n   0.0From this, we can see the optimal policy: in the first stage, use 150 MWh of thermal generation and 0 MWh of hydro generation. In the second stage, use 100 MWh of thermal and 50 Wh of hydro. In the third and final stage, use 0 MWh of thermal and 150 MWh of  hydro.This concludes our first very simple tutorial for Kokako.jl. In the next tutorial, Tutorial Two: adding uncertainty, we will extend this problem by adding uncertainty."
+    "text": "Once you have a trained policy, you can simulate it using Kokako.simulate. The return value from simulate is a vector with one element for each replication. Each element is itself a vector, with one element for each stage. Each element, corresponding to a particular stage in a particular replication, is a dictionary that records information from the simulation.simulations = Kokako.simulate(\n    # The trained model to simulate.\n    model,\n    # The number of replications.\n    1,\n    # A list of names to record the values of.\n    [:volume, :thermal_generation, :hydro_generation, :hydro_spill]\n)\n\nreplication = 1\nstage = 2\nsimulations[replication][stage]\n\n# output\n\nDict{Symbol,Any} with 9 entries:\n  :volume             => State{Float64}(200.0, 150.0)\n  :hydro_spill        => 0.0\n  :bellman_term       => 0.0\n  :noise_term         => nothing\n  :node_index         => 2\n  :stage_objective    => 10000.0\n  :objective_state    => nothing\n  :thermal_generation => 100.0\n  :hydro_generation   => 50.0Ignore many of the entries for now. They will be relevant later. Of interest is :volume and :thermal_generation.julia> outgoing_volume = [stage[:volume].out for stage in simulations[1]]\n3-element Array{Float64,1}:\n 200.0\n 150.0\n   0.0\n\njulia> thermal_generation = [stage[:thermal_generation] for stage in simulations[1]]\n3-element Array{Float64,1}:\n 150.0\n 100.0\n   0.0From this, we can see the optimal policy: in the first stage, use 150 MWh of thermal generation and 0 MWh of hydro generation. In the second stage, use 100 MWh of thermal and 50 Wh of hydro. In the third and final stage, use 0 MWh of thermal and 150 MWh of  hydro.This concludes our first very simple tutorial for Kokako.jl. In the next tutorial, Basics II: adding uncertainty, we will extend this problem by adding uncertainty."
 },
 
 {
     "location": "tutorial/02_adding_uncertainty/#",
-    "page": "Tutorial Two: adding uncertainty",
-    "title": "Tutorial Two: adding uncertainty",
+    "page": "Basics II: adding uncertainty",
+    "title": "Basics II: adding uncertainty",
     "category": "page",
     "text": ""
 },
 
 {
-    "location": "tutorial/02_adding_uncertainty/#Tutorial-Two:-adding-uncertainty-1",
-    "page": "Tutorial Two: adding uncertainty",
-    "title": "Tutorial Two: adding uncertainty",
+    "location": "tutorial/02_adding_uncertainty/#Basics-II:-adding-uncertainty-1",
+    "page": "Basics II: adding uncertainty",
+    "title": "Basics II: adding uncertainty",
     "category": "section",
-    "text": "In the previous tutorial, Tutorial One: first steps, we created a deterministic  hydro-thermal scheduling model. In this tutorial, we extend the problem by adding uncertainty.Notably missing from our previous model were inflows. Inflows are the water that flows into the reservoir through rainfall or rivers. These inflows are uncertain, and are the cause of the main trade-off in hydro-thermal scheduling: the desire to use water now to generate cheap electricity, against the risk that future inflows will be low, leading to blackouts or expensive thermal generation.For our simple model, we assume that the inflows can be modelled by a discrete distribution with the three outcomes given in the following table:ω 0 50 100\nP(ω) 1/3 1/3 1/3The value of the noise (the random variable) is observed by the agent at the start of each stage. This makes the problem a wait-and-see or hazard-decision formulation.To represent this, we can draw the following picture. The wavy lines denote the uncertainty arriving into the start of each stage (node).(Image: Linear policy graph)In addition to adding this uncertainty to the model, we also need to modify the dynamics to include inflow:volume.out = volume.in + inflow - hydro_generation - hydro_spill"
+    "text": "In the previous tutorial, Basics I: first steps, we created a deterministic  hydro-thermal scheduling model. In this tutorial, we extend the problem by adding uncertainty.Notably missing from our previous model were inflows. Inflows are the water that flows into the reservoir through rainfall or rivers. These inflows are uncertain, and are the cause of the main trade-off in hydro-thermal scheduling: the desire to use water now to generate cheap electricity, against the risk that future inflows will be low, leading to blackouts or expensive thermal generation.For our simple model, we assume that the inflows can be modelled by a discrete distribution with the three outcomes given in the following table:ω 0 50 100\nP(ω) 1/3 1/3 1/3The value of the noise (the random variable) is observed by the agent at the start of each stage. This makes the problem a wait-and-see or hazard-decision formulation.To represent this, we can draw the following picture. The wavy lines denote the uncertainty arriving into the start of each stage (node).(Image: Linear policy graph)In addition to adding this uncertainty to the model, we also need to modify the dynamics to include inflow:volume.out = volume.in + inflow - hydro_generation - hydro_spill"
 },
 
 {
     "location": "tutorial/02_adding_uncertainty/#Creating-a-Kokako-model-1",
-    "page": "Tutorial Two: adding uncertainty",
+    "page": "Basics II: adding uncertainty",
     "title": "Creating a Kokako model",
     "category": "section",
-    "text": "To add an uncertain variable to the model, we create a new JuMP variable inflow, and then call the function Kokako.parameterize. The Kokako.parameterize function takes three arguments: the subproblem, a vector of realizations, and a corresponding vector of probabilities.using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    # Define the objective for each stage `t`. Note that we can use `t` as an\n    # index for t = 1, 2, 3.\n    fuel_cost = [50.0, 100.0, 150.0]\n    @stageobjective(subproblem, fuel_cost[t] * thermal_generation)\n    # Parameterize the subproblem.\n    Kokako.parameterize(subproblem, [0.0, 50.0, 100.0], [1/3, 1/3, 1/3]) do ω\n        JuMP.fix(inflow, ω)\n    end\nend\n\n# output\n\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3Note how we use the JuMP function JuMP.fix to set the value of the inflow variable to ω.note: Note\nKokako.parameterize can only be called once in each subproblem definition!"
+    "text": "To add an uncertain variable to the model, we create a new JuMP variable inflow, and then call the function Kokako.parameterize. The Kokako.parameterize function takes three arguments: the subproblem, a vector of realizations, and a corresponding vector of probabilities.using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        demand_constraint, thermal_generation + hydro_generation == 150.0\n    end)\n    # Define the objective for each stage `t`. Note that we can use `t` as an\n    # index for t = 1, 2, 3.\n    fuel_cost = [50.0, 100.0, 150.0]\n    @stageobjective(subproblem, fuel_cost[t] * thermal_generation)\n    # Parameterize the subproblem.\n    Kokako.parameterize(subproblem, [0.0, 50.0, 100.0], [1/3, 1/3, 1/3]) do ω\n        JuMP.fix(inflow, ω)\n    end\nend\n\n# output\n\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3Note how we use the JuMP function JuMP.fix to set the value of the inflow variable to ω.note: Note\nKokako.parameterize can only be called once in each subproblem definition!"
 },
 
 {
     "location": "tutorial/02_adding_uncertainty/#Training-and-simulating-the-policy-1",
-    "page": "Tutorial Two: adding uncertainty",
+    "page": "Basics II: adding uncertainty",
     "title": "Training and simulating the policy",
     "category": "section",
-    "text": "As in Tutorial One: first steps, we train the policy:training_results = Kokako.train(model; iteration_limit = 10)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                         Kokako - © Oscar Dowson, 2018.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |    12.500K |     5.000K |     0.007\n         2 |    12.500K |     8.333K |     0.007\n         3 |    12.500K |     8.333K |     0.008\n         4 |    12.500K |     8.333K |     0.009\n         5 |     2.500K |     8.333K |     0.011\n         6 |     5.000K |     8.333K |     0.012\n         7 |     5.000K |     8.333K |     0.013\n         8 |    12.500K |     8.333K |     0.014\n         9 |     7.500K |     8.333K |     0.014\n        10 |     5.000K |     8.333K |     0.016\nTermination status is: iteration_limitnote: Note\nSince SDDP is a stochastic algorithm, you might get slightly different numerical results.We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.In addition to the confidence interval, we can calculate the lower bound using Kokako.calculate_bound.simulations = Kokako.simulate(model, 500)\n\nobjective_values = [\n    sum(stage[:stage_objective] for stage in sim) for sim in simulations\n]\n\nusing Statistics\n\nμ = round(mean(objective_values), digits = 2)\nci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)\n\nprintln(\"Confidence interval: \", μ, \" ± \", ci)\nprintln(\"Lower bound: \", round(Kokako.calculate_bound(model), digits = 2))\n\n# output\n\nConfidence interval: 8400.00 ± 409.34\nLower bound: 8333.33This concludes our second tutorial for Kokako.jl. In the next tutorial, Tutorial Three: objective uncertainty, we extend the uncertainty to the fuel cost."
+    "text": "As in Basics I: first steps, we train the policy:training_results = Kokako.train(model; iteration_limit = 10)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |    12.500K |     5.000K |     0.007\n         2 |    12.500K |     8.333K |     0.007\n         3 |    12.500K |     8.333K |     0.008\n         4 |    12.500K |     8.333K |     0.009\n         5 |     2.500K |     8.333K |     0.011\n         6 |     5.000K |     8.333K |     0.012\n         7 |     5.000K |     8.333K |     0.013\n         8 |    12.500K |     8.333K |     0.014\n         9 |     7.500K |     8.333K |     0.014\n        10 |     5.000K |     8.333K |     0.016\nTermination status is: iteration_limitnote: Note\nSince SDDP is a stochastic algorithm, you might get slightly different numerical results.We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.In addition to the confidence interval, we can calculate the lower bound using Kokako.calculate_bound.simulations = Kokako.simulate(model, 500)\n\nobjective_values = [\n    sum(stage[:stage_objective] for stage in sim) for sim in simulations\n]\n\nusing Statistics\n\nμ = round(mean(objective_values), digits = 2)\nci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)\n\nprintln(\"Confidence interval: \", μ, \" ± \", ci)\nprintln(\"Lower bound: \", round(Kokako.calculate_bound(model), digits = 2))\n\n# output\n\nConfidence interval: 8400.00 ± 409.34\nLower bound: 8333.33In addition to simulating the primal values of variables, we can also pass Kokako.jl custom recorder functions. Each of these functions takes one argument, the JuMP subproblem, and returns anything you can compute. For example, the dual of the demand constraint (which we named demand_constraint) corresponds to the price we should charge for electricity, since it represents the cost of each additional unit of demand. To calculate this, we can gosimulations = Kokako.simulate(\n    model,\n    1,\n    custom_recorders = Dict{Symbol, Function}(\n        :price => (sp) -> JuMP.dual(sp[:demand_constraint])\n    )\n)\n\nelectricity_price = [stage[:price] for stage in simulations[1]]\n\n# output\n\n3-element Array{Float64,1}:\n  50.0\n 100.0\n  -0.0This concludes our second tutorial for Kokako.jl. In the next tutorial, Basics III: objective uncertainty, we extend the uncertainty to the fuel cost."
 },
 
 {
     "location": "tutorial/03_objective_uncertainty/#",
-    "page": "Tutorial Three: objective uncertainty",
-    "title": "Tutorial Three: objective uncertainty",
+    "page": "Basics III: objective uncertainty",
+    "title": "Basics III: objective uncertainty",
     "category": "page",
     "text": ""
 },
 
 {
-    "location": "tutorial/03_objective_uncertainty/#Tutorial-Three:-objective-uncertainty-1",
-    "page": "Tutorial Three: objective uncertainty",
-    "title": "Tutorial Three: objective uncertainty",
+    "location": "tutorial/03_objective_uncertainty/#Basics-III:-objective-uncertainty-1",
+    "page": "Basics III: objective uncertainty",
+    "title": "Basics III: objective uncertainty",
     "category": "section",
-    "text": "In the previous tutorial, Tutorial Two: adding uncertainty, we created a stochastic hydro-thermal scheduling model. In this tutorial, we extend the problem by adding uncertainty to the fuel costs.Previously, we assumed that the fuel cost was deterministic: \\$50/MWh in the first stage, \\$100/MWh in the second stage, and \\$150/MWh in the third stage. For this tutorial, we assume that in addition to these base costs, the actual fuel cost is correlated with the inflows.Our new model for the uncertinty is given by the following table:ω 1 2 3\nP(ω) 1/3 1/3 1/3\ninflow 0 50 100\nfuel_multiplier 1.5 1.0 0.75In stage t, the objective is not to minimizefuel_multiplier * fuel_cost[t] * thermal_generation"
+    "text": "In the previous tutorial, Basics II: adding uncertainty, we created a stochastic hydro-thermal scheduling model. In this tutorial, we extend the problem by adding uncertainty to the fuel costs.Previously, we assumed that the fuel cost was deterministic: \\$50/MWh in the first stage, \\$100/MWh in the second stage, and \\$150/MWh in the third stage. For this tutorial, we assume that in addition to these base costs, the actual fuel cost is correlated with the inflows.Our new model for the uncertinty is given by the following table:ω 1 2 3\nP(ω) 1/3 1/3 1/3\ninflow 0 50 100\nfuel_multiplier 1.5 1.0 0.75In stage t, the objective is not to minimizefuel_multiplier * fuel_cost[t] * thermal_generation"
 },
 
 {
     "location": "tutorial/03_objective_uncertainty/#Creating-a-Kokako-model-1",
-    "page": "Tutorial Three: objective uncertainty",
+    "page": "Basics III: objective uncertainty",
     "title": "Creating a Kokako model",
     "category": "section",
     "text": "To add an uncertain objective, we can simply call @stageobjective from inside the Kokako.parameterize function.using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    fuel_cost = [50.0, 100.0, 150.0]\n    # Parameterize the subproblem.\n    Ω = [\n        (inflow = 0.0, fuel_multiplier = 1.5),\n        (inflow = 50.0, fuel_multiplier = 1.0),\n        (inflow = 100.0, fuel_multiplier = 0.75)\n    ]\n    Kokako.parameterize(subproblem, Ω, [1/3, 1/3, 1/3]) do ω\n        JuMP.fix(inflow, ω.inflow)\n        @stageobjective(subproblem,\n            ω.fuel_multiplier * fuel_cost[t] * thermal_generation)\n    end\nend\n\n# output\n\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3"
@@ -210,31 +218,31 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/03_objective_uncertainty/#Training-and-simulating-the-policy-1",
-    "page": "Tutorial Three: objective uncertainty",
+    "page": "Basics III: objective uncertainty",
     "title": "Training and simulating the policy",
     "category": "section",
-    "text": "As in the previous two tutorials, we train the policy:training_results = Kokako.train(model; iteration_limit = 10)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\nsimulations = Kokako.simulate(model, 500)\n\nobjective_values = [\n    sum(stage[:stage_objective] for stage in sim) for sim in simulations\n]\n\nusing Statistics\n\nμ = round(mean(objective_values), digits = 2)\nci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)\n\nprintln(\"Confidence interval: \", μ, \" ± \", ci)\nprintln(\"Lower bound: \", round(Kokako.calculate_bound(model), digits = 2))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                         Kokako - © Oscar Dowson, 2018.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     7.500K |     8.173K |     0.046\n         2 |    13.654K |    10.506K |     0.047\n         3 |    31.607K |    10.625K |     0.049\n         4 |    22.500K |    10.625K |     0.051\n         5 |     1.875K |    10.625K |     0.053\n         6 |     1.875K |    10.625K |     0.054\n         7 |    24.375K |    10.625K |     0.055\n         8 |    27.500K |    10.625K |     0.058\n         9 |    11.250K |    10.625K |     0.060\n        10 |    11.250K |    10.625K |     0.061\nTermination status is: iteration_limit\nConfidence interval: 11342.5 ± 753.02\nLower bound: 10625.0This concludes our third tutorial for Kokako.jl. In the next tutorial, Tutorial Four: Markov uncertainty, we add stagewise-dependence to the inflows using a Markov chain."
+    "text": "As in the previous two tutorials, we train the policy:training_results = Kokako.train(model; iteration_limit = 10)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\nsimulations = Kokako.simulate(model, 500)\n\nobjective_values = [\n    sum(stage[:stage_objective] for stage in sim) for sim in simulations\n]\n\nusing Statistics\n\nμ = round(mean(objective_values), digits = 2)\nci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)\n\nprintln(\"Confidence interval: \", μ, \" ± \", ci)\nprintln(\"Lower bound: \", round(Kokako.calculate_bound(model), digits = 2))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     7.500K |     8.173K |     0.046\n         2 |    13.654K |    10.506K |     0.047\n         3 |    31.607K |    10.625K |     0.049\n         4 |    22.500K |    10.625K |     0.051\n         5 |     1.875K |    10.625K |     0.053\n         6 |     1.875K |    10.625K |     0.054\n         7 |    24.375K |    10.625K |     0.055\n         8 |    27.500K |    10.625K |     0.058\n         9 |    11.250K |    10.625K |     0.060\n        10 |    11.250K |    10.625K |     0.061\nTermination status is: iteration_limit\nConfidence interval: 11342.5 ± 753.02\nLower bound: 10625.0This concludes our third tutorial for Kokako.jl. In the next tutorial, Basics IV: Markov uncertainty, we add stagewise-dependence to the inflows using a Markov chain."
 },
 
 {
     "location": "tutorial/04_markov_uncertainty/#",
-    "page": "Tutorial Four: Markov uncertainty",
-    "title": "Tutorial Four: Markov uncertainty",
+    "page": "Basics IV: Markov uncertainty",
+    "title": "Basics IV: Markov uncertainty",
     "category": "page",
     "text": ""
 },
 
 {
-    "location": "tutorial/04_markov_uncertainty/#Tutorial-Four:-Markov-uncertainty-1",
-    "page": "Tutorial Four: Markov uncertainty",
-    "title": "Tutorial Four: Markov uncertainty",
+    "location": "tutorial/04_markov_uncertainty/#Basics-IV:-Markov-uncertainty-1",
+    "page": "Basics IV: Markov uncertainty",
+    "title": "Basics IV: Markov uncertainty",
     "category": "section",
-    "text": "In our three tutorials (Tutorial One: first steps, Tutorial Two: adding uncertainty, and Tutorial Three: objective uncertainty), we formulated a simple hydrothermal scheduling problem with stagewise-independent noise in the right-hand side of the constraints and in the objective function. Now, in this tutorial, we introduce some stagewise-dependent uncertainty using a Markov chain."
+    "text": "In our three tutorials (Basics I: first steps, Basics II: adding uncertainty, and Basics III: objective uncertainty), we formulated a simple hydrothermal scheduling problem with stagewise-independent noise in the right-hand side of the constraints and in the objective function. Now, in this tutorial, we introduce some stagewise-dependent uncertainty using a Markov chain."
 },
 
 {
     "location": "tutorial/04_markov_uncertainty/#Formulating-the-problem-1",
-    "page": "Tutorial Four: Markov uncertainty",
+    "page": "Basics IV: Markov uncertainty",
     "title": "Formulating the problem",
     "category": "section",
     "text": "In this tutorial we consider a Markov chain with two climate states: wet and dry. Each Markov state is associated with an integer, in this case the wet climate state  is Markov state 1 and the dry climate state is Markov state 2. In the wet climate state, the probability of the high inflow increases to 50%, and the probability of the low inflow decreases to 1/6. In the dry climate state, the converse happens. There is also persistence in the climate state: the probability of remaining in the current state is 75%, and the probability of transitioning to the other climate state is 25%. We assume that the first stage starts in the wet climate state.Here is a picture of the model we\'re going to implement.(Image: Markovian policy graph)There are five nodes in our graph. Each node is named by a tuple (t, i), where t is the stage for t=1,2,3, and i is the Markov state for i=1,2. As before, the wavy lines denote the stagewise-independent random variable.For each stage, we need to provide a Markov transition matrix. This is an MxN matrix, where the element A[i, j] gives the probability of transitioning from Markov state i in the previous stage to Markov state j in the current stage. The first stage is special because we assume there is a \"zero\'th\" stage which has one Markov state (the round node in the graph above). Furthermore, the number of columns in the transition matrix of a stage (i.e. the number of Markov states) must equal the number of rows in the next stage\'s transition matrix. For our example, the vector of Markov transition matrices is given by:T = Array{Float64, 2}[\n    [ 1.0 ]\',\n    [ 0.75 0.25 ],\n    [ 0.75 0.25 ; 0.25 0.75 ]\n]note: Note\nMake sure to add the \' after the first transition matrix so Julia can distinguish between a vector and a matrix."
@@ -242,7 +250,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/04_markov_uncertainty/#Creating-a-Kokako-model-1",
-    "page": "Tutorial Four: Markov uncertainty",
+    "page": "Basics IV: Markov uncertainty",
     "title": "Creating a Kokako model",
     "category": "section",
     "text": "using Kokako, GLPK\n\nΩ = [\n    (inflow = 0.0, fuel_multiplier = 1.5),\n    (inflow = 50.0, fuel_multiplier = 1.0),\n    (inflow = 100.0, fuel_multiplier = 0.75)\n]\n\nmodel = Kokako.MarkovianPolicyGraph(\n            transition_matrices = Array{Float64, 2}[\n                [ 1.0 ]\',\n                [ 0.75 0.25 ],\n                [ 0.75 0.25 ; 0.25 0.75 ]\n            ],\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, node\n    # Unpack the stage and Markov index.\n    t, markov_state = node\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    # Note how we can use `markov_state` to dispatch an `if` statement.\n    probability = if markov_state == 1  # wet climate state\n        [1/6, 1/3, 1/2]\n    else  # dry climate state\n        [1/2, 1/3, 1/6]\n    end\n\n    fuel_cost = [50.0, 100.0, 150.0]\n    Kokako.parameterize(subproblem, Ω, probability) do ω\n        JuMP.fix(inflow, ω.inflow)\n        @stageobjective(subproblem,\n            ω.fuel_multiplier * fuel_cost[t] * thermal_generation)\n    end\nend\n\n# output\n\nA policy graph with 5 nodes.\n Node indices: (1, 1), (2, 1), (2, 2), (3, 1), (3, 2)"
@@ -250,10 +258,98 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "tutorial/04_markov_uncertainty/#Training-and-simulating-the-policy-1",
-    "page": "Tutorial Four: Markov uncertainty",
+    "page": "Basics IV: Markov uncertainty",
     "title": "Training and simulating the policy",
     "category": "section",
-    "text": "As in the previous three tutorials, we train the policy:training_results = Kokako.train(model; iteration_limit = 10)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                         Kokako - © Oscar Dowson, 2018.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     5.625K |     5.329K |     0.031\n         2 |    11.250K |     7.975K |     0.034\n         3 |     5.000K |     7.975K |     0.035\n         4 |    22.440K |     8.073K |     0.068\n         5 |     5.000K |     8.073K |     0.084\n         6 |     5.000K |     8.073K |     0.087\n         7 |     1.875K |     8.073K |     0.089\n         8 |    13.125K |     8.073K |     0.092\n         9 |    11.250K |     8.073K |     0.096\n        10 |     1.875K |     8.073K |     0.099\nTermination status is: iteration_limitInstead of performing a Monte Carlo simulation like the previous tutorials, we may want to simulate one particular sequence of noise realizations. This historical simulation can also be conducted by passing a Kokako.Historical sampling scheme to the sampling_scheme keyword of the Kokako.simulate function.We can confirm that the historical sequence of nodes was visited by querying the :node_index key of the simulation results.simulations = Kokako.simulate(\n    model,\n    sampling_scheme = Kokako.Historical([\n        ((1, 1), Ω[1]),\n        ((2, 2), Ω[3]),\n        ((3, 1), Ω[2])\n    ])\n)\n\n[stage[:node_index] for stage in simulations[1]]\n\n# output\n\n3-element Array{Tuple{Int64,Int64},1}:\n (1, 1)\n (2, 2)\n (3, 1)This concludes our fourth tutorial for Kokako.jl."
+    "text": "As in the previous three tutorials, we train the policy:training_results = Kokako.train(model; iteration_limit = 10)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     5.625K |     5.329K |     0.031\n         2 |    11.250K |     7.975K |     0.034\n         3 |     5.000K |     7.975K |     0.035\n         4 |    22.440K |     8.073K |     0.068\n         5 |     5.000K |     8.073K |     0.084\n         6 |     5.000K |     8.073K |     0.087\n         7 |     1.875K |     8.073K |     0.089\n         8 |    13.125K |     8.073K |     0.092\n         9 |    11.250K |     8.073K |     0.096\n        10 |     1.875K |     8.073K |     0.099\nTermination status is: iteration_limitInstead of performing a Monte Carlo simulation like the previous tutorials, we may want to simulate one particular sequence of noise realizations. This historical simulation can also be conducted by passing a Kokako.Historical sampling scheme to the sampling_scheme keyword of the Kokako.simulate function.We can confirm that the historical sequence of nodes was visited by querying the :node_index key of the simulation results.simulations = Kokako.simulate(\n    model,\n    sampling_scheme = Kokako.Historical([\n        ((1, 1), Ω[1]),\n        ((2, 2), Ω[3]),\n        ((3, 1), Ω[2])\n    ])\n)\n\n[stage[:node_index] for stage in simulations[1]]\n\n# output\n\n3-element Array{Tuple{Int64,Int64},1}:\n (1, 1)\n (2, 2)\n (3, 1)This concludes our fourth tutorial for Kokako.jl. In the next tutorial, Basics V: plotting we discuss the plotting utilities included in Kokako.jl."
+},
+
+{
+    "location": "tutorial/05_plotting/#",
+    "page": "Basics V: plotting",
+    "title": "Basics V: plotting",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorial/05_plotting/#Basics-V:-plotting-1",
+    "page": "Basics V: plotting",
+    "title": "Basics V: plotting",
+    "category": "section",
+    "text": "In our previous tutorials, we formulated, solved, and simulated multistage stochastic optimization problems. However, we haven\'t really investigated what the solution looks like. Luckily, Kokako.jl includes a number of plotting tools to help us do that. In this tutorial, we explain the tools and make some pretty pictures."
+},
+
+{
+    "location": "tutorial/05_plotting/#Preliminaries-1",
+    "page": "Basics V: plotting",
+    "title": "Preliminaries",
+    "category": "section",
+    "text": "First, we need to create a policy and simulate some trajectories. So, let\'s take the model from  Basics IV: Markov uncertainty, train it for 20 iterations, and then simulate 100 Monte Carlo realizations of the policy.using Kokako, GLPK\nΩ = [\n    (inflow = 0.0, fuel_multiplier = 1.5),\n    (inflow = 50.0, fuel_multiplier = 1.0),\n    (inflow = 100.0, fuel_multiplier = 0.75)\n]\nmodel = Kokako.MarkovianPolicyGraph(\n            transition_matrices = Array{Float64, 2}[\n                [1.0]\', [0.75 0.25], [0.75 0.25 ; 0.25 0.75]],\n            sense = :Min, lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, node\n    t, markov_state = node\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    @variable(subproblem, thermal_generation >= 0)\n    @variable(subproblem, hydro_generation >= 0)\n    @variable(subproblem, hydro_spill >= 0)\n    @variable(subproblem, inflow)\n    @constraint(subproblem,\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill)\n    @constraint(subproblem, thermal_generation + hydro_generation == 150.0)\n    probability = markov_state == 1 ? [1/6, 1/3, 1/2] : [1/2, 1/3, 1/6]\n    fuel_cost = [50.0, 100.0, 150.0]\n    Kokako.parameterize(subproblem, Ω, probability) do ω\n        JuMP.fix(inflow, ω.inflow)\n        @stageobjective(subproblem,\n            ω.fuel_multiplier * fuel_cost[t] * thermal_generation)\n    end\nend\n\nKokako.train(model, iteration_limit = 20)\n\nsimulations = Kokako.simulate(\n    model, 100,\n    [:volume, :thermal_generation, :hydro_generation, :hydro_spill])\n\nprintln(\"Completed $(length(simulations)) simulations.\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |    33.750K |     5.329K |     0.034\n         2 |     5.000K |     7.975K |     0.036\n         3 |    13.125K |     8.073K |     0.038\n         4 |     5.000K |     8.073K |     0.039\n         5 |     1.875K |     8.073K |     0.041\n         6 |     1.875K |     8.073K |     0.042\n         7 |    16.250K |     8.073K |     0.044\n         8 |     1.875K |     8.073K |     0.045\n         9 |     1.875K |     8.073K |     0.048\n        10 |     1.875K |     8.073K |     0.049\n        11 |     1.875K |     8.073K |     0.051\n        12 |     1.875K |     8.073K |     0.053\n        13 |    33.750K |     8.073K |     0.054\n        14 |     9.375K |     8.073K |     0.056\n        15 |     5.000K |     8.073K |     0.059\n        16 |     5.000K |     8.073K |     0.061\n        17 |    11.250K |     8.073K |     0.063\n        18 |     5.000K |     8.073K |     0.065\n        19 |     1.875K |     8.073K |     0.066\n        20 |    11.250K |     8.073K |     0.069\nCompleted 100 simulations.Great! Now we have some data in simulations to visualize."
+},
+
+{
+    "location": "tutorial/05_plotting/#Spaghetti-plots-1",
+    "page": "Basics V: plotting",
+    "title": "Spaghetti plots",
+    "category": "section",
+    "text": "The first plotting utility we discuss is a spaghetti plot (you\'ll understand the name when you see the graph).To create a spaghetti plot, begin by creating a new Kokako.SpaghettiPlot instance as follows:julia> plt = Kokako.SpaghettiPlot(stages = 3, scenarios = 100)\nA spaghetti plot with 3 stages and 100 scenarios.The keyword stages gives the number of stages in the problem (in this case, 3) and the keyword scenarios gives the number of trajectories that you want to plot (in this case, 100, since that is how many Monte Carlo replications we conducted).Next, we can add plots to plt using the Kokako.add_spaghetti function.julia> Kokako.add_spaghetti(plt; title = \"Reservoir volume\") do scenario, stage\n           return simulations[scenario][stage][:volume].out\n       endThe return value of each do ... end block is a Float64 for the y-value of the scenario\'th line in stage stage.You don\'t have just return values from the simulation, you can compute things too.julia> Kokako.add_spaghetti(plt;\n               title = \"Fuel cost\", ymin = 0, ymax = 250) do scenario, stage\n           if simulations[scenario][stage][:thermal_generation] > 0\n               return simulations[scenario][stage][:stage_objective] /\n                   simulations[scenario][stage][:thermal_generation]\n           else  # No thermal generation, so return 0.0.\n               return 0.0\n           end\n       endNote that there are many keyword arguments in addition to title. For example, we fixed the minimum and maximum values of the y-axis using ymin and ymax. See the Kokako.add_spaghetti documentation for all the arguments.Having built the plot, we now need to display it.julia> Kokako.save(plt, \"spaghetti_plot.html\", open = true)This should open a webpage that looks like this one.Using the mouse, you can highlight individual trajectories by hovering over them. This makes it possible to visualize a single trajectory across multiple dimensions.If you click on the plot, then trajectories that are close to the mouse pointer are shown darker and those further away are shown lighter."
+},
+
+{
+    "location": "tutorial/05_plotting/#Publication-plots-1",
+    "page": "Basics V: plotting",
+    "title": "Publication plots",
+    "category": "section",
+    "text": "Instead of the interactive Javascript plots, you can also create some publication ready plots using the Kokako.publicationplot function.!!!info     You need to install the Plots.jl     package for this to work. We used the GR backend (gr()), but any     Plots.jl backend should work.    import Pkg\n    Pkg.add(\"Plots\")\n    Pkg.add(\"GR\")\n    ```\n\nThis function implements a plot recipe to create ribbon plots of each variable\nagainst the stages. The first argument is the vector of simulation dictionaries\nand the second argument is the dictionary key that you want to plot. Standard\nPlots.jl keyword arguments such as `title` and `xlabel` can be used to modify\nthe look of each plot. By default, the plot displays ribbons of the 0-100,\n10-90, and 25-75 percentiles. The dark, solid line in the middle is the median\n(i.e. 50\'th percentile).\njulia using Plots plot(     Kokako.publicationplot(         simulations,         data -> data[:volume].out,         title = \"Outgoing volume\"     ),     Kokako.publicationplot(         simulations,         data -> data[:thermalgeneration],         title = \"Thermal generation\"     ),     xlabel = \"Stage\",     ylims = (0, 200),     layout = (1, 2),     marginbottom = 5,     size = (1000, 300) )\nThis should open a plot window with a plot that looks like:\n\n![publication plot](../assets/publication_plot.png)\n\nYou can save this plot as a PDF using the `Plots.jl` function `savefig`:julia Plots.savefig(\"my_picture.pdf\") ```This concludes our fifth tutorial for Kokako.jl. In our final Basics tutorial, Basics VI: words of warning we discuss some of the issues that you should be aware of when creating your own models."
+},
+
+{
+    "location": "tutorial/06_warnings/#",
+    "page": "Basics VI: words of warning",
+    "title": "Basics VI: words of warning",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorial/06_warnings/#Basics-VI:-words-of-warning-1",
+    "page": "Basics VI: words of warning",
+    "title": "Basics VI: words of warning",
+    "category": "section",
+    "text": "SDDP is a powerful solution technique for multistage stochastic programming. However, there are a number of subtle things to be aware of before creating your own models."
+},
+
+{
+    "location": "tutorial/06_warnings/#Numerical-stability-1",
+    "page": "Basics VI: words of warning",
+    "title": "Numerical stability",
+    "category": "section",
+    "text": "If you aren\'t aware, SDDP builds an outer-approximation to a convex function using cutting planes. This results in a formulation that is particularly hard for solvers like GLPK, Gurobi, and CPLEX to deal with. As a result, you may run into weird behavior. This behavior could includeIterations suddenly taking a long time (the solver stalled)\nSubproblems turning infeasible or unbounded after many iterations\nSolvers returning \"Numerical Error\" statuses"
+},
+
+{
+    "location": "tutorial/06_warnings/#Problem-scaling-1",
+    "page": "Basics VI: words of warning",
+    "title": "Problem scaling",
+    "category": "section",
+    "text": "In almost all cases, the cause of this is poor problem scaling. For our purpose, poor problem scaling means having variables with very large numbers and variables with very small numbers in the same model.info: Info\nGurobi has an excellent set of articles on numerical issues and how to avoid them.Consider, for example, the hydro-thermal scheduling problem we have been discussing in previous tutorials.If we define the volume of the reservoir in terms of m³, then a lake might have a capacity of 10^10 m³: @variable(subproblem, 0 <= volume <= 10^10). Moreover, the cost per cubic meter might be around \\$0.05/m³. To calculate the  value of water in our reservoir, we need to multiple a variable on the order of 10^10, by one on the order of 10⁻²!. That is twelve orders of magnitude!To improve the performance of the SDDP algorithm (and reduce the chance of weird behavior), try to re-scale the units of the problem in order to reduce the largest difference in magnitude. For example, if we talk in terms of million m³, then we have a capacity of 10⁴ million m³, and a price of \\$50,000 per million m³. Now things are only one order of magnitude apart."
+},
+
+{
+    "location": "tutorial/06_warnings/#Solver-choice-1",
+    "page": "Basics VI: words of warning",
+    "title": "Solver choice",
+    "category": "section",
+    "text": "If you still run into issues after re-scaling your problem, the next thing to consider is solver choice. We highly recommend using a commercial solver such as CPLEX, Gurobi, or Xpress. If you have a particularly troublesome model, you should investigate setting solver-specific options to improve the numerical stability of each solver. For example, Gurobi has a NumericFocus option."
+},
+
+{
+    "location": "tutorial/06_warnings/#Choosing-an-initial-bound-1",
+    "page": "Basics VI: words of warning",
+    "title": "Choosing an initial bound",
+    "category": "section",
+    "text": "One of the important requirements when building a SDDP model is to choose an appropriate bound on the objective (lower if minimizing, upper if maximizing). However, it can be hard to choose a bound if you don\'t know the solution! (Which is very likely.)The bound should not be as large as possible (since this will help with convergence and the numerical issues discussed above), but if chosen to small, it may cut of the feasible region and lead to a sub-optimal solution.Consider the following simple model, where we first set lower_bound to 0.0.using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)\n    @variable(subproblem, u >= 0)\n    @variable(subproblem, v >= 0)\n    @constraint(subproblem, x.out == x.in - u)\n    @constraint(subproblem, u + v == 1.5)\n    @stageobjective(subproblem, t * v)\nend\n\nKokako.train(model, iteration_limit = 5)\n\nprintln(\"Finished training!\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     6.500  |     3.000  |     0.001\n         2 |     3.500  |     3.500  |     0.001\n         3 |     3.500  |     3.500  |     0.004\n         4 |     3.500  |     3.500  |     0.004\n         5 |     3.500  |     3.500  |     0.005\nFinished training!Now consider the case when we set the lower_bound to 10.0:using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 10.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)\n    @variable(subproblem, u >= 0)\n    @variable(subproblem, v >= 0)\n    @constraint(subproblem, x.out == x.in - u)\n    @constraint(subproblem, u + v == 1.5)\n    @stageobjective(subproblem, t * v)\nend\n\nKokako.train(model, iteration_limit = 5)\n\nprintln(\"Finished training!\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     6.500  |    11.000  |     0.001\n         2 |     5.500  |    11.000  |     0.002\n         3 |     5.500  |    11.000  |     0.002\n         4 |     5.500  |    11.000  |     0.003\n         5 |     5.500  |    11.000  |     0.006\nFinished training!How do we tell which is more appropriate? There are a few clues that you should look out for.    m = Model(withoptimizer(Ipopt.Optimizer, tol=1E-24, dualinftol=1E-24,         constrvioltol=1E-24, complinftol=1E-24, printlevel=0))     @variable(m, newvarvec[i=1:numvars] >= 0)     obj = @expression(m, sum(newvarvec[i] for i=1:numvars))     @objective(m, Min, obj)     JuMP.optimize!(m)The bound converges to a value above (if minimizing) the simulated cost of the policy. In this case, the problem is deterministic, so it is easy to tell. But you can also check by performing a Monte Carlo simulation like we did in Basics II: adding uncertainty.\nThe bound converges to different values when we change the bound. This is another clear give-away. The bound provided by the user is only used in the initial iterations. It should not change the value of the converged policy. Thus, if you don\'t know an appropriate value for the bound, choose an initial value, and then increase (or decrease) the value of the bound to confirm that the value of the policy doesn\'t change.\nThe bound converges to a value close to the bound provided by the user. This varies between models, but notice that 11.0 is quite close to 10.0 compared with 3.5 and 0.0.This concludes or series of basic introductory tutorials for Kokako.jl."
 },
 
 {
@@ -382,6 +478,30 @@ var documenterSearchIndex = {"docs": [
     "title": "Simulating the policy",
     "category": "section",
     "text": "Kokako.simulate\nKokako.calculate_bound\nKokako.Historical"
+},
+
+{
+    "location": "apireference/#Kokako.SpaghettiPlot",
+    "page": "Reference",
+    "title": "Kokako.SpaghettiPlot",
+    "category": "type",
+    "text": "Kokako.SpaghettiPlot(; stages, scenarios)\n\nInitialize a new SpaghettiPlot with stages stages and scenarios number of replications.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.add_spaghetti",
+    "page": "Reference",
+    "title": "Kokako.add_spaghetti",
+    "category": "function",
+    "text": "Kokako.add_spaghetti(data_function::Function, plt::SpaghettiPlot; kwargs...)\n\nDescription\n\nAdd a new figure to the SpaghettiPlot plt, where the y-value is given by data_function(stage, scenario) for all stages in 1:plt.stages and scenarios in 1:plt.scenarios.\n\nKeyword arguments\n\nxlabel: set the xaxis label\nylabel: set the yaxis label\ntitle: set the title of the plot\nymin: set the minimum y value\nymax: set the maximum y value\ncumulative: plot the additive accumulation of the value across the stages\ninterpolate: interpolation method for lines between stages.\n\nDefaults to \"linear\" see the d3 docs 	for all options.\n\nExamples\n\nsimulations = simulate(model, 10)\nplt = Kokako.spaghetti_plot(stages = 10, scenarios = 10)\nKokako.add_spaghetti(plt; title = \"Stage objective\") do scenario, stage\n	return simulations[scenario][stage][:stage_objective]\nend\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Visualizing-the-policy-1",
+    "page": "Reference",
+    "title": "Visualizing the policy",
+    "category": "section",
+    "text": "Kokako.SpaghettiPlot\nKokako.add_spaghetti"
 },
 
 ]}
