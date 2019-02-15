@@ -199,7 +199,7 @@ whole problem, we use the Kokako-provided [`@stageobjective`](@ref).
 @stageobjective(subproblem, fuel_cost[t] * thermal_generation)
 ```
 Note that we don't have to specify the optimization sense (`Max` of `Min`) since
-this is done via the `sense` keyword argument of [`LinearPolicyGraph`](@ref).
+this is done via the `sense` keyword argument of [`Kokako.LinearPolicyGraph`](@ref).
 
 ## Training a Kokako policy
 
