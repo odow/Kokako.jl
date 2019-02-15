@@ -154,7 +154,7 @@ the dual of the demand constraint (which we named `demand_constraint`)
 corresponds to the price we should charge for electricity, since it represents
 the cost of each additional unit of demand. To calculate this, we can go
 
-```jldoctest tutorial_two; filter = r"\s+[\-]?\d+\.\d\n"
+```jldoctest tutorial_two; filter = r"\s+?\-?\d+\.0\n"
 simulations = Kokako.simulate(
     model,
     1,

@@ -188,9 +188,18 @@ gives the incoming value of the state variable in the first stage.
 
 #### Defining the stage-objective
 
+In a JuMP model, we can set the objective using `@objective`. For example:
 ```julia
 @objective(subproblem, Min, fuel_cost[t] * thermal_generation)
 ```
+
+Since we only need to define the objective for each stage, rather than the
+whole problem, we use the Kokako-provided [`@stageobjective`](@ref).
+```julia
+@stageobjective(subproblem, fuel_cost[t] * thermal_generation)
+```
+Note that we don't have to specify the optimization sense (`Max` of `Min`) since
+this is done via the `sense` keyword argument of [`LinearPolicyGraph`](@ref).
 
 ## Training a Kokako policy
 
