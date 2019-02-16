@@ -1,17 +1,17 @@
 # Intermediate I: risk
 
 ```@meta
-DocTestSetup = begin
+DocTestSetup = quote
     using Kokako, GLPK
 end
 ```
 
 ## Risk measures
 
-To illustrate the risk-measures included in `Kokako.jl`, we'll consider a
-discrete random variable with four outcomes.
+To illustrate the risk-measures included in `Kokako.jl`, we consider a discrete
+random variable with four outcomes.
 
-This random variable is supported on the values 1, 2, 3, and 4:
+The random variable is supported on the values 1, 2, 3, and 4:
 
 ```jldoctest intermediate_risk
 julia> noise_supports = [1, 2, 3, 4]
@@ -53,7 +53,7 @@ Finally, we create a vector that will be used to store the risk-adjusted
 probabilities:
 
 ```jldoctest intermediate_risk
-risk_adjusted_probability = zeros(4)
+julia> risk_adjusted_probability = zeros(4)
 4-element Array{Float64,1}:
  0.0
  0.0
@@ -116,6 +116,9 @@ risk_adjusted_probability
 ```
 
 ### Average value at risk (AV@R)
+
+The average value at risk [`AVaR`](@ref) measure computes the expectation of the
+worst `beta` fraction of outcomes.
 
 ```jldoctest intermediate_risk
 Kokako.adjust_probability(
@@ -235,6 +238,13 @@ risk_adjusted_probability
 
 ## Training a risk-averse model
 
+Now that we know what risk measures `Kokako.jl` supports, lets see how to train
+a policy using them. There are three possible ways.
+
+If the same risk measure is used at every node in the policy graph, we can just
+pass an instance of one of the risk measures to the `risk_measure` keyword
+argument of the [`Kokako.train`](@ref) function.
+
 ```julia
 Kokako.train(
     model,
@@ -242,6 +252,11 @@ Kokako.train(
     iteration_limit = 10
 )
 ```
+
+However, if you want different risk measures at different nodes, there are two
+options. First, you can pass `risk_measure` a dictionary of risk measures,
+with one entry for each node. The keys of the dictionary are the indices of the
+nodes.
 
 ```julia
 Kokako.train(
@@ -254,6 +269,8 @@ Kokako.train(
 )
 ```
 
+An alternative method is to pass `risk_measure` a function that takes one
+argument, the index of a node, and returns an instance of a risk measure:
 ```julia
 Kokako.train(
     model,
