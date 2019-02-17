@@ -301,7 +301,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basics V: plotting",
     "title": "Publication plots",
     "category": "section",
-    "text": "Instead of the interactive Javascript plots, you can also create some publication ready plots using the Kokako.publicationplot function.!!!info     You need to install the Plots.jl     package for this to work. We used the GR backend (gr()), but any     Plots.jl backend should work.    import Pkg\n    Pkg.add(\"Plots\")\n    Pkg.add(\"GR\")\n    ```\n\nThis function implements a plot recipe to create ribbon plots of each variable\nagainst the stages. The first argument is the vector of simulation dictionaries\nand the second argument is the dictionary key that you want to plot. Standard\nPlots.jl keyword arguments such as `title` and `xlabel` can be used to modify\nthe look of each plot. By default, the plot displays ribbons of the 0-100,\n10-90, and 25-75 percentiles. The dark, solid line in the middle is the median\n(i.e. 50\'th percentile).\njulia using Plots plot(     Kokako.publicationplot(         simulations,         data -> data[:volume].out,         title = \"Outgoing volume\"     ),     Kokako.publicationplot(         simulations,         data -> data[:thermalgeneration],         title = \"Thermal generation\"     ),     xlabel = \"Stage\",     ylims = (0, 200),     layout = (1, 2),     marginbottom = 5,     size = (1000, 300) )\nThis should open a plot window with a plot that looks like:\n\n![publication plot](../assets/publication_plot.png)\n\nYou can save this plot as a PDF using the `Plots.jl` function `savefig`:julia Plots.savefig(\"my_picture.pdf\") ```This concludes our fifth tutorial for Kokako.jl. In our final Basics tutorial, Basics VI: words of warning we discuss some of the issues that you should be aware of when creating your own models."
+    "text": "Instead of the interactive Javascript plots, you can also create some publication ready plots using the Kokako.publicationplot function.!!!info     You need to install the Plots.jl     package for this to work. We used the GR backend (gr()), but any     Plots.jl backend should work.Kokako.publicationplot implements a plot recipe to create ribbon plots of each variable against the stages. The first argument is the vector of simulation dictionaries and the second argument is the dictionary key that you want to plot. Standard Plots.jl keyword arguments such as title and xlabel can be used to modify the look of each plot. By default, the plot displays ribbons of the 0-100, 10-90, and 25-75 percentiles. The dark, solid line in the middle is the median (i.e. 50\'th percentile).using Plots\nplot(\n    Kokako.publicationplot(\n        simulations,\n        data -> data[:volume].out,\n        title = \"Outgoing volume\"\n    ),\n    Kokako.publicationplot(\n        simulations,\n        data -> data[:thermal_generation],\n        title = \"Thermal generation\"\n    ),\n    xlabel = \"Stage\",\n    ylims = (0, 200),\n    layout = (1, 2),\n    margin_bottom = 5,\n    size = (1000, 300)\n)This should open a plot window with a plot that looks like:(Image: publication plot)You can save this plot as a PDF using the Plots.jl function savefig:Plots.savefig(\"my_picture.pdf\")This concludes our fifth tutorial for Kokako.jl. In our final Basics tutorial, Basics VI: words of warning we discuss some of the issues that you should be aware of when creating your own models."
 },
 
 {
@@ -377,11 +377,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "tutorial/11_risk/#Kokako.Expectation",
+    "page": "Intermediate I: risk",
+    "title": "Kokako.Expectation",
+    "category": "type",
+    "text": "Expectation()\n\nThe Expectation risk measure. Identical to taking the expectation with respect to the nominal distribution.\n\n\n\n\n\n"
+},
+
+{
     "location": "tutorial/11_risk/#Expectation-1",
     "page": "Intermediate I: risk",
     "title": "Expectation",
     "category": "section",
-    "text": "The Kokako.Expectation risk-measure takes the risk-adjusted expectation with respect to the nominal distribution:Kokako.adjust_probability(\n    Kokako.Expectation(),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.1\n 0.2\n 0.3\n 0.4Kokako.Expectation is the default risk measure in Kokako.jl."
+    "text": "Kokako.ExpectationKokako.adjust_probability(\n    Kokako.Expectation(),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.1\n 0.2\n 0.3\n 0.4Kokako.Expectation is the default risk measure in Kokako.jl."
+},
+
+{
+    "location": "tutorial/11_risk/#Kokako.WorstCase",
+    "page": "Intermediate I: risk",
+    "title": "Kokako.WorstCase",
+    "category": "type",
+    "text": "WorstCase()\n\nThe worst-case risk measure. Places all of the probability weight on the worst outcome.\n\n\n\n\n\n"
 },
 
 {
@@ -389,7 +405,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate I: risk",
     "title": "Worst-case",
     "category": "section",
-    "text": "The Kokako.WorstCase risk-measure places all of the weight on the worst outcome (largest if minimizing, smallest if maximizing):Kokako.adjust_probability(\n    Kokako.WorstCase(),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.0\n 0.0\n 1.0\n 0.0"
+    "text": "Kokako.WorstCaseKokako.adjust_probability(\n    Kokako.WorstCase(),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.0\n 0.0\n 1.0\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Kokako.AVaR",
+    "page": "Intermediate I: risk",
+    "title": "Kokako.AVaR",
+    "category": "type",
+    "text": "AVaR(β)\n\nThe average value at risk (AV@R) risk measure.\n\nComputes the expectation of the β fraction of worst outcomes. β must be in [0, 1]. When β=1, this is equivalent to the Expectation risk measure. When β=0, this is equivalent  to the WorstCase risk measure.\n\nAV@R is also known as the conditional value at risk (CV@R) or expected shortfall.\n\n\n\n\n\n"
 },
 
 {
@@ -397,7 +421,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate I: risk",
     "title": "Average value at risk (AV@R)",
     "category": "section",
-    "text": "The average value at risk Kokako.AVaR measure computes the expectation of the worst beta fraction of outcomes.Kokako.adjust_probability(\n    Kokako.AVaR(0.5),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nround.(risk_adjusted_probability, digits = 1)\n\n# output\n\n4-element Array{Float64,1}:\n 0.2\n 0.2\n 0.6\n 0.0"
+    "text": "Kokako.AVaRKokako.adjust_probability(\n    Kokako.AVaR(0.5),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nround.(risk_adjusted_probability, digits = 1)\n\n# output\n\n4-element Array{Float64,1}:\n 0.2\n 0.2\n 0.6\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Kokako.EAVaR",
+    "page": "Intermediate I: risk",
+    "title": "Kokako.EAVaR",
+    "category": "function",
+    "text": "EAVaR(;lambda=1.0, beta=1.0)\n\nA risk measure that is a convex combination of Expectation and Average Value @ Risk (also called Conditional Value @ Risk).\n\n    λ * E[x] + (1 - λ) * AV@R(1-β)[x]\n\nKeyword Arguments\n\nlambda: Convex weight on the expectation ((1-lambda) weight is put on the AV@R component. Inreasing values of lambda are less risk averse (more weight on expectation).\nbeta: The quantile at which to calculate the Average Value @ Risk. Increasing values of beta are less risk averse. If beta=0, then the AV@R component is the worst case risk measure.\n\n\n\n\n\n"
 },
 
 {
@@ -405,7 +437,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate I: risk",
     "title": "Convex combination of risk measures",
     "category": "section",
-    "text": "Using the axioms of coherent risk measures, it is easy to show that any convex combination of coherent risk measures is also a coherent risk measure.risk_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()\n\nKokako.adjust_probability(\n    risk_measure,\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.05\n 0.1\n 0.65\n 0.2As a special case, the Kokako.EAVaR risk-measure is a convex combination of Kokako.Expectation and Kokako.AVaR:julia> risk_measure = Kokako.EAVaR(beta=0.25, lambda=0.4)\nA convex combination of 0.4 * Kokako.Expectation() + 0.6 * Kokako.AVaR(0.25)This is short-hand for lambda * Kokako.Expectation() + (1-lambda) * Kokako.AVaR(beta).  As lambda and beta tend toward 1.0, the measure becomes more risk-neutral  (i.e. less risk averse)."
+    "text": "Using the axioms of coherent risk measures, it is easy to show that any convex combination of coherent risk measures is also a coherent risk measure. Convex combinations of risk measures can be created directly:julia> cvx_comb_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()\nA convex combination of 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()Kokako.adjust_probability(\n    cvx_comb_measure,\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.05\n 0.1\n 0.65\n 0.2As a special case, the Kokako.EAVaR risk-measure is a convex combination of Kokako.Expectation and Kokako.AVaR:julia> risk_measure = Kokako.EAVaR(beta=0.25, lambda=0.4)\nA convex combination of 0.4 * Kokako.Expectation() + 0.6 * Kokako.AVaR(0.25)Kokako.EAVaR"
 },
 
 {
@@ -417,11 +449,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "tutorial/11_risk/#Kokako.ModifiedChiSquared",
+    "page": "Intermediate I: risk",
+    "title": "Kokako.ModifiedChiSquared",
+    "category": "type",
+    "text": "ModifiedChiSquared(radius::Float64)\n\nThe distributionally robust SDDP risk measure of\n\nPhilpott, A., de Matos, V., Kapelevich, L. Distributionally robust SDDP. Computational Management Science (2018) 165:431-454.\n\n\n\n\n\n"
+},
+
+{
     "location": "tutorial/11_risk/#Modified-Chi-squard-1",
     "page": "Intermediate I: risk",
     "title": "Modified Chi-squard",
     "category": "section",
-    "text": "The Kokako.ModifiedChiSquared risk measure takes one argument: the radius of the ball.Kokako.adjust_probability(\n    Kokako.ModifiedChiSquared(0.5),\n    risk_adjusted_probability,\n    [0.25, 0.25, 0.25, 0.25],\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nround.(risk_adjusted_probability, digits = 4)\n\n# output\n\n4-element Array{Float64,1}:\n 0.3333\n 0.0447\n 0.622\n 0.0"
+    "text": "Kokako.ModifiedChiSquaredKokako.adjust_probability(\n    Kokako.ModifiedChiSquared(0.5),\n    risk_adjusted_probability,\n    [0.25, 0.25, 0.25, 0.25],\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nround.(risk_adjusted_probability, digits = 4)\n\n# output\n\n4-element Array{Float64,1}:\n 0.3333\n 0.0447\n 0.622\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Kokako.Wasserstein",
+    "page": "Intermediate I: risk",
+    "title": "Kokako.Wasserstein",
+    "category": "type",
+    "text": "Wasserstein(norm::Function, solver_factory; alpha::Float64)\n\nA distributionally-robust risk measure based on the Wasserstein distance.\n\nAs alpha increases, the measure becomes more risk-averse. When alpha=0, the measure is equivalent to the expectation operator. As alpha increases, the measure approaches the Worst-case risk measure.\n\n\n\n\n\n"
 },
 
 {
@@ -453,39 +501,55 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate II: stopping rules",
     "title": "Intermediate II: stopping rules",
     "category": "section",
-    "text": ""
+    "text": "The theory of SDDP tells us that the algorithm converges to an optimal policy almost surely in a finite number of iterations. In practice, this number is very large. Therefore, we need some way of pre-emptively terminating SDDP when the solution is “good enough.” We call heuristics for pre-emptively terminating SDDP stopping rules."
 },
 
 {
-    "location": "tutorial/12_stopping_rules/#Iteration-limit-1",
+    "location": "tutorial/12_stopping_rules/#Basic-limits-1",
     "page": "Intermediate II: stopping rules",
-    "title": "Iteration limit",
+    "title": "Basic limits",
     "category": "section",
-    "text": "Kokako.train(model, iteration_limit = 10)"
+    "text": "The training of an SDDP policy can be terminated after a fixed number of iterations using the iteration_limit keyword.Kokako.train(model, iteration_limit = 10)The training of an SDDP policy can be terminated after a fixed number of seconds using the time_limit keyword.Kokako.train(model, time_limit = 2.0)"
 },
 
 {
-    "location": "tutorial/12_stopping_rules/#Time-limit-1",
+    "location": "tutorial/12_stopping_rules/#Kokako.IterationLimit",
     "page": "Intermediate II: stopping rules",
-    "title": "Time limit",
-    "category": "section",
-    "text": "Kokako.train(model, time_limit = 2.0)"
+    "title": "Kokako.IterationLimit",
+    "category": "type",
+    "text": "IterationLimit(limit::Int)\n\nTeriminate the algorithm after limit number of iterations.\n\n\n\n\n\n"
 },
 
 {
-    "location": "tutorial/12_stopping_rules/#Statistical-1",
+    "location": "tutorial/12_stopping_rules/#Kokako.TimeLimit",
     "page": "Intermediate II: stopping rules",
-    "title": "Statistical",
-    "category": "section",
-    "text": ""
+    "title": "Kokako.TimeLimit",
+    "category": "type",
+    "text": "TimeLimit(limit::Float64)\n\nTeriminate the algorithm after limit seconds of computation.\n\n\n\n\n\n"
 },
 
 {
-    "location": "tutorial/12_stopping_rules/#Bound-stalling-1",
+    "location": "tutorial/12_stopping_rules/#Kokako.Statistical",
     "page": "Intermediate II: stopping rules",
-    "title": "Bound stalling",
+    "title": "Kokako.Statistical",
+    "category": "type",
+    "text": "Statistical(; num_replications, iteration_period = 1, z_score = 1.96,\n            verbose = true)\n\nPerform an in-sample Monte Carlo simulation of the policy with num_replications replications every iteration_periods. Terminate if the deterministic bound (lower if minimizing) calls into the confidence interval for the mean of the simulated cost. If verbose = true, print the confidence interval.\n\nNote that this tests assumes that the simulated values are normally distributed. In infinite horizon models, this is almost never the case. The distribution is usually closer to exponential or log-normal.\n\n\n\n\n\n"
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#Kokako.BoundStalling",
+    "page": "Intermediate II: stopping rules",
+    "title": "Kokako.BoundStalling",
+    "category": "type",
+    "text": "BoundStalling(num_previous_iterations::Int, tolerance::Float64)\n\nTeriminate the algorithm once the deterministic bound (lower if minimizing, upper if maximizing) fails to improve by more than tolerance in absolute terms for more than num_previous_iterations consecutve iterations.\n\n\n\n\n\n"
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#Stopping-rules-1",
+    "page": "Intermediate II: stopping rules",
+    "title": "Stopping rules",
     "category": "section",
-    "text": ""
+    "text": "In addition to the limits provided as keyword arguments, a variety of other stopping rules are available. These can be passed to Kokako.train as a vector to the stopping_rules keyword. For example:Kokako.train(model, stopping_rules = [Kokako.BoundStalling(10, 1e-4)])Here are the stopping rules implemented in Kokako.jl:Kokako.IterationLimit\nKokako.TimeLimit\nKokako.Statistical\nKokako.BoundStalling"
 },
 
 {
@@ -646,62 +710,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Training the policy",
     "category": "section",
     "text": "Kokako.train\nKokako.termination_status"
-},
-
-{
-    "location": "apireference/#Kokako.Expectation",
-    "page": "Reference",
-    "title": "Kokako.Expectation",
-    "category": "type",
-    "text": "Expectation()\n\nThe Expectation risk measure.\n\n\n\n\n\n"
-},
-
-{
-    "location": "apireference/#Kokako.WorstCase",
-    "page": "Reference",
-    "title": "Kokako.WorstCase",
-    "category": "type",
-    "text": "WorstCase()\n\nThe worst-case risk measure.\n\n\n\n\n\n"
-},
-
-{
-    "location": "apireference/#Kokako.AVaR",
-    "page": "Reference",
-    "title": "Kokako.AVaR",
-    "category": "type",
-    "text": "AVaR(β)\n\nThe average value at risk (AV@R) risk measure.\n\nComputes the expectation of the β fraction of worst outcomes. β must be in [0, 1]. When β=1, this is equivalent to the Expectation risk measure. When β=0, this is equivalent  to the WorstCase risk measure.\n\nAV@R is also known as the conditional value at risk (CV@R) or expected shortfall.\n\n\n\n\n\n"
-},
-
-{
-    "location": "apireference/#Kokako.EAVaR",
-    "page": "Reference",
-    "title": "Kokako.EAVaR",
-    "category": "function",
-    "text": "EAVaR(;lambda=1.0, beta=1.0)\n\nA risk measure that is a convex combination of Expectation and Average Value @ Risk (also called Conditional Value @ Risk).\n\n    λ * E[x] + (1 - λ) * AV@R(1-β)[x]\n\nKeyword Arguments\n\nlambda: Convex weight on the expectation ((1-lambda) weight is put on the AV@R component. Inreasing values of lambda are less risk averse (more weight on expectation).\nbeta: The quantile at which to calculate the Average Value @ Risk. Increasing values of beta are less risk averse. If beta=0, then the AV@R component is the worst case risk measure.\n\n\n\n\n\n"
-},
-
-{
-    "location": "apireference/#Kokako.ModifiedChiSquared",
-    "page": "Reference",
-    "title": "Kokako.ModifiedChiSquared",
-    "category": "type",
-    "text": "ModifiedChiSquared(radius::Float64)\n\nThe distributionally robust SDDP risk measure of\n\nPhilpott, A., de Matos, V., Kapelevich, L. Distributionally robust SDDP. Computational Management Science (2018) 165:431-454.\n\n\n\n\n\n"
-},
-
-{
-    "location": "apireference/#Kokako.Wasserstein",
-    "page": "Reference",
-    "title": "Kokako.Wasserstein",
-    "category": "type",
-    "text": "Wasserstein(solver_factory; alpha::Float64)\n\nA distributionally-robust risk measure based on the Wasserstein distance.\n\nAs alpha increases, the measure becomes more risk-averse. When alpha=0, the measure is equivalent to the expectation operator. As alpha increases, the measure approaches the Worst-case risk measure.\n\n\n\n\n\n"
-},
-
-{
-    "location": "apireference/#Risk-measures-1",
-    "page": "Reference",
-    "title": "Risk measures",
-    "category": "section",
-    "text": "Kokako.Expectation\nKokako.WorstCase\nKokako.AVaR\nKokako.EAVaR\nKokako.ModifiedChiSquared\nKokako.Wasserstein"
 },
 
 {

@@ -20,7 +20,7 @@ true</code></pre><p>Finally, we create a vector that will be used to store the r
  0.0
  0.0
  0.0
- 0.0</code></pre><h3><a class="nav-anchor" id="Expectation-1" href="#Expectation-1">Expectation</a></h3><p>The <a href="../../apireference/#Kokako.Expectation"><code>Kokako.Expectation</code></a> risk-measure takes the risk-adjusted expectation with respect to the nominal distribution:</p><pre><code class="language-julia">Kokako.adjust_probability(
+ 0.0</code></pre><h3><a class="nav-anchor" id="Expectation-1" href="#Expectation-1">Expectation</a></h3><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Kokako.Expectation" href="#Kokako.Expectation"><code>Kokako.Expectation</code></a> — <span class="docstring-category">Type</span>.</div><div><div><pre><code class="language-none">Expectation()</code></pre><p>The Expectation risk measure. Identical to taking the expectation with respect to the nominal distribution.</p></div></div></section><pre><code class="language-julia">Kokako.adjust_probability(
     Kokako.Expectation(),
     risk_adjusted_probability,
     nominal_probability,
@@ -37,7 +37,7 @@ risk_adjusted_probability
  0.1
  0.2
  0.3
- 0.4</code></pre><p><a href="../../apireference/#Kokako.Expectation"><code>Kokako.Expectation</code></a> is the default risk measure in <code>Kokako.jl</code>.</p><h3><a class="nav-anchor" id="Worst-case-1" href="#Worst-case-1">Worst-case</a></h3><p>The <a href="../../apireference/#Kokako.WorstCase"><code>Kokako.WorstCase</code></a> risk-measure places all of the weight on the worst outcome (largest if minimizing, smallest if maximizing):</p><pre><code class="language-julia">Kokako.adjust_probability(
+ 0.4</code></pre><p><a href="#Kokako.Expectation"><code>Kokako.Expectation</code></a> is the default risk measure in <code>Kokako.jl</code>.</p><h3><a class="nav-anchor" id="Worst-case-1" href="#Worst-case-1">Worst-case</a></h3><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Kokako.WorstCase" href="#Kokako.WorstCase"><code>Kokako.WorstCase</code></a> — <span class="docstring-category">Type</span>.</div><div><div><pre><code class="language-none">WorstCase()</code></pre><p>The worst-case risk measure. Places all of the probability weight on the worst outcome.</p></div></div></section><pre><code class="language-julia">Kokako.adjust_probability(
     Kokako.WorstCase(),
     risk_adjusted_probability,
     nominal_probability,
@@ -54,7 +54,7 @@ risk_adjusted_probability
  0.0
  0.0
  1.0
- 0.0</code></pre><h3><a class="nav-anchor" id="Average-value-at-risk-(AV@R)-1" href="#Average-value-at-risk-(AV@R)-1">Average value at risk (AV@R)</a></h3><p>The average value at risk <a href="../../apireference/#Kokako.AVaR"><code>Kokako.AVaR</code></a> measure computes the expectation of the worst <code>beta</code> fraction of outcomes.</p><pre><code class="language-julia">Kokako.adjust_probability(
+ 0.0</code></pre><h3><a class="nav-anchor" id="Average-value-at-risk-(AV@R)-1" href="#Average-value-at-risk-(AV@R)-1">Average value at risk (AV@R)</a></h3><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Kokako.AVaR" href="#Kokako.AVaR"><code>Kokako.AVaR</code></a> — <span class="docstring-category">Type</span>.</div><div><div><pre><code class="language-none">AVaR(β)</code></pre><p>The average value at risk (AV@R) risk measure.</p><p>Computes the expectation of the β fraction of worst outcomes. β must be in <code>[0, 1]</code>. When <code>β=1</code>, this is equivalent to the <a href="#Kokako.Expectation"><code>Expectation</code></a> risk measure. When <code>β=0</code>, this is equivalent  to the <a href="#Kokako.WorstCase"><code>WorstCase</code></a> risk measure.</p><p>AV@R is also known as the conditional value at risk (CV@R) or expected shortfall.</p></div></div></section><pre><code class="language-julia">Kokako.adjust_probability(
     Kokako.AVaR(0.5),
     risk_adjusted_probability,
     nominal_probability,
@@ -71,10 +71,9 @@ round.(risk_adjusted_probability, digits = 1)
  0.2
  0.2
  0.6
- 0.0</code></pre><h3><a class="nav-anchor" id="Convex-combination-of-risk-measures-1" href="#Convex-combination-of-risk-measures-1">Convex combination of risk measures</a></h3><p>Using the axioms of coherent risk measures, it is easy to show that any convex combination of coherent risk measures is also a coherent risk measure.</p><pre><code class="language-julia">risk_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()
-
-Kokako.adjust_probability(
-    risk_measure,
+ 0.0</code></pre><h3><a class="nav-anchor" id="Convex-combination-of-risk-measures-1" href="#Convex-combination-of-risk-measures-1">Convex combination of risk measures</a></h3><p>Using the axioms of coherent risk measures, it is easy to show that any convex combination of coherent risk measures is also a coherent risk measure. Convex combinations of risk measures can be created directly:</p><pre><code class="language-julia-repl">julia&gt; cvx_comb_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()
+A convex combination of 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()</code></pre><pre><code class="language-julia">Kokako.adjust_probability(
+    cvx_comb_measure,
     risk_adjusted_probability,
     nominal_probability,
     noise_supports,
@@ -90,8 +89,8 @@ risk_adjusted_probability
  0.05
  0.1
  0.65
- 0.2</code></pre><p>As a special case, the <a href="../../apireference/#Kokako.EAVaR"><code>Kokako.EAVaR</code></a> risk-measure is a convex combination of <a href="../../apireference/#Kokako.Expectation"><code>Kokako.Expectation</code></a> and <a href="../../apireference/#Kokako.AVaR"><code>Kokako.AVaR</code></a>:</p><pre><code class="language-julia-repl">julia&gt; risk_measure = Kokako.EAVaR(beta=0.25, lambda=0.4)
-A convex combination of 0.4 * Kokako.Expectation() + 0.6 * Kokako.AVaR(0.25)</code></pre><p>This is short-hand for <code>lambda * Kokako.Expectation() + (1-lambda) * Kokako.AVaR(beta)</code>.  As <code>lambda</code> and <code>beta</code> tend toward <code>1.0</code>, the measure becomes more risk-neutral  (i.e. less risk averse).</p><h3><a class="nav-anchor" id="Distributionally-robust-1" href="#Distributionally-robust-1">Distributionally robust</a></h3><p><code>Kokako.jl</code> supports two types of distrbutionally robust risk measures: the modified Χ² method of Philpott et al. (2018), and a method based on the Wasserstein distance metric.</p><h4><a class="nav-anchor" id="Modified-Chi-squard-1" href="#Modified-Chi-squard-1">Modified Chi-squard</a></h4><p>The <a href="../../apireference/#Kokako.ModifiedChiSquared"><code>Kokako.ModifiedChiSquared</code></a> risk measure takes one argument: the radius of the ball.</p><pre><code class="language-julia">Kokako.adjust_probability(
+ 0.2</code></pre><p>As a special case, the <a href="#Kokako.EAVaR"><code>Kokako.EAVaR</code></a> risk-measure is a convex combination of <a href="#Kokako.Expectation"><code>Kokako.Expectation</code></a> and <a href="#Kokako.AVaR"><code>Kokako.AVaR</code></a>:</p><pre><code class="language-julia-repl">julia&gt; risk_measure = Kokako.EAVaR(beta=0.25, lambda=0.4)
+A convex combination of 0.4 * Kokako.Expectation() + 0.6 * Kokako.AVaR(0.25)</code></pre><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Kokako.EAVaR" href="#Kokako.EAVaR"><code>Kokako.EAVaR</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-none">EAVaR(;lambda=1.0, beta=1.0)</code></pre><p>A risk measure that is a convex combination of Expectation and Average Value @ Risk (also called Conditional Value @ Risk).</p><pre><code class="language-none">    λ * E[x] + (1 - λ) * AV@R(1-β)[x]</code></pre><p><strong>Keyword Arguments</strong></p><ul><li><p><code>lambda</code>: Convex weight on the expectation (<code>(1-lambda)</code> weight is put on the AV@R component. Inreasing values of <code>lambda</code> are less risk averse (more weight on expectation).</p></li><li><p><code>beta</code>: The quantile at which to calculate the Average Value @ Risk. Increasing values of <code>beta</code> are less risk averse. If <code>beta=0</code>, then the AV@R component is the worst case risk measure.</p></li></ul></div></div></section><h3><a class="nav-anchor" id="Distributionally-robust-1" href="#Distributionally-robust-1">Distributionally robust</a></h3><p><code>Kokako.jl</code> supports two types of distrbutionally robust risk measures: the modified Χ² method of Philpott et al. (2018), and a method based on the Wasserstein distance metric.</p><h4><a class="nav-anchor" id="Modified-Chi-squard-1" href="#Modified-Chi-squard-1">Modified Chi-squard</a></h4><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Kokako.ModifiedChiSquared" href="#Kokako.ModifiedChiSquared"><code>Kokako.ModifiedChiSquared</code></a> — <span class="docstring-category">Type</span>.</div><div><div><pre><code class="language-none">ModifiedChiSquared(radius::Float64)</code></pre><p>The distributionally robust SDDP risk measure of</p><p>Philpott, A., de Matos, V., Kapelevich, L. Distributionally robust SDDP. Computational Management Science (2018) 165:431-454.</p></div></div></section><pre><code class="language-julia">Kokako.adjust_probability(
     Kokako.ModifiedChiSquared(0.5),
     risk_adjusted_probability,
     [0.25, 0.25, 0.25, 0.25],
@@ -108,7 +107,7 @@ round.(risk_adjusted_probability, digits = 4)
  0.3333
  0.0447
  0.622
- 0.0</code></pre><h4><a class="nav-anchor" id="Wasserstein-1" href="#Wasserstein-1">Wasserstein</a></h4><p><a href="../../apireference/#Kokako.Wasserstein"><code>Kokako.Wasserstein</code></a></p><pre><code class="language-julia">risk_measure = Kokako.Wasserstein(
+ 0.0</code></pre><h4><a class="nav-anchor" id="Wasserstein-1" href="#Wasserstein-1">Wasserstein</a></h4><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Kokako.Wasserstein" href="#Kokako.Wasserstein"><code>Kokako.Wasserstein</code></a> — <span class="docstring-category">Type</span>.</div><div><div><pre><code class="language-none">Wasserstein(norm::Function, solver_factory; alpha::Float64)</code></pre><p>A distributionally-robust risk measure based on the Wasserstein distance.</p><p>As <code>alpha</code> increases, the measure becomes more risk-averse. When <code>alpha=0</code>, the measure is equivalent to the expectation operator. As <code>alpha</code> increases, the measure approaches the Worst-case risk measure.</p></div></div></section><pre><code class="language-julia">risk_measure = Kokako.Wasserstein(
         with_optimizer(GLPK.Optimizer); alpha=0.5) do x, y
    return abs(x - y)
 end

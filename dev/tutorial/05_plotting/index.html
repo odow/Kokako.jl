@@ -75,21 +75,21 @@ A spaghetti plot with 3 stages and 100 scenarios.</code></pre><p>The keyword <co
            else  # No thermal generation, so return 0.0.
                return 0.0
            end
-       end</code></pre><p>Note that there are many keyword arguments in addition to <code>title</code>. For example, we fixed the minimum and maximum values of the y-axis using <code>ymin</code> and <code>ymax</code>. See the <a href="../../apireference/#Kokako.add_spaghetti"><code>Kokako.add_spaghetti</code></a> documentation for all the arguments.</p><p>Having built the plot, we now need to display it.</p><pre><code class="language-julia-repl">julia&gt; Kokako.save(plt, &quot;spaghetti_plot.html&quot;, open = true)</code></pre><p>This should open a webpage that looks like <a href="../../assets/spaghetti_plot.html">this one</a>.</p><p>Using the mouse, you can highlight individual trajectories by hovering over them. This makes it possible to visualize a single trajectory across multiple dimensions.</p><p>If you click on the plot, then trajectories that are close to the mouse pointer are shown darker and those further away are shown lighter.</p><h2><a class="nav-anchor" id="Publication-plots-1" href="#Publication-plots-1">Publication plots</a></h2><p>Instead of the interactive Javascript plots, you can also create some publication ready plots using the <code>Kokako.publicationplot</code> function.</p><p>!!!info     You need to install the <a href="https://github.com/JuliaPlots/Plots">Plots.jl</a>     package for this to work. We used the <code>GR</code> backend (<code>gr()</code>), but any     <code>Plots.jl</code> backend should work.</p><pre><code class="language-julia">    import Pkg
-    Pkg.add(&quot;Plots&quot;)
-    Pkg.add(&quot;GR&quot;)
-    ```
-
-This function implements a plot recipe to create ribbon plots of each variable
-against the stages. The first argument is the vector of simulation dictionaries
-and the second argument is the dictionary key that you want to plot. Standard
-Plots.jl keyword arguments such as `title` and `xlabel` can be used to modify
-the look of each plot. By default, the plot displays ribbons of the 0-100,
-10-90, and 25-75 percentiles. The dark, solid line in the middle is the median
-(i.e. 50&#39;th percentile).
-</code></pre><p>julia using Plots plot(     Kokako.publicationplot(         simulations,         data -&gt; data[:volume].out,         title = &quot;Outgoing volume&quot;     ),     Kokako.publicationplot(         simulations,         data -&gt; data[:thermal<em>generation],         title = &quot;Thermal generation&quot;     ),     xlabel = &quot;Stage&quot;,     ylims = (0, 200),     layout = (1, 2),     margin</em>bottom = 5,     size = (1000, 300) )</p><pre><code class="language-none">
-This should open a plot window with a plot that looks like:
-
-![publication plot](../assets/publication_plot.png)
-
-You can save this plot as a PDF using the `Plots.jl` function `savefig`:</code></pre><p>julia Plots.savefig(&quot;my_picture.pdf&quot;) ```</p><p>This concludes our fifth tutorial for <code>Kokako.jl</code>. In our final <em>Basics</em> tutorial, <a href="../06_warnings/#Basics-VI:-words-of-warning-1">Basics VI: words of warning</a> we discuss some of the issues that you should be aware of when creating your own models.</p><footer><hr/><a class="previous" href="../04_markov_uncertainty/"><span class="direction">Previous</span><span class="title">Basics IV: Markov uncertainty</span></a><a class="next" href="../06_warnings/"><span class="direction">Next</span><span class="title">Basics VI: words of warning</span></a></footer></article></body></html>
+       end</code></pre><p>Note that there are many keyword arguments in addition to <code>title</code>. For example, we fixed the minimum and maximum values of the y-axis using <code>ymin</code> and <code>ymax</code>. See the <a href="../../apireference/#Kokako.add_spaghetti"><code>Kokako.add_spaghetti</code></a> documentation for all the arguments.</p><p>Having built the plot, we now need to display it.</p><pre><code class="language-julia-repl">julia&gt; Kokako.save(plt, &quot;spaghetti_plot.html&quot;, open = true)</code></pre><p>This should open a webpage that looks like <a href="../../assets/spaghetti_plot.html">this one</a>.</p><p>Using the mouse, you can highlight individual trajectories by hovering over them. This makes it possible to visualize a single trajectory across multiple dimensions.</p><p>If you click on the plot, then trajectories that are close to the mouse pointer are shown darker and those further away are shown lighter.</p><h2><a class="nav-anchor" id="Publication-plots-1" href="#Publication-plots-1">Publication plots</a></h2><p>Instead of the interactive Javascript plots, you can also create some publication ready plots using the <code>Kokako.publicationplot</code> function.</p><p>!!!info     You need to install the <a href="https://github.com/JuliaPlots/Plots">Plots.jl</a>     package for this to work. We used the <code>GR</code> backend (<code>gr()</code>), but any     <code>Plots.jl</code> backend should work.</p><p><code>Kokako.publicationplot</code> implements a plot recipe to create ribbon plots of each variable against the stages. The first argument is the vector of simulation dictionaries and the second argument is the dictionary key that you want to plot. Standard Plots.jl keyword arguments such as <code>title</code> and <code>xlabel</code> can be used to modify the look of each plot. By default, the plot displays ribbons of the 0-100, 10-90, and 25-75 percentiles. The dark, solid line in the middle is the median (i.e. 50&#39;th percentile).</p><pre><code class="language-julia">using Plots
+plot(
+    Kokako.publicationplot(
+        simulations,
+        data -&gt; data[:volume].out,
+        title = &quot;Outgoing volume&quot;
+    ),
+    Kokako.publicationplot(
+        simulations,
+        data -&gt; data[:thermal_generation],
+        title = &quot;Thermal generation&quot;
+    ),
+    xlabel = &quot;Stage&quot;,
+    ylims = (0, 200),
+    layout = (1, 2),
+    margin_bottom = 5,
+    size = (1000, 300)
+)</code></pre><p>This should open a plot window with a plot that looks like:</p><p><img src="../assets/publication_plot.png" alt="publication plot"/></p><p>You can save this plot as a PDF using the <code>Plots.jl</code> function <code>savefig</code>:</p><pre><code class="language-julia">Plots.savefig(&quot;my_picture.pdf&quot;)</code></pre><p>This concludes our fifth tutorial for <code>Kokako.jl</code>. In our final <em>Basics</em> tutorial, <a href="../06_warnings/#Basics-VI:-words-of-warning-1">Basics VI: words of warning</a> we discuss some of the issues that you should be aware of when creating your own models.</p><footer><hr/><a class="previous" href="../04_markov_uncertainty/"><span class="direction">Previous</span><span class="title">Basics IV: Markov uncertainty</span></a><a class="next" href="../06_warnings/"><span class="direction">Next</span><span class="title">Basics VI: words of warning</span></a></footer></article></body></html>
