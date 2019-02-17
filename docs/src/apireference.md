@@ -29,7 +29,7 @@ Kokako.Expectation
 Kokako.WorstCase
 Kokako.AVaR
 Kokako.EAVaR
-Kokako.DRO
+Kokako.ModifiedChiSquared
 Kokako.Wasserstein
 ```
 

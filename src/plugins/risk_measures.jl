@@ -132,7 +132,7 @@ struct ConvexCombination{T<:Tuple} <: AbstractRiskMeasure
 end
 ConvexCombination(args::Tuple...) = ConvexCombination(args)
 function Base.show(io::IO, measure::ConvexCombination)
-    print(io, "A convex combination of risk measures: ")
+    print(io, "A convex combination of ")
     is_first = true
     for m in measure.measures
         !is_first && print(io, " + ")

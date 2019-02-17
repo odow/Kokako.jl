@@ -117,8 +117,8 @@ risk_adjusted_probability
 
 ### Average value at risk (AV@R)
 
-The average value at risk [`AVaR`](@ref) measure computes the expectation of the
-worst `beta` fraction of outcomes.
+The average value at risk [`Kokako.AVaR`](@ref) measure computes the expectation
+of the worst `beta` fraction of outcomes.
 
 ```jldoctest intermediate_risk
 Kokako.adjust_probability(
@@ -130,7 +130,7 @@ Kokako.adjust_probability(
     is_minimization
 )
 
-risk_adjusted_probability
+round.(risk_adjusted_probability, digits = 1)
 
 # output
 
@@ -172,7 +172,8 @@ risk_adjusted_probability
 As a special case, the [`Kokako.EAVaR`](@ref) risk-measure is a convex
 combination of [`Kokako.Expectation`](@ref) and [`Kokako.AVaR`](@ref):
 ```jldoctest intermediate_risk
-julia> risk_measure = Kokako.EAVaR(beta=0.25, lambda=2/3)
+julia> risk_measure = Kokako.EAVaR(beta=0.25, lambda=0.4)
+A convex combination of 0.4 * Kokako.Expectation() + 0.6 * Kokako.AVaR(0.25)
 ```
 
 This is short-hand for
@@ -182,33 +183,39 @@ This is short-hand for
 
 ### Distributionally robust
 
-[`Kokako.DRO`](@ref)
+`Kokako.jl` supports two types of distrbutionally robust risk measures: the
+modified Χ² method of Philpott et al. (2018), and a method based on the
+Wasserstein distance metric.
+
+#### Modified Chi-squard
+
+The [`Kokako.ModifiedChiSquared`](@ref) risk measure takes one argument: the
+radius of the ball.
 
 ```jldoctest intermediate_risk
 Kokako.adjust_probability(
-    Kokako.DRO(0.5),
+    Kokako.ModifiedChiSquared(0.5),
     risk_adjusted_probability,
-    nominal_probability,
+    [0.25, 0.25, 0.25, 0.25],
     noise_supports,
     cost_realizations,
     is_minimization
 )
 
-risk_adjusted_probability
+round.(risk_adjusted_probability, digits = 4)
 
 # output
 
 4-element Array{Float64,1}:
- 0.05
- 0.1
- 0.65
- 0.2
+ 0.3333
+ 0.0447
+ 0.622
+ 0.0
 ```
 
-### Wasserstein
+#### Wasserstein
 
 [`Kokako.Wasserstein`](@ref)
-
 
 ```jldoctest intermediate_risk
 risk_measure = Kokako.Wasserstein(
@@ -225,7 +232,7 @@ Kokako.adjust_probability(
     is_minimization
 )
 
-risk_adjusted_probability
+round.(risk_adjusted_probability, digits = 1)
 
 # output
 
