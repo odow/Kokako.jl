@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Intermediate I: risk · Kokako.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../../logo.ico" rel="icon" type="image/x-icon"/></head><body><nav class="toc"><a href="../../index.html"><img class="logo" src="../../assets/logo.png" alt="Kokako.jl logo"/></a><h1>Kokako.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../01_first_steps/">Basics I: first steps</a></li><li><a class="toctext" href="../02_adding_uncertainty/">Basics II: adding uncertainty</a></li><li><a class="toctext" href="../03_objective_uncertainty/">Basics III: objective uncertainty</a></li><li><a class="toctext" href="../04_markov_uncertainty/">Basics IV: Markov uncertainty</a></li><li><a class="toctext" href="../05_plotting/">Basics V: plotting</a></li><li><a class="toctext" href="../06_warnings/">Basics VI: words of warning</a></li><li class="current"><a class="toctext" href>Intermediate I: risk</a><ul class="internal"><li><a class="toctext" href="#Risk-measures-1">Risk measures</a></li><li><a class="toctext" href="#Training-a-risk-averse-model-1">Training a risk-averse model</a></li></ul></li><li><a class="toctext" href="../12_stopping_rules/">Intermediate II: stopping rules</a></li><li><a class="toctext" href="../13_generic_graphs/">Intermediate III: policy graphs</a></li><li><a class="toctext" href="../14_price_interpolation/">Intermediate IV: price interpolation</a></li><li><a class="toctext" href="../15_performance/">Intermediate V: performance</a></li></ul></li><li><a class="toctext" href="../../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li><a href>Intermediate I: risk</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/tutorial/11_risk.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Intermediate I: risk</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Intermediate-I:-risk-1" href="#Intermediate-I:-risk-1">Intermediate I: risk</a></h1><h2><a class="nav-anchor" id="Risk-measures-1" href="#Risk-measures-1">Risk measures</a></h2><p>To illustrate the risk-measures included in <code>Kokako.jl</code>, we consider a discrete random variable with four outcomes.</p><p>The random variable is supported on the values 1, 2, 3, and 4:</p><pre><code class="language-julia-repl">julia&gt; noise_supports = [1, 2, 3, 4]
+4-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4</code></pre><p>The associated probability of each outcome is as follows:</p><pre><code class="language-julia-repl">julia&gt; nominal_probability = [0.1, 0.2, 0.3, 0.4]
+4-element Array{Float64,1}:
+ 0.1
+ 0.2
+ 0.3
+ 0.4</code></pre><p>With each outcome ω, the agent observes a cost <code>Z(ω)</code>:</p><pre><code class="language-julia-repl">julia&gt; cost_realizations = [5.0, 4.0, 6.0, 2.0]
+4-element Array{Float64,1}:
+ 5.0
+ 4.0
+ 6.0
+ 2.0</code></pre><p>We assume that we are minimizing:</p><pre><code class="language-julia-repl">julia&gt; is_minimization = true
+true</code></pre><p>Finally, we create a vector that will be used to store the risk-adjusted probabilities:</p><pre><code class="language-julia-repl">julia&gt; risk_adjusted_probability = zeros(4)
+4-element Array{Float64,1}:
+ 0.0
+ 0.0
+ 0.0
+ 0.0</code></pre><h3><a class="nav-anchor" id="Expectation-1" href="#Expectation-1">Expectation</a></h3><p>The <a href="../../apireference/#Kokako.Expectation"><code>Kokako.Expectation</code></a> risk-measure takes the risk-adjusted expectation with respect to the nominal distribution:</p><pre><code class="language-julia">Kokako.adjust_probability(
+    Kokako.Expectation(),
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+risk_adjusted_probability
+
+# output
+
+4-element Array{Float64,1}:
+ 0.1
+ 0.2
+ 0.3
+ 0.4</code></pre><p><a href="../../apireference/#Kokako.Expectation"><code>Kokako.Expectation</code></a> is the default risk measure in <code>Kokako.jl</code>.</p><h3><a class="nav-anchor" id="Worst-case-1" href="#Worst-case-1">Worst-case</a></h3><p>The <a href="../../apireference/#Kokako.WorstCase"><code>Kokako.WorstCase</code></a> risk-measure places all of the weight on the worst outcome (largest if minimizing, smallest if maximizing):</p><pre><code class="language-julia">Kokako.adjust_probability(
+    Kokako.WorstCase(),
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+risk_adjusted_probability
+
+# output
+
+4-element Array{Float64,1}:
+ 0.0
+ 0.0
+ 1.0
+ 0.0</code></pre><h3><a class="nav-anchor" id="Average-value-at-risk-(AV@R)-1" href="#Average-value-at-risk-(AV@R)-1">Average value at risk (AV@R)</a></h3><p>The average value at risk <a href="../../apireference/#Kokako.AVaR"><code>Kokako.AVaR</code></a> measure computes the expectation of the worst <code>beta</code> fraction of outcomes.</p><pre><code class="language-julia">Kokako.adjust_probability(
+    Kokako.AVaR(0.5),
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+round.(risk_adjusted_probability, digits = 1)
+
+# output
+
+4-element Array{Float64,1}:
+ 0.2
+ 0.2
+ 0.6
+ 0.0</code></pre><h3><a class="nav-anchor" id="Convex-combination-of-risk-measures-1" href="#Convex-combination-of-risk-measures-1">Convex combination of risk measures</a></h3><p>Using the axioms of coherent risk measures, it is easy to show that any convex combination of coherent risk measures is also a coherent risk measure.</p><pre><code class="language-julia">risk_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()
+
+Kokako.adjust_probability(
+    risk_measure,
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+risk_adjusted_probability
+
+# output
+
+4-element Array{Float64,1}:
+ 0.05
+ 0.1
+ 0.65
+ 0.2</code></pre><p>As a special case, the <a href="../../apireference/#Kokako.EAVaR"><code>Kokako.EAVaR</code></a> risk-measure is a convex combination of <a href="../../apireference/#Kokako.Expectation"><code>Kokako.Expectation</code></a> and <a href="../../apireference/#Kokako.AVaR"><code>Kokako.AVaR</code></a>:</p><pre><code class="language-julia-repl">julia&gt; risk_measure = Kokako.EAVaR(beta=0.25, lambda=0.4)
+A convex combination of 0.4 * Kokako.Expectation() + 0.6 * Kokako.AVaR(0.25)</code></pre><p>This is short-hand for <code>lambda * Kokako.Expectation() + (1-lambda) * Kokako.AVaR(beta)</code>.  As <code>lambda</code> and <code>beta</code> tend toward <code>1.0</code>, the measure becomes more risk-neutral  (i.e. less risk averse).</p><h3><a class="nav-anchor" id="Distributionally-robust-1" href="#Distributionally-robust-1">Distributionally robust</a></h3><p><code>Kokako.jl</code> supports two types of distrbutionally robust risk measures: the modified Χ² method of Philpott et al. (2018), and a method based on the Wasserstein distance metric.</p><h4><a class="nav-anchor" id="Modified-Chi-squard-1" href="#Modified-Chi-squard-1">Modified Chi-squard</a></h4><p>The <a href="../../apireference/#Kokako.ModifiedChiSquared"><code>Kokako.ModifiedChiSquared</code></a> risk measure takes one argument: the radius of the ball.</p><pre><code class="language-julia">Kokako.adjust_probability(
+    Kokako.ModifiedChiSquared(0.5),
+    risk_adjusted_probability,
+    [0.25, 0.25, 0.25, 0.25],
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+round.(risk_adjusted_probability, digits = 4)
+
+# output
+
+4-element Array{Float64,1}:
+ 0.3333
+ 0.0447
+ 0.622
+ 0.0</code></pre><h4><a class="nav-anchor" id="Wasserstein-1" href="#Wasserstein-1">Wasserstein</a></h4><p><a href="../../apireference/#Kokako.Wasserstein"><code>Kokako.Wasserstein</code></a></p><pre><code class="language-julia">risk_measure = Kokako.Wasserstein(
+        with_optimizer(GLPK.Optimizer); alpha=0.5) do x, y
+   return abs(x - y)
+end
+
+Kokako.adjust_probability(
+    risk_measure,
+    risk_adjusted_probability,
+    nominal_probability,
+    noise_supports,
+    cost_realizations,
+    is_minimization
+)
+
+round.(risk_adjusted_probability, digits = 1)
+
+# output
+
+4-element Array{Float64,1}:
+ 0.1
+ 0.1
+ 0.8
+ 0.0</code></pre><h2><a class="nav-anchor" id="Training-a-risk-averse-model-1" href="#Training-a-risk-averse-model-1">Training a risk-averse model</a></h2><p>Now that we know what risk measures <code>Kokako.jl</code> supports, lets see how to train a policy using them. There are three possible ways.</p><p>If the same risk measure is used at every node in the policy graph, we can just pass an instance of one of the risk measures to the <code>risk_measure</code> keyword argument of the <a href="../../apireference/#Kokako.train"><code>Kokako.train</code></a> function.</p><pre><code class="language-julia">Kokako.train(
+    model,
+    risk_measure = Kokako.WorstCase(),
+    iteration_limit = 10
+)</code></pre><p>However, if you want different risk measures at different nodes, there are two options. First, you can pass <code>risk_measure</code> a dictionary of risk measures, with one entry for each node. The keys of the dictionary are the indices of the nodes.</p><pre><code class="language-julia">Kokako.train(
+    model,
+    risk_measure = Dict(
+        1 =&gt; Kokako.Expectation(),
+        2 =&gt; Kokako.WorstCase()
+    ),
+    iteration_limit = 10
+)</code></pre><p>An alternative method is to pass <code>risk_measure</code> a function that takes one argument, the index of a node, and returns an instance of a risk measure:</p><pre><code class="language-julia">Kokako.train(
+    model,
+    risk_measure = (node_index) -&gt; begin
+        if node_index == 1
+            return Kokako.Expectation()
+        else
+            return Kokako.WorstCase()
+        end
+    end,
+    iteration_limit = 10
+)</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>If you simulate the policy, the simulated value is the risk-neutral value of the policy.</p></div></div><p>This concludes our first intermediate tutorial.</p><footer><hr/><a class="previous" href="../06_warnings/"><span class="direction">Previous</span><span class="title">Basics VI: words of warning</span></a><a class="next" href="../12_stopping_rules/"><span class="direction">Next</span><span class="title">Intermediate II: stopping rules</span></a></footer></article></body></html>

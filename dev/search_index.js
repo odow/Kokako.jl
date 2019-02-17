@@ -349,7 +349,207 @@ var documenterSearchIndex = {"docs": [
     "page": "Basics VI: words of warning",
     "title": "Choosing an initial bound",
     "category": "section",
-    "text": "One of the important requirements when building a SDDP model is to choose an appropriate bound on the objective (lower if minimizing, upper if maximizing). However, it can be hard to choose a bound if you don\'t know the solution! (Which is very likely.)The bound should not be as large as possible (since this will help with convergence and the numerical issues discussed above), but if chosen to small, it may cut of the feasible region and lead to a sub-optimal solution.Consider the following simple model, where we first set lower_bound to 0.0.using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)\n    @variable(subproblem, u >= 0)\n    @variable(subproblem, v >= 0)\n    @constraint(subproblem, x.out == x.in - u)\n    @constraint(subproblem, u + v == 1.5)\n    @stageobjective(subproblem, t * v)\nend\n\nKokako.train(model, iteration_limit = 5)\n\nprintln(\"Finished training!\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     6.500  |     3.000  |     0.001\n         2 |     3.500  |     3.500  |     0.001\n         3 |     3.500  |     3.500  |     0.004\n         4 |     3.500  |     3.500  |     0.004\n         5 |     3.500  |     3.500  |     0.005\nFinished training!Now consider the case when we set the lower_bound to 10.0:using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 10.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)\n    @variable(subproblem, u >= 0)\n    @variable(subproblem, v >= 0)\n    @constraint(subproblem, x.out == x.in - u)\n    @constraint(subproblem, u + v == 1.5)\n    @stageobjective(subproblem, t * v)\nend\n\nKokako.train(model, iteration_limit = 5)\n\nprintln(\"Finished training!\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     6.500  |    11.000  |     0.001\n         2 |     5.500  |    11.000  |     0.002\n         3 |     5.500  |    11.000  |     0.002\n         4 |     5.500  |    11.000  |     0.003\n         5 |     5.500  |    11.000  |     0.006\nFinished training!How do we tell which is more appropriate? There are a few clues that you should look out for.    m = Model(withoptimizer(Ipopt.Optimizer, tol=1E-24, dualinftol=1E-24,         constrvioltol=1E-24, complinftol=1E-24, printlevel=0))     @variable(m, newvarvec[i=1:numvars] >= 0)     obj = @expression(m, sum(newvarvec[i] for i=1:numvars))     @objective(m, Min, obj)     JuMP.optimize!(m)The bound converges to a value above (if minimizing) the simulated cost of the policy. In this case, the problem is deterministic, so it is easy to tell. But you can also check by performing a Monte Carlo simulation like we did in Basics II: adding uncertainty.\nThe bound converges to different values when we change the bound. This is another clear give-away. The bound provided by the user is only used in the initial iterations. It should not change the value of the converged policy. Thus, if you don\'t know an appropriate value for the bound, choose an initial value, and then increase (or decrease) the value of the bound to confirm that the value of the policy doesn\'t change.\nThe bound converges to a value close to the bound provided by the user. This varies between models, but notice that 11.0 is quite close to 10.0 compared with 3.5 and 0.0.This concludes or series of basic introductory tutorials for Kokako.jl."
+    "text": "One of the important requirements when building a SDDP model is to choose an appropriate bound on the objective (lower if minimizing, upper if maximizing). However, it can be hard to choose a bound if you don\'t know the solution! (Which is very likely.)The bound should not be as large as possible (since this will help with convergence and the numerical issues discussed above), but if chosen to small, it may cut of the feasible region and lead to a sub-optimal solution.Consider the following simple model, where we first set lower_bound to 0.0.using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)\n    @variable(subproblem, u >= 0)\n    @variable(subproblem, v >= 0)\n    @constraint(subproblem, x.out == x.in - u)\n    @constraint(subproblem, u + v == 1.5)\n    @stageobjective(subproblem, t * v)\nend\n\nKokako.train(model, iteration_limit = 5)\n\nprintln(\"Finished training!\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     6.500  |     3.000  |     0.001\n         2 |     3.500  |     3.500  |     0.001\n         3 |     3.500  |     3.500  |     0.004\n         4 |     3.500  |     3.500  |     0.004\n         5 |     3.500  |     3.500  |     0.005\nFinished training!Now consider the case when we set the lower_bound to 10.0:using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 10.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)\n    @variable(subproblem, u >= 0)\n    @variable(subproblem, v >= 0)\n    @constraint(subproblem, x.out == x.in - u)\n    @constraint(subproblem, u + v == 1.5)\n    @stageobjective(subproblem, t * v)\nend\n\nKokako.train(model, iteration_limit = 5)\n\nprintln(\"Finished training!\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     6.500  |    11.000  |     0.001\n         2 |     5.500  |    11.000  |     0.002\n         3 |     5.500  |    11.000  |     0.002\n         4 |     5.500  |    11.000  |     0.003\n         5 |     5.500  |    11.000  |     0.006\nFinished training!How do we tell which is more appropriate? There are a few clues that you should look out for.The bound converges to a value above (if minimizing) the simulated cost of the policy. In this case, the problem is deterministic, so it is easy to tell. But you can also check by performing a Monte Carlo simulation like we did in Basics II: adding uncertainty.\nThe bound converges to different values when we change the bound. This is another clear give-away. The bound provided by the user is only used in the initial iterations. It should not change the value of the converged policy. Thus, if you don\'t know an appropriate value for the bound, choose an initial value, and then increase (or decrease) the value of the bound to confirm that the value of the policy doesn\'t change.\nThe bound converges to a value close to the bound provided by the user. This varies between models, but notice that 11.0 is quite close to 10.0 compared with 3.5 and 0.0.This concludes or series of basic introductory tutorials for Kokako.jl. When you\'re ready, continue to our intermediate series of tutorials, beginning with Intermediate I: risk."
+},
+
+{
+    "location": "tutorial/11_risk/#",
+    "page": "Intermediate I: risk",
+    "title": "Intermediate I: risk",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorial/11_risk/#Intermediate-I:-risk-1",
+    "page": "Intermediate I: risk",
+    "title": "Intermediate I: risk",
+    "category": "section",
+    "text": "DocTestSetup = quote\n    using Kokako, GLPK\nend"
+},
+
+{
+    "location": "tutorial/11_risk/#Risk-measures-1",
+    "page": "Intermediate I: risk",
+    "title": "Risk measures",
+    "category": "section",
+    "text": "To illustrate the risk-measures included in Kokako.jl, we consider a discrete random variable with four outcomes.The random variable is supported on the values 1, 2, 3, and 4:julia> noise_supports = [1, 2, 3, 4]\n4-element Array{Int64,1}:\n 1\n 2\n 3\n 4The associated probability of each outcome is as follows:julia> nominal_probability = [0.1, 0.2, 0.3, 0.4]\n4-element Array{Float64,1}:\n 0.1\n 0.2\n 0.3\n 0.4With each outcome ω, the agent observes a cost Z(ω):julia> cost_realizations = [5.0, 4.0, 6.0, 2.0]\n4-element Array{Float64,1}:\n 5.0\n 4.0\n 6.0\n 2.0We assume that we are minimizing:julia> is_minimization = true\ntrueFinally, we create a vector that will be used to store the risk-adjusted probabilities:julia> risk_adjusted_probability = zeros(4)\n4-element Array{Float64,1}:\n 0.0\n 0.0\n 0.0\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Expectation-1",
+    "page": "Intermediate I: risk",
+    "title": "Expectation",
+    "category": "section",
+    "text": "The Kokako.Expectation risk-measure takes the risk-adjusted expectation with respect to the nominal distribution:Kokako.adjust_probability(\n    Kokako.Expectation(),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.1\n 0.2\n 0.3\n 0.4Kokako.Expectation is the default risk measure in Kokako.jl."
+},
+
+{
+    "location": "tutorial/11_risk/#Worst-case-1",
+    "page": "Intermediate I: risk",
+    "title": "Worst-case",
+    "category": "section",
+    "text": "The Kokako.WorstCase risk-measure places all of the weight on the worst outcome (largest if minimizing, smallest if maximizing):Kokako.adjust_probability(\n    Kokako.WorstCase(),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.0\n 0.0\n 1.0\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Average-value-at-risk-(AV@R)-1",
+    "page": "Intermediate I: risk",
+    "title": "Average value at risk (AV@R)",
+    "category": "section",
+    "text": "The average value at risk Kokako.AVaR measure computes the expectation of the worst beta fraction of outcomes.Kokako.adjust_probability(\n    Kokako.AVaR(0.5),\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nround.(risk_adjusted_probability, digits = 1)\n\n# output\n\n4-element Array{Float64,1}:\n 0.2\n 0.2\n 0.6\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Convex-combination-of-risk-measures-1",
+    "page": "Intermediate I: risk",
+    "title": "Convex combination of risk measures",
+    "category": "section",
+    "text": "Using the axioms of coherent risk measures, it is easy to show that any convex combination of coherent risk measures is also a coherent risk measure.risk_measure = 0.5 * Kokako.Expectation() + 0.5 * Kokako.WorstCase()\n\nKokako.adjust_probability(\n    risk_measure,\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nrisk_adjusted_probability\n\n# output\n\n4-element Array{Float64,1}:\n 0.05\n 0.1\n 0.65\n 0.2As a special case, the Kokako.EAVaR risk-measure is a convex combination of Kokako.Expectation and Kokako.AVaR:julia> risk_measure = Kokako.EAVaR(beta=0.25, lambda=0.4)\nA convex combination of 0.4 * Kokako.Expectation() + 0.6 * Kokako.AVaR(0.25)This is short-hand for lambda * Kokako.Expectation() + (1-lambda) * Kokako.AVaR(beta).  As lambda and beta tend toward 1.0, the measure becomes more risk-neutral  (i.e. less risk averse)."
+},
+
+{
+    "location": "tutorial/11_risk/#Distributionally-robust-1",
+    "page": "Intermediate I: risk",
+    "title": "Distributionally robust",
+    "category": "section",
+    "text": "Kokako.jl supports two types of distrbutionally robust risk measures: the modified Χ² method of Philpott et al. (2018), and a method based on the Wasserstein distance metric."
+},
+
+{
+    "location": "tutorial/11_risk/#Modified-Chi-squard-1",
+    "page": "Intermediate I: risk",
+    "title": "Modified Chi-squard",
+    "category": "section",
+    "text": "The Kokako.ModifiedChiSquared risk measure takes one argument: the radius of the ball.Kokako.adjust_probability(\n    Kokako.ModifiedChiSquared(0.5),\n    risk_adjusted_probability,\n    [0.25, 0.25, 0.25, 0.25],\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nround.(risk_adjusted_probability, digits = 4)\n\n# output\n\n4-element Array{Float64,1}:\n 0.3333\n 0.0447\n 0.622\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Wasserstein-1",
+    "page": "Intermediate I: risk",
+    "title": "Wasserstein",
+    "category": "section",
+    "text": "Kokako.Wassersteinrisk_measure = Kokako.Wasserstein(\n        with_optimizer(GLPK.Optimizer); alpha=0.5) do x, y\n   return abs(x - y)\nend\n\nKokako.adjust_probability(\n    risk_measure,\n    risk_adjusted_probability,\n    nominal_probability,\n    noise_supports,\n    cost_realizations,\n    is_minimization\n)\n\nround.(risk_adjusted_probability, digits = 1)\n\n# output\n\n4-element Array{Float64,1}:\n 0.1\n 0.1\n 0.8\n 0.0"
+},
+
+{
+    "location": "tutorial/11_risk/#Training-a-risk-averse-model-1",
+    "page": "Intermediate I: risk",
+    "title": "Training a risk-averse model",
+    "category": "section",
+    "text": "Now that we know what risk measures Kokako.jl supports, lets see how to train a policy using them. There are three possible ways.If the same risk measure is used at every node in the policy graph, we can just pass an instance of one of the risk measures to the risk_measure keyword argument of the Kokako.train function.Kokako.train(\n    model,\n    risk_measure = Kokako.WorstCase(),\n    iteration_limit = 10\n)However, if you want different risk measures at different nodes, there are two options. First, you can pass risk_measure a dictionary of risk measures, with one entry for each node. The keys of the dictionary are the indices of the nodes.Kokako.train(\n    model,\n    risk_measure = Dict(\n        1 => Kokako.Expectation(),\n        2 => Kokako.WorstCase()\n    ),\n    iteration_limit = 10\n)An alternative method is to pass risk_measure a function that takes one argument, the index of a node, and returns an instance of a risk measure:Kokako.train(\n    model,\n    risk_measure = (node_index) -> begin\n        if node_index == 1\n            return Kokako.Expectation()\n        else\n            return Kokako.WorstCase()\n        end\n    end,\n    iteration_limit = 10\n)note: Note\nIf you simulate the policy, the simulated value is the risk-neutral value of the policy.This concludes our first intermediate tutorial.DocTestSetup = nothing"
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#",
+    "page": "Intermediate II: stopping rules",
+    "title": "Intermediate II: stopping rules",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#Intermediate-II:-stopping-rules-1",
+    "page": "Intermediate II: stopping rules",
+    "title": "Intermediate II: stopping rules",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#Iteration-limit-1",
+    "page": "Intermediate II: stopping rules",
+    "title": "Iteration limit",
+    "category": "section",
+    "text": "Kokako.train(model, iteration_limit = 10)"
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#Time-limit-1",
+    "page": "Intermediate II: stopping rules",
+    "title": "Time limit",
+    "category": "section",
+    "text": "Kokako.train(model, time_limit = 2.0)"
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#Statistical-1",
+    "page": "Intermediate II: stopping rules",
+    "title": "Statistical",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "tutorial/12_stopping_rules/#Bound-stalling-1",
+    "page": "Intermediate II: stopping rules",
+    "title": "Bound stalling",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#",
+    "page": "Intermediate III: policy graphs",
+    "title": "Intermediate III: policy graphs",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#Intermediate-III:-policy-graphs-1",
+    "page": "Intermediate III: policy graphs",
+    "title": "Intermediate III: policy graphs",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "tutorial/14_price_interpolation/#",
+    "page": "Intermediate IV: price interpolation",
+    "title": "Intermediate IV: price interpolation",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorial/14_price_interpolation/#Intermediate-IV:-price-interpolation-1",
+    "page": "Intermediate IV: price interpolation",
+    "title": "Intermediate IV: price interpolation",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "tutorial/15_performance/#",
+    "page": "Intermediate V: performance",
+    "title": "Intermediate V: performance",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorial/15_performance/#Intermediate-V:-performance-1",
+    "page": "Intermediate V: performance",
+    "title": "Intermediate V: performance",
+    "category": "section",
+    "text": "SDDP is a computationally intensive algorithm. In this tutorial, we give suggestions for how the computational performance can be improved."
+},
+
+{
+    "location": "tutorial/15_performance/#Numerical-stability-(again)-1",
+    "page": "Intermediate V: performance",
+    "title": "Numerical stability (again)",
+    "category": "section",
+    "text": "We\'ve already discussed this in the Numerical stability section of Basics VI: words of warning. But, it\'s so important that we\'re going to say it again: improving the problem scaling is one of the best ways to improve the numerical performance of your models."
+},
+
+{
+    "location": "tutorial/15_performance/#Solver-selection-1",
+    "page": "Intermediate V: performance",
+    "title": "Solver selection",
+    "category": "section",
+    "text": "The majority of the solution time is spent inside the low-level solvers. Choosing which solver (and the associated settings) correctly can lead to big speed-ups.Choose a commercial solver.\nOptions include CPLEX, Gurobi, and Xpress. Using free solvers such as CLP and GLPK isn\'t a viable approach for large problems.\nTry different solvers.Even commercial solvers can have wildly different solution times. We\'ve seen   models on which CPLEX was 50% fast than Gurobi, and vice versa.Experiment with different solver options.\nUsing the default settings is usually a good option. However, sometimes it can pay to change these. In particular, forcing solvers to use the dual simplex algorithm (e.g., Method=1 in Gurobi ) is usually a performance win."
 },
 
 {
@@ -446,6 +646,62 @@ var documenterSearchIndex = {"docs": [
     "title": "Training the policy",
     "category": "section",
     "text": "Kokako.train\nKokako.termination_status"
+},
+
+{
+    "location": "apireference/#Kokako.Expectation",
+    "page": "Reference",
+    "title": "Kokako.Expectation",
+    "category": "type",
+    "text": "Expectation()\n\nThe Expectation risk measure.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.WorstCase",
+    "page": "Reference",
+    "title": "Kokako.WorstCase",
+    "category": "type",
+    "text": "WorstCase()\n\nThe worst-case risk measure.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.AVaR",
+    "page": "Reference",
+    "title": "Kokako.AVaR",
+    "category": "type",
+    "text": "AVaR(β)\n\nThe average value at risk (AV@R) risk measure.\n\nComputes the expectation of the β fraction of worst outcomes. β must be in [0, 1]. When β=1, this is equivalent to the Expectation risk measure. When β=0, this is equivalent  to the WorstCase risk measure.\n\nAV@R is also known as the conditional value at risk (CV@R) or expected shortfall.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.EAVaR",
+    "page": "Reference",
+    "title": "Kokako.EAVaR",
+    "category": "function",
+    "text": "EAVaR(;lambda=1.0, beta=1.0)\n\nA risk measure that is a convex combination of Expectation and Average Value @ Risk (also called Conditional Value @ Risk).\n\n    λ * E[x] + (1 - λ) * AV@R(1-β)[x]\n\nKeyword Arguments\n\nlambda: Convex weight on the expectation ((1-lambda) weight is put on the AV@R component. Inreasing values of lambda are less risk averse (more weight on expectation).\nbeta: The quantile at which to calculate the Average Value @ Risk. Increasing values of beta are less risk averse. If beta=0, then the AV@R component is the worst case risk measure.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.ModifiedChiSquared",
+    "page": "Reference",
+    "title": "Kokako.ModifiedChiSquared",
+    "category": "type",
+    "text": "ModifiedChiSquared(radius::Float64)\n\nThe distributionally robust SDDP risk measure of\n\nPhilpott, A., de Matos, V., Kapelevich, L. Distributionally robust SDDP. Computational Management Science (2018) 165:431-454.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.Wasserstein",
+    "page": "Reference",
+    "title": "Kokako.Wasserstein",
+    "category": "type",
+    "text": "Wasserstein(solver_factory; alpha::Float64)\n\nA distributionally-robust risk measure based on the Wasserstein distance.\n\nAs alpha increases, the measure becomes more risk-averse. When alpha=0, the measure is equivalent to the expectation operator. As alpha increases, the measure approaches the Worst-case risk measure.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Risk-measures-1",
+    "page": "Reference",
+    "title": "Risk measures",
+    "category": "section",
+    "text": "Kokako.Expectation\nKokako.WorstCase\nKokako.AVaR\nKokako.EAVaR\nKokako.ModifiedChiSquared\nKokako.Wasserstein"
 },
 
 {
