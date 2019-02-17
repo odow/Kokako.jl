@@ -79,17 +79,17 @@ function add_spaghetti(data_function::Function, plt::SpaghettiPlot;
 		"ymax" => ymax
 	)
 	plot_dict["data"] = Vector{Float64}[]
-	for scenario in 1:plt.scenarios
+	for (i, scenario) in enumerate(plt.simulations)
 		push!(plot_dict["data"], Float64[])
 		series_value = 0.0
-		for stage in 1:plt.stages
-			y_value = float(data_function(plt.simulations[scenario][stage]))
+		for stage in scenario
+			y_value = float(data_function(stage))
 			if cumulative
 				series_value += y_value
 			else
 				series_value = y_value
 			end
-			push!(plot_dict["data"][scenario], series_value)
+			push!(plot_dict["data"][i], series_value)
 		end
 	end
 	push!(plt.data, plot_dict)
