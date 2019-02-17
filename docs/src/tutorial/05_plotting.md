@@ -91,35 +91,27 @@ the name when you see the graph).
 To create a spaghetti plot, begin by creating a new
 [`Kokako.SpaghettiPlot`](@ref) instance as follows:
 ```jldoctest tutorial_five
-julia> plt = Kokako.SpaghettiPlot(stages = 3, scenarios = 100)
-A spaghetti plot with 3 stages and 100 scenarios.
+julia> plt = Kokako.SpaghettiPlot(simulations)
+A spaghetti plot with 100 scenarios and 3 stages.
 ```
-The keyword `stages` gives the number of stages in the problem (in this case, 3)
-and the keyword `scenarios` gives the number of trajectories that you want to
-plot (in this case, 100, since that is how many Monte Carlo replications we
-conducted).
 
-Next, we can add plots to `plt` using the [`Kokako.add_spaghetti`](@ref)
+We can add plots to `plt` using the [`Kokako.add_spaghetti`](@ref)
 function.
 
 ```jldoctest tutorial_five
-julia> Kokako.add_spaghetti(plt; title = "Reservoir volume") do scenario, stage
-           return simulations[scenario][stage][:volume].out
+julia> Kokako.add_spaghetti(plt; title = "Reservoir volume") do data
+           return data[:volume].out
        end
 ```
-
-The return value of each `do ... end` block is a `Float64` for the y-value of
-the `scenario`'th line in stage `stage`.
 
 You don't have just return values from the simulation, you can compute things
 too.
 
 ```jldoctest tutorial_five
 julia> Kokako.add_spaghetti(plt;
-               title = "Fuel cost", ymin = 0, ymax = 250) do scenario, stage
-           if simulations[scenario][stage][:thermal_generation] > 0
-               return simulations[scenario][stage][:stage_objective] /
-                   simulations[scenario][stage][:thermal_generation]
+               title = "Fuel cost", ymin = 0, ymax = 250) do data
+           if data[:thermal_generation] > 0
+               return data[:stage_objective] / data[:thermal_generation]
            else  # No thermal generation, so return 0.0.
                return 0.0
            end
