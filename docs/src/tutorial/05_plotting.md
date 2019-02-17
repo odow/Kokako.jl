@@ -140,34 +140,30 @@ are shown darker and those further away are shown lighter.
 ## Publication plots
 
 Instead of the interactive Javascript plots, you can also create some
-publication ready plots using the `Kokako.publicationplot` function.
+publication ready plots using the [`Kokako.publication_plot`](@ref) function.
 
 !!!info
     You need to install the [Plots.jl](https://github.com/JuliaPlots/Plots)
     package for this to work. We used the `GR` backend (`gr()`), but any
     `Plots.jl` backend should work.
 
-`Kokako.publicationplot` implements a plot recipe to create ribbon plots of each
-variable against the stages. The first argument is the vector of simulation
-dictionaries and the second argument is the dictionary key that you want to
-plot. Standard Plots.jl keyword arguments such as `title` and `xlabel` can be
-used to modify the look of each plot. By default, the plot displays ribbons of
-the 0-100, 10-90, and 25-75 percentiles. The dark, solid line in the middle is
-the median (i.e. 50'th percentile).
+[`Kokako.publication_plot`](@ref) implements a plot recipe to create ribbon
+plots of each variable against the stages. The first argument is the vector of
+simulation dictionaries and the second argument is the dictionary key that you
+want to plot. Standard `Plots.jl` keyword arguments such as `title` and `xlabel`
+can be used to modify the look of each plot. By default, the plot displays
+ribbons of the 0-100, 10-90, and 25-75 percentiles. The dark, solid line in the
+middle is the median (i.e. 50'th percentile).
 
 ```julia
 using Plots
 plot(
-    Kokako.publicationplot(
-        simulations,
-        data -> data[:volume].out,
-        title = "Outgoing volume"
-    ),
-    Kokako.publicationplot(
-        simulations,
-        data -> data[:thermal_generation],
-        title = "Thermal generation"
-    ),
+    Kokako.publication_plot(simulations, title = "Outgoing volume") do data
+        return data[:volume].out
+    end,
+    Kokako.publication_plot(simulations, title = "Thermal generation") do data
+        return data[:thermal_generation]
+    end,
     xlabel = "Stage",
     ylims = (0, 200),
     layout = (1, 2),
