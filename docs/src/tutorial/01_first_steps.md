@@ -219,7 +219,7 @@ println("Termination status is: ", SDDP.termination_status(training_results))
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        SDDP - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2017-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
