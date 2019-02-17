@@ -3,28 +3,28 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-using Kokako, Test, GLPK
+using SDDP, Test, GLPK
 
 @testset "Forward Pass" begin
-    model = Kokako.PolicyGraph(Kokako.LinearGraph(2);
+    model = SDDP.PolicyGraph(SDDP.LinearGraph(2);
                 sense = :Max,
-                bellman_function = Kokako.AverageCut(upper_bound = 100.0),
+                bellman_function = SDDP.AverageCut(upper_bound = 100.0),
                 optimizer = with_optimizer(GLPK.Optimizer)
                     ) do node, stage
-        @variable(node, x, Kokako.State, initial_value = 0.0)
+        @variable(node, x, SDDP.State, initial_value = 0.0)
         @stageobjective(node, x.out)
-        Kokako.parameterize(node, stage * [1, 3], [0.5, 0.5]) do ω
+        SDDP.parameterize(node, stage * [1, 3], [0.5, 0.5]) do ω
             JuMP.set_upper_bound(x.out, ω)
         end
     end
     scenario_path, sampled_states, objective_states, cumulative_value =
-        Kokako.forward_pass(
+        SDDP.forward_pass(
             model,
-            Kokako.Options(
+            SDDP.Options(
                 model,
                 Dict(:x => 1.0),
-                Kokako.InSampleMonteCarlo(),
-                Kokako.Expectation(),
+                SDDP.InSampleMonteCarlo(),
+                SDDP.Expectation(),
                 0.0,
                 true
             )
@@ -38,16 +38,16 @@ using Kokako, Test, GLPK
 end
 
 @testset "solve" begin
-    model = Kokako.PolicyGraph(Kokako.LinearGraph(2),
-                bellman_function = Kokako.AverageCut(lower_bound = 0.0),
+    model = SDDP.PolicyGraph(SDDP.LinearGraph(2),
+                bellman_function = SDDP.AverageCut(lower_bound = 0.0),
                 optimizer = with_optimizer(GLPK.Optimizer)
                     ) do node, stage
-        @variable(node, x >= 0, Kokako.State, initial_value = 0.0)
+        @variable(node, x >= 0, SDDP.State, initial_value = 0.0)
         @stageobjective(node, x.out)
-        Kokako.parameterize(node, stage * [1, 3], [0.5, 0.5]) do ω
+        SDDP.parameterize(node, stage * [1, 3], [0.5, 0.5]) do ω
             JuMP.set_lower_bound(x.out, ω)
         end
     end
-    train_results = Kokako.train(model; iteration_limit = 4)
-    @test Kokako.termination_status(train_results) == :iteration_limit
+    train_results = SDDP.train(model; iteration_limit = 4)
+    @test SDDP.termination_status(train_results) == :iteration_limit
 end

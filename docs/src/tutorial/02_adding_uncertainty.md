@@ -33,24 +33,24 @@ dynamics to include `inflow`:
 `volume.out = volume.in + inflow - hydro_generation - hydro_spill`
 
 
-## Creating a Kokako model
+## Creating a SDDP model
 
 To add an uncertain variable to the model, we create a new JuMP variable
-`inflow`, and then call the function [`Kokako.parameterize`](@ref). The
-[`Kokako.parameterize`](@ref) function takes three arguments: the subproblem,
-a vector of realizations, and a corresponding vector of probabilities.
+`inflow`, and then call the function [`SDDP.parameterize`](@ref). The
+[`SDDP.parameterize`](@ref) function takes three arguments: the subproblem, a
+vector of realizations, and a corresponding vector of probabilities.
 
 ```jldoctest tutorial_two
-using Kokako, GLPK
+using SDDP, GLPK
 
-model = Kokako.LinearPolicyGraph(
+model = SDDP.LinearPolicyGraph(
             stages = 3,
             sense = :Min,
             lower_bound = 0.0,
             optimizer = with_optimizer(GLPK.Optimizer)
         ) do subproblem, t
     # Define the state variable.
-    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)
+    @variable(subproblem, 0 <= volume <= 200, SDDP.State, initial_value = 200)
     # Define the control variables.
     @variables(subproblem, begin
         thermal_generation >= 0
@@ -68,7 +68,7 @@ model = Kokako.LinearPolicyGraph(
     fuel_cost = [50.0, 100.0, 150.0]
     @stageobjective(subproblem, fuel_cost[t] * thermal_generation)
     # Parameterize the subproblem.
-    Kokako.parameterize(subproblem, [0.0, 50.0, 100.0], [1/3, 1/3, 1/3]) do ω
+    SDDP.parameterize(subproblem, [0.0, 50.0, 100.0], [1/3, 1/3, 1/3]) do ω
         JuMP.fix(inflow, ω)
     end
 end
@@ -83,21 +83,22 @@ Note how we use the JuMP function `JuMP.fix` to set the value of the `inflow`
 variable to `ω`.
 
 !!! note
-    [`Kokako.parameterize`](@ref) can only be called once in each subproblem
+    [`SDDP.parameterize`](@ref) can only be called once in each subproblem
     definition!
 
 ## Training and simulating the policy
 
 As in [Basics I: first steps](@ref), we train the policy:
-```jldoctest tutorial_two; filter=r"\|.+?\n"
-training_results = Kokako.train(model; iteration_limit = 10)
 
-println("Termination status is: ", Kokako.termination_status(training_results))
+```jldoctest tutorial_two; filter=r"\|.+?\n"
+training_results = SDDP.train(model; iteration_limit = 10)
+
+println("Termination status is: ", SDDP.termination_status(training_results))
 
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        Kokako - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
@@ -124,10 +125,10 @@ perform  a Monte Carlo simulation and then form a confidence interval for the
 expected cost. This confidence interval is an estimate for the upper bound.
 
 In addition to the confidence interval, we can calculate the lower bound using
-[`Kokako.calculate_bound`](@ref).
+[`SDDP.calculate_bound`](@ref).
 
 ```jldoctest tutorial_two; filter=r"Confidence interval.+?\n"
-simulations = Kokako.simulate(model, 500)
+simulations = SDDP.simulate(model, 500)
 
 objective_values = [
     sum(stage[:stage_objective] for stage in sim) for sim in simulations
@@ -139,7 +140,7 @@ using Statistics
 ci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)
 
 println("Confidence interval: ", μ, " ± ", ci)
-println("Lower bound: ", round(Kokako.calculate_bound(model), digits = 2))
+println("Lower bound: ", round(SDDP.calculate_bound(model), digits = 2))
 
 # output
 
@@ -148,14 +149,14 @@ Lower bound: 8333.33
 ```
 
 In addition to simulating the primal values of variables, we can also pass
-`Kokako.jl` custom recorder functions. Each of these functions takes one
+`SDDP.jl` custom recorder functions. Each of these functions takes one
 argument, the JuMP subproblem, and returns anything you can compute. For example,
 the dual of the demand constraint (which we named `demand_constraint`)
 corresponds to the price we should charge for electricity, since it represents
 the cost of each additional unit of demand. To calculate this, we can go
 
 ```jldoctest tutorial_two; filter = r"\s+?\-?\d+\.0"
-simulations = Kokako.simulate(
+simulations = SDDP.simulate(
     model,
     1,
     custom_recorders = Dict{Symbol, Function}(
@@ -173,6 +174,6 @@ electricity_price = [stage[:price] for stage in simulations[1]]
   -0.0
 ```
 
-This concludes our second tutorial for `Kokako.jl`. In the next tutorial,
+This concludes our second tutorial for `SDDP.jl`. In the next tutorial,
 [Basics III: objective uncertainty](@ref), we extend the uncertainty to the
 fuel cost.

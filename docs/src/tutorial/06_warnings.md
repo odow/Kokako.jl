@@ -63,16 +63,17 @@ convergence and the numerical issues discussed above), but if chosen to small,
 it may cut of the feasible region and lead to a sub-optimal solution.
 
 Consider the following simple model, where we first set `lower_bound` to `0.0`.
-```jldoctest; filter=r"\|.+?\n"
-using Kokako, GLPK
 
-model = Kokako.LinearPolicyGraph(
+```jldoctest; filter=r"\|.+?\n"
+using SDDP, GLPK
+
+model = SDDP.LinearPolicyGraph(
             stages = 3,
             sense = :Min,
             lower_bound = 0.0,
             optimizer = with_optimizer(GLPK.Optimizer)
         ) do subproblem, t
-    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)
+    @variable(subproblem, x >= 0, SDDP.State, initial_value = 2)
     @variable(subproblem, u >= 0)
     @variable(subproblem, v >= 0)
     @constraint(subproblem, x.out == x.in - u)
@@ -80,14 +81,14 @@ model = Kokako.LinearPolicyGraph(
     @stageobjective(subproblem, t * v)
 end
 
-Kokako.train(model, iteration_limit = 5)
+SDDP.train(model, iteration_limit = 5)
 
 println("Finished training!")
 
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        Kokako - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
@@ -102,15 +103,15 @@ Finished training!
 Now consider the case when we set the `lower_bound` to `10.0`:
 
 ```jldoctest; filter=r"\|.+?\n"
-using Kokako, GLPK
+using SDDP, GLPK
 
-model = Kokako.LinearPolicyGraph(
+model = SDDP.LinearPolicyGraph(
             stages = 3,
             sense = :Min,
             lower_bound = 10.0,
             optimizer = with_optimizer(GLPK.Optimizer)
         ) do subproblem, t
-    @variable(subproblem, x >= 0, Kokako.State, initial_value = 2)
+    @variable(subproblem, x >= 0, SDDP.State, initial_value = 2)
     @variable(subproblem, u >= 0)
     @variable(subproblem, v >= 0)
     @constraint(subproblem, x.out == x.in - u)
@@ -118,14 +119,14 @@ model = Kokako.LinearPolicyGraph(
     @stageobjective(subproblem, t * v)
 end
 
-Kokako.train(model, iteration_limit = 5)
+SDDP.train(model, iteration_limit = 5)
 
 println("Finished training!")
 
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        Kokako - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
@@ -138,12 +139,7 @@ Finished training!
 ```
 
 How do we tell which is more appropriate? There are a few clues that you should
-look out for.    m = Model(with_optimizer(Ipopt.Optimizer, tol=1E-24, dual_inf_tol=1E-24,
-        constr_viol_tol=1E-24, compl_inf_tol=1E-24, print_level=0))
-    @variable(m, newvarvec[i=1:numvars] >= 0)
-    obj = @expression(m, sum(newvarvec[i] for i=1:numvars))
-    @objective(m, Min, obj)
-    JuMP.optimize!(m)
+look out for.
 
 - The bound converges to a value above (if minimizing) the simulated cost of the
   policy. In this case, the problem is deterministic, so it is easy to tell. But
@@ -161,4 +157,4 @@ look out for.    m = Model(with_optimizer(Ipopt.Optimizer, tol=1E-24, dual_inf_t
   varies between models, but notice that `11.0` is quite close to `10.0`
   compared with `3.5` and `0.0`.
 
-This concludes or series of basic introductory tutorials for `Kokako.jl`.
+This concludes or series of basic introductory tutorials for `SDDP.jl`.

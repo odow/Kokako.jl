@@ -19,7 +19,7 @@ const PLOT_DATA = Dict{String, Any}(
 )
 
 """
-	Kokako.SpaghettiPlot(; stages, scenarios)
+	SDDP.SpaghettiPlot(; stages, scenarios)
 
 Initialize a new `SpaghettiPlot` with `stages` stages and `scenarios` number of
 replications.
@@ -39,7 +39,7 @@ function Base.show(io::IO, plt::SpaghettiPlot)
 end
 
 """
-	Kokako.add_spaghetti(data_function::Function, plt::SpaghettiPlot; kwargs...)
+	SDDP.add_spaghetti(data_function::Function, plt::SpaghettiPlot; kwargs...)
 
 # Description
 
@@ -62,8 +62,8 @@ Add a new figure to the SpaghettiPlot `plt`, where the y-value is given by
 # Examples
 
 	simulations = simulate(model, 10)
-	plt = Kokako.spaghetti_plot(stages = 10, scenarios = 10)
-	Kokako.add_spaghetti(plt; title = "Stage objective") do scenario, stage
+	plt = SDDP.spaghetti_plot(stages = 10, scenarios = 10)
+	SDDP.add_spaghetti(plt; title = "Stage objective") do scenario, stage
 		return simulations[scenario][stage][:stage_objective]
 	end
 """

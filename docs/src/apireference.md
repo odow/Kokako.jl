@@ -3,36 +3,36 @@
 ## Policy graphs
 
 ```@docs
-Kokako.LinearPolicyGraph
-Kokako.MarkovianPolicyGraph
-Kokako.PolicyGraph
+SDDP.LinearPolicyGraph
+SDDP.MarkovianPolicyGraph
+SDDP.PolicyGraph
 ```
 
 ## Subproblem definition
 
 ```@docs
 @stageobjective
-Kokako.parameterize
+SDDP.parameterize
 ```
 
 ## Training the policy
 
 ```@docs
-Kokako.train
-Kokako.termination_status
+SDDP.train
+SDDP.termination_status
 ```
 
 ## Simulating the policy
 
 ```@docs
-Kokako.simulate
-Kokako.calculate_bound
-Kokako.Historical
+SDDP.simulate
+SDDP.calculate_bound
+SDDP.Historical
 ```
 
 ## Visualizing the policy
 
 ```@docs
-Kokako.SpaghettiPlot
-Kokako.add_spaghetti
+SDDP.SpaghettiPlot
+SDDP.add_spaghetti
 ```

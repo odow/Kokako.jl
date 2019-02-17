@@ -6,7 +6,7 @@
 const SDDP_TIMER = TimerOutputs.TimerOutput()
 
 # to_nodal_form is an internal helper function so users can pass arguments like:
-# risk_measure = Kokako.Expectation(),
+# risk_measure = SDDP.Expectation(),
 # risk_measure = Dict(1=>Expectation(), 2=>WorstCase())
 # risk_measure = (node_index) -> node_index == 1 ? Expectation() : WorstCase()
 # It will return a dictionary with a key for each node_index in the policy
@@ -470,7 +470,7 @@ function backward_pass(graph::PolicyGraph{T},
 end
 
 """
-    Kokako.calculate_bound(graph::PolicyGraph, state::Dict{Symbol, Float64},
+    SDDP.calculate_bound(graph::PolicyGraph, state::Dict{Symbol, Float64},
                            risk_measure=Expectation())
 
 Calculate the lower bound (if minimizing, otherwise upper bound) of the problem
@@ -526,7 +526,7 @@ Query the reason why the training stopped.
 termination_status(results::TrainingResults) = results.status
 
 """
-    Kokako.train(graph::PolicyGraph; kwargs...)::TrainingResults
+    SDDP.train(graph::PolicyGraph; kwargs...)::TrainingResults
 
 Train the policy of the graph. Keyword arguments are
  - iteration_limit: number of iterations to conduct before termination. Defaults
@@ -544,12 +544,12 @@ function train(graph::PolicyGraph;
                iteration_limit = nothing,
                time_limit = nothing,
                stopping_rules = AbstractStoppingRule[],
-               risk_measure = Kokako.Expectation(),
-               sampling_scheme = Kokako.InSampleMonteCarlo(),
+               risk_measure = SDDP.Expectation(),
+               sampling_scheme = SDDP.InSampleMonteCarlo(),
                print_level = 1,
                cycle_discretization_delta = 0.0,
                refine_at_similar_nodes = true,
-               log_file = "kokako.log"
+               log_file = "SDDP.log"
                )
     # Reset the TimerOutput.
     TimerOutputs.reset_timer!(SDDP_TIMER)
@@ -559,7 +559,7 @@ function train(graph::PolicyGraph;
         print_banner(log_file_handle)
     end
     # Convert the vector to an AbstractStoppingRule. Otherwise if the user gives
-    # something like stopping_rules = [Kokako.IterationLimit(100)], the vector
+    # something like stopping_rules = [SDDP.IterationLimit(100)], the vector
     # will be concretely typed and we can't add a TimeLimit.
     stopping_rules = convert(Vector{AbstractStoppingRule}, stopping_rules)
     # Add the limits as stopping rules. An IterationLimit or TimeLimit may
@@ -572,7 +572,7 @@ function train(graph::PolicyGraph;
     end
     if length(stopping_rules) == 0
         @warn("You haven't specified a stopping rule! You can only terminate " *
-              "the call to Kokako.train via a keyboard interrupt ([CTRL+C]).")
+              "the call to SDDP.train via a keyboard interrupt ([CTRL+C]).")
     end
     options = Options(
         graph,
@@ -627,7 +627,7 @@ function train(graph::PolicyGraph;
 end
 
 # Internal function: helper to conduct a single simulation. Users should use the
-# documented, user-facing function Kokako.simulate instead.
+# documented, user-facing function SDDP.simulate instead.
 function _simulate(graph::PolicyGraph,
                    variables::Vector{Symbol} = Symbol[];
                    sampling_scheme::AbstractSamplingScheme =

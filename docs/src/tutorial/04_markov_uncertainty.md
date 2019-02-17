@@ -32,10 +32,11 @@ For each stage, we need to provide a Markov transition matrix. This is an
 `M`x`N` matrix, where the element `A[i, j]` gives the probability of
 transitioning from Markov state `i` in the previous stage to Markov state `j` in
 the current stage. The first stage is special because we assume there is a
-"zero'th" stage which has one Markov state (the round node in the graph above). Furthermore, the number of columns
-in the transition matrix of a stage (i.e. the number of Markov states) must
-equal the number of rows in the next stage's transition matrix. For our example,
-the vector of Markov transition matrices is given by:
+"zero'th" stage which has one Markov state (the round node in the graph above).
+Furthermore, the number of columns in the transition matrix of a stage (i.e. the
+number of Markov states) must equal the number of rows in the next stage's
+transition matrix. For our example, the vector of Markov transition matrices is
+given by:
 ```julia
 T = Array{Float64, 2}[
     [ 1.0 ]',
@@ -48,10 +49,10 @@ T = Array{Float64, 2}[
     Make sure to add the `'` after the first transition matrix so Julia can
     distinguish between a vector and a matrix.
 
-## Creating a Kokako model
+## Creating a SDDP model
 
 ```jldoctest tutorial_four
-using Kokako, GLPK
+using SDDP, GLPK
 
 Ω = [
     (inflow = 0.0, fuel_multiplier = 1.5),
@@ -59,7 +60,7 @@ using Kokako, GLPK
     (inflow = 100.0, fuel_multiplier = 0.75)
 ]
 
-model = Kokako.MarkovianPolicyGraph(
+model = SDDP.MarkovianPolicyGraph(
             transition_matrices = Array{Float64, 2}[
                 [ 1.0 ]',
                 [ 0.75 0.25 ],
@@ -72,7 +73,7 @@ model = Kokako.MarkovianPolicyGraph(
     # Unpack the stage and Markov index.
     t, markov_state = node
     # Define the state variable.
-    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)
+    @variable(subproblem, 0 <= volume <= 200, SDDP.State, initial_value = 200)
     # Define the control variables.
     @variables(subproblem, begin
         thermal_generation >= 0
@@ -93,7 +94,7 @@ model = Kokako.MarkovianPolicyGraph(
     end
 
     fuel_cost = [50.0, 100.0, 150.0]
-    Kokako.parameterize(subproblem, Ω, probability) do ω
+    SDDP.parameterize(subproblem, Ω, probability) do ω
         JuMP.fix(inflow, ω.inflow)
         @stageobjective(subproblem,
             ω.fuel_multiplier * fuel_cost[t] * thermal_generation)
@@ -109,15 +110,16 @@ A policy graph with 5 nodes.
 ## Training and simulating the policy
 
 As in the previous three tutorials, we train the policy:
-```jldoctest tutorial_four; filter=[r"\|.+?\n", r"Confidence interval.+?\n"]
-training_results = Kokako.train(model; iteration_limit = 10)
 
-println("Termination status is: ", Kokako.termination_status(training_results))
+```jldoctest tutorial_four; filter=[r"\|.+?\n", r"Confidence interval.+?\n"]
+training_results = SDDP.train(model; iteration_limit = 10)
+
+println("Termination status is: ", SDDP.termination_status(training_results))
 
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        Kokako - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
@@ -137,16 +139,16 @@ Termination status is: iteration_limit
 Instead of performing a Monte Carlo simulation like the previous tutorials, we
 may want to simulate one particular sequence of noise realizations. This
 _historical_ simulation can also be conducted by passing a
-[`Kokako.Historical`](@ref) sampling scheme to the `sampling_scheme` keyword of
-the [`Kokako.simulate`](@ref) function.
+[`SDDP.Historical`](@ref) sampling scheme to the `sampling_scheme` keyword of
+the [`SDDP.simulate`](@ref) function.
 
 We can confirm that the historical sequence of nodes was visited by querying
 the `:node_index` key of the simulation results.
 
 ```jldoctest tutorial_four
-simulations = Kokako.simulate(
+simulations = SDDP.simulate(
     model,
-    sampling_scheme = Kokako.Historical([
+    sampling_scheme = SDDP.Historical([
         ((1, 1), Ω[1]),
         ((2, 2), Ω[3]),
         ((3, 1), Ω[2])
@@ -163,6 +165,6 @@ simulations = Kokako.simulate(
  (3, 1)
 ```
 
-This concludes our fourth tutorial for `Kokako.jl`. In the next tutorial,
+This concludes our fourth tutorial for `SDDP.jl`. In the next tutorial,
 [Basics V: plotting](@ref) we discuss the plotting utilities included in
-`Kokako.jl`.
+`SDDP.jl`.

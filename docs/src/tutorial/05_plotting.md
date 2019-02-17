@@ -2,9 +2,9 @@
 
 In our previous tutorials, we formulated, solved, and simulated multistage
 stochastic optimization problems. However, we haven't really investigated what
-the solution looks like. Luckily, `Kokako.jl` includes a number of plotting
-tools to help us do that. In this tutorial, we explain the tools and make some
-pretty pictures.
+the solution looks like. Luckily, `SDDP.jl` includes a number of plotting tools
+to help us do that. In this tutorial, we explain the tools and make some pretty
+pictures.
 
 ## Preliminaries
 
@@ -13,20 +13,20 @@ the model from  [Basics IV: Markov uncertainty](@ref), train it for 20
 iterations, and then simulate 100 Monte Carlo realizations of the policy.
 
 ```jldoctest tutorial_five; filter=r"\|.+?\n"
-using Kokako, GLPK
+using SDDP, GLPK
 Ω = [
     (inflow = 0.0, fuel_multiplier = 1.5),
     (inflow = 50.0, fuel_multiplier = 1.0),
     (inflow = 100.0, fuel_multiplier = 0.75)
 ]
-model = Kokako.MarkovianPolicyGraph(
+model = SDDP.MarkovianPolicyGraph(
             transition_matrices = Array{Float64, 2}[
                 [1.0]', [0.75 0.25], [0.75 0.25 ; 0.25 0.75]],
             sense = :Min, lower_bound = 0.0,
             optimizer = with_optimizer(GLPK.Optimizer)
         ) do subproblem, node
     t, markov_state = node
-    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)
+    @variable(subproblem, 0 <= volume <= 200, SDDP.State, initial_value = 200)
     @variable(subproblem, thermal_generation >= 0)
     @variable(subproblem, hydro_generation >= 0)
     @variable(subproblem, hydro_spill >= 0)
@@ -36,16 +36,16 @@ model = Kokako.MarkovianPolicyGraph(
     @constraint(subproblem, thermal_generation + hydro_generation == 150.0)
     probability = markov_state == 1 ? [1/6, 1/3, 1/2] : [1/2, 1/3, 1/6]
     fuel_cost = [50.0, 100.0, 150.0]
-    Kokako.parameterize(subproblem, Ω, probability) do ω
+    SDDP.parameterize(subproblem, Ω, probability) do ω
         JuMP.fix(inflow, ω.inflow)
         @stageobjective(subproblem,
             ω.fuel_multiplier * fuel_cost[t] * thermal_generation)
     end
 end
 
-Kokako.train(model, iteration_limit = 20)
+SDDP.train(model, iteration_limit = 20)
 
-simulations = Kokako.simulate(
+simulations = SDDP.simulate(
     model, 100,
     [:volume, :thermal_generation, :hydro_generation, :hydro_spill])
 
@@ -54,7 +54,7 @@ println("Completed $(length(simulations)) simulations.")
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        Kokako - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
@@ -89,9 +89,9 @@ The first plotting utility we discuss is a _spaghetti_ plot (you'll understand
 the name when you see the graph).
 
 To create a spaghetti plot, begin by creating a new
-[`Kokako.SpaghettiPlot`](@ref) instance as follows:
+[`SDDP.SpaghettiPlot`](@ref) instance as follows:
 ```jldoctest tutorial_five
-julia> plt = Kokako.SpaghettiPlot(stages = 3, scenarios = 100)
+julia> plt = SDDP.SpaghettiPlot(stages = 3, scenarios = 100)
 A spaghetti plot with 3 stages and 100 scenarios.
 ```
 The keyword `stages` gives the number of stages in the problem (in this case, 3)
@@ -99,11 +99,10 @@ and the keyword `scenarios` gives the number of trajectories that you want to
 plot (in this case, 100, since that is how many Monte Carlo replications we
 conducted).
 
-Next, we can add plots to `plt` using the [`Kokako.add_spaghetti`](@ref)
-function.
+We can add plots to `plt` using the [`SDDP.add_spaghetti`](@ref) function.
 
 ```jldoctest tutorial_five
-julia> Kokako.add_spaghetti(plt; title = "Reservoir volume") do scenario, stage
+julia> SDDP.add_spaghetti(plt; title = "Reservoir volume") do scenario, stage
            return simulations[scenario][stage][:volume].out
        end
 ```
@@ -115,7 +114,7 @@ You don't have just return values from the simulation, you can compute things
 too.
 
 ```jldoctest tutorial_five
-julia> Kokako.add_spaghetti(plt;
+julia> SDDP.add_spaghetti(plt;
                title = "Fuel cost", ymin = 0, ymax = 250) do scenario, stage
            if simulations[scenario][stage][:thermal_generation] > 0
                return simulations[scenario][stage][:stage_objective] /
@@ -128,12 +127,12 @@ julia> Kokako.add_spaghetti(plt;
 
 Note that there are many keyword arguments in addition to `title`. For example,
 we fixed the minimum and maximum values of the y-axis using `ymin` and `ymax`.
-See the [`Kokako.add_spaghetti`](@ref) documentation for all the arguments.
+See the [`SDDP.add_spaghetti`](@ref) documentation for all the arguments.
 
 Having built the plot, we now need to display it.
 
 ```jldoctest tutorial_five
-julia> Kokako.save(plt, "spaghetti_plot.html", open = true)
+julia> SDDP.save(plt, "spaghetti_plot.html", open = true)
 ```
 
 This should open a webpage that looks like [this one](../assets/spaghetti_plot.html).
@@ -148,7 +147,7 @@ are shown darker and those further away are shown lighter.
 ## Publication plots
 
 Instead of the interactive Javascript plots, you can also create some
-publication ready plots using the `Kokako.publicationplot` function.
+publication ready plots using the `SDDP.publicationplot` function.
 
 !!!info
     You need to install the [Plots.jl](https://github.com/JuliaPlots/Plots)
@@ -171,12 +170,12 @@ the look of each plot. By default, the plot displays ribbons of the 0-100,
 ```julia
 using Plots
 plot(
-    Kokako.publicationplot(
+    SDDP.publicationplot(
         simulations,
         data -> data[:volume].out,
         title = "Outgoing volume"
     ),
-    Kokako.publicationplot(
+    SDDP.publicationplot(
         simulations,
         data -> data[:thermal_generation],
         title = "Thermal generation"
@@ -198,6 +197,6 @@ You can save this plot as a PDF using the `Plots.jl` function `savefig`:
 Plots.savefig("my_picture.pdf")
 ```
 
-This concludes our fifth tutorial for `Kokako.jl`. In our final _Basics_
-tutorial, [Basics VI: words of warning](@ref) we discuss some of the issues that
-you should be aware of when creating your own models.
+This concludes our fifth tutorial for `SDDP.jl`. In our final _Basics_ tutorial,
+[Basics VI: words of warning](@ref) we discuss some of the issues that you
+should be aware of when creating your own models.

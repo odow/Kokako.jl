@@ -352,8 +352,8 @@ function PolicyGraph(builder::Function, graph::Graph{T};
             nothing
 
         )
-        subproblem.ext[:kokako_policy_graph] = policy_graph
-        policy_graph.nodes[node_index] = subproblem.ext[:kokako_node] = node
+        subproblem.ext[:SDDP_policy_graph] = policy_graph
+        policy_graph.nodes[node_index] = subproblem.ext[:SDDP_node] = node
         builder(subproblem, node_index)
         # Add a dummy noise here so that all nodes have at least one noise term.
         if length(node.noise_terms) == 0
@@ -382,12 +382,12 @@ end
 
 # Internal functino: helper to get the node given a subproblem.
 function get_node(subproblem::JuMP.Model)
-    return subproblem.ext[:kokako_node]::Node
+    return subproblem.ext[:SDDP_node]::Node
 end
 
 # Internal functino: helper to get the policy graph given a subproblem.
 function get_policy_graph(subproblem::JuMP.Model)
-    return subproblem.ext[:kokako_policy_graph]::PolicyGraph
+    return subproblem.ext[:SDDP_policy_graph]::PolicyGraph
 end
 
 """
@@ -407,7 +407,7 @@ arguments that are not in realizations (but still of type T).
 
 # Example
 
-    Kokako.parameterize(subproblem, [1, 2, 3], [0.4, 0.3, 0.3]) do ω
+    SDDP.parameterize(subproblem, [1, 2, 3], [0.4, 0.3, 0.3]) do ω
         JuMP.set_upper_bound(x, ω)
     end
 """
@@ -419,7 +419,7 @@ function parameterize(modify::Function,
                           ) where T
     node = get_node(subproblem)
     if length(node.noise_terms) != 0
-        error("Duplicate calls to Kokako.parameterize detected. Only " *
+        error("Duplicate calls to SDDP.parameterize detected. Only " *
               "a subproblem at most one time.")
     end
     for (realization, prob) in zip(realizations, probability)
@@ -436,7 +436,7 @@ Set the stage-objective of `subproblem` to `stage_objective`.
 
 # Example
 
-    Kokako.set_stage_objective(subproblem, 2x + 1)
+    SDDP.set_stage_objective(subproblem, 2x + 1)
 """
 function set_stage_objective(subproblem::JuMP.Model, stage_objective)
     node = get_node(subproblem)
@@ -475,7 +475,7 @@ end
 #
 #   Usage:
 #   julia> @variable(subproblem, 0 <= x[i=1:2] <= i,
-#              Kokako.State, initial_value = i)
+#              SDDP.State, initial_value = i)
 #
 #   julia> x
 #   2-element Array{State{VariableRef},1}:

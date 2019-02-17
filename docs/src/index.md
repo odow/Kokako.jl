@@ -1,16 +1,14 @@
 ```@meta
-CurrentModule = Kokako
+CurrentModule = SDDP
 ```
 
-# Kōkako.jl
+# SDDP.jl
 
 !!! note
-    `SDDP.jl` is currently undergoing a re-write in this repository under the
-    name `Kōkako.jl`. Once completed, this package will be renamed back to
-    `SDDP.jl`.
+    To co-incide with the release of Julia 1.0 and JuMP 0.19, `SDDP.jl`
+    under-went a major re-write.
 
-
-`Kōkako.jl` is a package for solving large multistage convex stochastic
+`SDDP.jl` is a package for solving large multistage convex stochastic
 programming problems using *stochastic dual dynamic programming*. In this
 manual, we're going to assume a reasonable amount of background knowledge about
 stochastic optimization, the SDDP algorithm, Julia, and JuMP.
@@ -18,20 +16,20 @@ stochastic optimization, the SDDP algorithm, Julia, and JuMP.
 !!! info
     If you haven't used JuMP before, we recommend that you read the
     [JuMP documentation](http://www.juliaopt.org/JuMP.jl/latest/) and try
-    building and solving JuMP models _before_ trying `Kokako.jl`.
+    building and solving JuMP models _before_ trying `SDDP.jl`.
 
 ## Installation
 
-You can install `Kōkako.jl` as follows:
+You can install `SDDP.jl` as follows:
 
 ```julia
 import Pkg
-Pkg.add("https://github.com/odow/Kokako.jl.git")
+Pkg.add("https://github.com/odow/SDDP.jl.git")
 ```
 
 ## Tutorials
 
-Once you've got Kōkako installed, you should read some tutorials, beginning
+Once you've got SDDP installed, you should read some tutorials, beginning
 with [Basics I: first steps](@ref).
 
 ## Citing SDDP.jl
@@ -47,7 +45,3 @@ If you use SDDP.jl, we ask that you please cite the following
 	year = {2017}
 }
 ```
-
-## Photo credit
-
-Image of a Kōkako by [Matt Binns](https://www.flickr.com/photos/mattbinns/1962834042).

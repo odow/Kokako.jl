@@ -22,22 +22,22 @@ In stage `t`, the objective is not to minimize
 
 `fuel_multiplier * fuel_cost[t] * thermal_generation`
 
-## Creating a Kokako model
+## Creating a SDDP model
 
 To add an uncertain objective, we can simply call [`@stageobjective`](@ref) from
-inside the [`Kokako.parameterize`](@ref) function.
+inside the [`SDDP.parameterize`](@ref) function.
 
 ```jldoctest tutorial_two
-using Kokako, GLPK
+using SDDP, GLPK
 
-model = Kokako.LinearPolicyGraph(
+model = SDDP.LinearPolicyGraph(
             stages = 3,
             sense = :Min,
             lower_bound = 0.0,
             optimizer = with_optimizer(GLPK.Optimizer)
         ) do subproblem, t
     # Define the state variable.
-    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)
+    @variable(subproblem, 0 <= volume <= 200, SDDP.State, initial_value = 200)
     # Define the control variables.
     @variables(subproblem, begin
         thermal_generation >= 0
@@ -57,7 +57,7 @@ model = Kokako.LinearPolicyGraph(
         (inflow = 50.0, fuel_multiplier = 1.0),
         (inflow = 100.0, fuel_multiplier = 0.75)
     ]
-    Kokako.parameterize(subproblem, Ω, [1/3, 1/3, 1/3]) do ω
+    SDDP.parameterize(subproblem, Ω, [1/3, 1/3, 1/3]) do ω
         JuMP.fix(inflow, ω.inflow)
         @stageobjective(subproblem,
             ω.fuel_multiplier * fuel_cost[t] * thermal_generation)
@@ -73,12 +73,13 @@ A policy graph with 3 nodes.
 ## Training and simulating the policy
 
 As in the previous two tutorials, we train the policy:
+
 ```jldoctest tutorial_two; filter=[r"\|.+?\n", r"Confidence interval.+?\n"]
-training_results = Kokako.train(model; iteration_limit = 10)
+training_results = SDDP.train(model; iteration_limit = 10)
 
-println("Termination status is: ", Kokako.termination_status(training_results))
+println("Termination status is: ", SDDP.termination_status(training_results))
 
-simulations = Kokako.simulate(model, 500)
+simulations = SDDP.simulate(model, 500)
 
 objective_values = [
     sum(stage[:stage_objective] for stage in sim) for sim in simulations
@@ -90,12 +91,12 @@ using Statistics
 ci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)
 
 println("Confidence interval: ", μ, " ± ", ci)
-println("Lower bound: ", round(Kokako.calculate_bound(model), digits = 2))
+println("Lower bound: ", round(SDDP.calculate_bound(model), digits = 2))
 
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        Kokako - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
@@ -114,6 +115,6 @@ Confidence interval: 11342.5 ± 753.02
 Lower bound: 10625.0
 ```
 
-This concludes our third tutorial for `Kokako.jl`. In the next tutorial,
+This concludes our third tutorial for `SDDP.jl`. In the next tutorial,
 [Basics IV: Markov uncertainty](@ref), we add stagewise-dependence to the
 inflows using a Markov chain.

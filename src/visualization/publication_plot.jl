@@ -3,7 +3,7 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Internal function: convert dataset (from Kokako.simulate) into a matrix where
+# Internal function: convert dataset (from SDDP.simulate) into a matrix where
 # the rows are quantiles, and the columns are stages.
 function publication_data(dataset::Vector{Vector{Dict{Symbol, Any}}},
         quantiles::Vector{Float64}, stage_function::Function)

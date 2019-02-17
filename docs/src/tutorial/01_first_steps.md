@@ -1,9 +1,8 @@
 # Basics I: first steps
 
 Hydrothermal scheduling is the most common application of stochastic dual
-dynamic programming. To illustrate some of the basic functionality of
-`Kōkako.jl`, we implement a very simple model of the hydrothermal scheduling
-problem.
+dynamic programming. To illustrate some of the basic functionality of `SDDP.jl`,
+we implement a very simple model of the hydrothermal scheduling problem.
 
 We consider the problem of scheduling electrical generation over three time
 periods in order to meet a known demand of 150 MWh in each period.
@@ -112,24 +111,24 @@ In stage `t`, they want to minimize `fuel_cost[t] * thermal_generation`, where
 `fuel_cost[t]` is \\\$50 when `t=1`, \\\$100 when `t=2`, and \\\$150 when
 `t=3`.
 
-We're now ready to construct a Kokako model. Since Kokako is intended to be very
+We're now ready to construct a SDDP model. Since SDDP is intended to be very
 user-friendly, we're going to give the full code first, and then walk through
 some of the details. However, you should be able to read through and understand
 most of what is happening.
 
-## Creating a Kokako model
+## Creating a SDDP model
 
 ```jldoctest tutorial_one
-using Kokako, GLPK
+using SDDP, GLPK
 
-model = Kokako.LinearPolicyGraph(
+model = SDDP.LinearPolicyGraph(
             stages = 3,
             sense = :Min,
             lower_bound = 0.0,
             optimizer = with_optimizer(GLPK.Optimizer)
         ) do subproblem, t
     # Define the state variable.
-    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)
+    @variable(subproblem, 0 <= volume <= 200, SDDP.State, initial_value = 200)
     # Define the control variables.
     @variables(subproblem, begin
         thermal_generation >= 0
@@ -155,7 +154,7 @@ A policy graph with 3 nodes.
 
 Wasn't that easy! Let's walk through some of the non-obvious features.
 
-#### The keywords in the [`Kokako.LinearPolicyGraph`](@ref) constructor
+#### The keywords in the [`SDDP.LinearPolicyGraph`](@ref) constructor
 
 Hopefully `stages` and `sense` are obvious. However, the other two are not so
 clear.
@@ -180,7 +179,7 @@ variable in JuMP, you go:
 ```
 whereas to create a state variable you go
 ```julia
-@variable(subproblem, x, Kokako.State)
+@variable(subproblem, x, SDDP.State)
 ```
 
 Also note that you have to pass a keyword argument called `initial_value` that
@@ -194,32 +193,33 @@ In a JuMP model, we can set the objective using `@objective`. For example:
 ```
 
 Since we only need to define the objective for each stage, rather than the
-whole problem, we use the Kokako-provided [`@stageobjective`](@ref).
+whole problem, we use the SDDP-provided [`@stageobjective`](@ref).
 ```julia
 @stageobjective(subproblem, fuel_cost[t] * thermal_generation)
 ```
 Note that we don't have to specify the optimization sense (`Max` of `Min`) since
-this is done via the `sense` keyword argument of [`Kokako.LinearPolicyGraph`](@ref).
+this is done via the `sense` keyword argument of
+[`SDDP.LinearPolicyGraph`](@ref).
 
-## Training a Kokako policy
+## Training a SDDP policy
 
-Kokako models can be trained using the [`Kokako.train`](@ref) function. It
-accepts a number of keyword arguments. `iteration_limit` terminates the training
-after the provided number of iterations.
+SDDP models can be trained using the [`SDDP.train`](@ref) function. It accepts a
+number of keyword arguments. `iteration_limit` terminates the training after the
+provided number of iterations.
 
-[`Kokako.train`](@ref) returns a `TrainingResults` object. You can query the
-reason that the training stopped by calling [`Kokako.termination_status`](@ref)
-on this  object.
+[`SDDP.train`](@ref) returns a `TrainingResults` object. You can query the
+reason that the training stopped by calling [`SDDP.termination_status`](@ref) on
+this  object.
 
 ```jldoctest tutorial_one; filter=r"\|\s+?\d\.\d+?\n"
-training_results = Kokako.train(model; iteration_limit = 3)
+training_results = SDDP.train(model; iteration_limit = 3)
 
-println("Termination status is: ", Kokako.termination_status(training_results))
+println("Termination status is: ", SDDP.termination_status(training_results))
 
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
-                        Kokako - © Oscar Dowson, 2018-19.
+                        SDDP - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
@@ -232,14 +232,14 @@ Termination status is: iteration_limit
 ## Simulating the policy
 
 Once you have a trained policy, you can simulate it using
-[`Kokako.simulate`](@ref). The return value from `simulate` is a
-vector with one element for each replication. Each element is itself a vector,
-with one element for each stage. Each element, corresponding to a particular
-stage in a particular replication, is a dictionary that records information
-from the simulation.
+[`SDDP.simulate`](@ref). The return value from `simulate` is a vector with one
+element for each replication. Each element is itself a vector, with one element
+for each stage. Each element, corresponding to a particular stage in a
+particular replication, is a dictionary that records information from the
+simulation.
 
 ```jldoctest tutorial_one
-simulations = Kokako.simulate(
+simulations = SDDP.simulate(
     # The trained model to simulate.
     model,
     # The number of replications.
@@ -288,6 +288,6 @@ thermal generation and 0 MWh of hydro generation. In the second stage, use 100
 MWh of thermal and 50 Wh of hydro. In the third and final stage, use 0 MWh of
 thermal and 150 MWh of  hydro.
 
-This concludes our first very simple tutorial for `Kokako.jl`. In the next
-tutorial, [Basics II: adding uncertainty](@ref), we will extend this problem
-by adding uncertainty.
+This concludes our first very simple tutorial for `SDDP.jl`. In the next
+tutorial, [Basics II: adding uncertainty](@ref), we will extend this problem by
+adding uncertainty.

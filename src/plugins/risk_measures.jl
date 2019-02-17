@@ -95,15 +95,15 @@ Create a weighted combination of risk measures.
 
 ### Examples
 
-    Kokako.ConvexCombination(
-        (0.5, Kokako.Expectation()),
-        (0.5, Kokako.AVaR(0.25))
+    SDDP.ConvexCombination(
+        (0.5, SDDP.Expectation()),
+        (0.5, SDDP.AVaR(0.25))
     )
 
 Convex combinations can also be constructed by adding weighted risk measures
 together as follows:
 
-    0.5 * Kokako.Expectation() + 0.5 * Kokako.AVaR(0.5)
+    0.5 * SDDP.Expectation() + 0.5 * SDDP.AVaR(0.5)
 """
 struct ConvexCombination{T<:Tuple} <: AbstractRiskMeasure
     measures::T

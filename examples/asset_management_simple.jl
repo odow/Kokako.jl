@@ -11,24 +11,24 @@ The Asset Management problem taken from
     Springer New York, New York, NY, 2011
 =#
 
-using Kokako, GLPK, Test
+using SDDP, GLPK, Test
 
 function asset_management_simple()
-    model = Kokako.PolicyGraph(
-        Kokako.MarkovianGraph(Array{Float64, 2}[
+    model = SDDP.PolicyGraph(
+        SDDP.MarkovianGraph(Array{Float64, 2}[
             [1.0]',
             [0.5 0.5],
             [0.5 0.5; 0.5 0.5],
             [0.5 0.5; 0.5 0.5]
         ]),
-        bellman_function = Kokako.AverageCut(lower_bound = -1_000.0),
+        bellman_function = SDDP.AverageCut(lower_bound = -1_000.0),
         optimizer = with_optimizer(GLPK.Optimizer)
             ) do subproblem, index
         (stage, markov_state) = index
         rstock = [1.25, 1.06]
         rbonds = [1.14, 1.12]
-        @variable(subproblem, stocks >= 0, Kokako.State, initial_value = 0.0)
-        @variable(subproblem, bonds >= 0, Kokako.State, initial_value = 0.0)
+        @variable(subproblem, stocks >= 0, SDDP.State, initial_value = 0.0)
+        @variable(subproblem, bonds >= 0, SDDP.State, initial_value = 0.0)
         if stage == 1
             @constraint(subproblem, stocks.out + bonds.out == 55)
             @stageobjective(subproblem, 0)
@@ -44,9 +44,9 @@ function asset_management_simple()
             @stageobjective(subproblem, -over + 4*short)
         end
     end
-    train_results = Kokako.train(model, iteration_limit = 25, print_level = 0)
-    @test Kokako.termination_status(train_results) == :iteration_limit
-    @test Kokako.calculate_bound(model) ≈ 1.514 atol = 1e-4
+    train_results = SDDP.train(model, iteration_limit = 25, print_level = 0)
+    @test SDDP.termination_status(train_results) == :iteration_limit
+    @test SDDP.calculate_bound(model) ≈ 1.514 atol = 1e-4
 end
 
 asset_management_simple()
