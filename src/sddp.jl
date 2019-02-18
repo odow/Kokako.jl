@@ -673,6 +673,9 @@ function _simulate(graph::PolicyGraph,
             :bellman_term => objective - stage_objective,
             :objective_state => objective_state_vector
         )
+        if objective_state_vector !== nothing && N == 1
+            store[:objective_state] = store[:objective_state][1]
+        end
         # Loop through the primal variable values that the user wants.
         for variable in variables
             if haskey(node.subproblem.obj_dict, variable)

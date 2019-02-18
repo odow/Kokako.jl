@@ -559,25 +559,33 @@ end
 """
     add_objective_state(update::Function, subproblem::JuMP.Model; kwargs...)
 
-Add an objective state variable to `subproblem`. Required `kwargs` are:
+Add an objective state variable to `subproblem`.
+
+Required `kwargs` are:
+
  - `initial_value`: The initial value of the objective state variable at the
     root node.
+ - `lipschitz`: The lipschitz constant of the objective state variable.
+
+Setting a tight value for the lipschitz constant can significantly improve the
+speed of convergence.
+
+Optional `kwargs` are:
+
  - `lower_bound`: A valid lower bound for the objective state variable. Can be
     `-Inf`.
  - `upper_bound`: A valid upper bound for the objective state variable. Can be
     `+Inf`.
- - `lipschitz`: The lipschitz constant of the objective state variable.
 
-If the objective state is one-dimensional, each keyword argument can either be a
-`Float64` or a tuple with length 1. For example `initial_value = 0.0` or
-`initial_value = (0.0,)`.
+Setting tight values for these optional variables can significantly improve the
+speed of convergence.
 
 If the objective state is `N`-dimensional, each keyword argument must be an
 `NTuple{N, Float64}`. For example, `initial_value = (0.0, 1.0)`.
 """
 function add_objective_state(
         update::Function, subproblem::JuMP.Model;
-        initial_value, lower_bound, upper_bound, lipschitz)
+        initial_value, lipschitz, lower_bound = -Inf, upper_bound = Inf)
     return add_objective_state(update, subproblem, initial_value, lower_bound,
         upper_bound, lipschitz)
 end
