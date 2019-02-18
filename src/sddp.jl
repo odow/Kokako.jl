@@ -258,7 +258,11 @@ end
 # and `noise`.
 update_objective_state(obj_state::Nothing, current_state, noise) = nothing
 function update_objective_state(obj_state, current_state, noise)
-    obj_state.state = obj_state.update(current_state, noise)
+    if length(current_state) == 1
+        obj_state.state = (obj_state.update(current_state[1], noise),)
+    else
+        obj_state.state = obj_state.update(current_state, noise)
+    end
     return obj_state.state
 end
 
@@ -287,8 +291,8 @@ function forward_pass(graph::PolicyGraph{T}, options::Options) where T
     for (node_index, noise) in scenario_path
         node = graph[node_index]
         # Objective state interpolation.
-        objective_state_vector = update_objective_state(node.objective_state,
-            objective_state_vector, noise)
+        objective_state_vector = update_objective_state(
+            node.objective_state, objective_state_vector, noise)
         if objective_state_vector !== nothing
             push!(objective_states, objective_state_vector)
         end
