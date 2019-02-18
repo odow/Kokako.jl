@@ -64,7 +64,7 @@ julia> Kokako.simulate(model, 1);
 [`JuMP.set_coefficient`](http://www.juliaopt.org/JuMP.jl/v0.19/constraints/#JuMP.set_coefficient)
 function.
 
-```jldoctest; filter=r" \: [\d\.]*\s?x"
+```jldoctest; filter=r" \: .+?1.0"
 julia> model = Kokako.LinearPolicyGraph(
                stages=3, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)
                ) do subproblem, t
