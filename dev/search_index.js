@@ -337,11 +337,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "tutorial/06_warnings/#Solver-choice-1",
+    "location": "tutorial/06_warnings/#Solver-specific-options-1",
     "page": "Basics VI: words of warning",
-    "title": "Solver choice",
+    "title": "Solver-specific options",
     "category": "section",
-    "text": "If you still run into issues after re-scaling your problem, the next thing to consider is solver choice. We highly recommend using a commercial solver such as CPLEX, Gurobi, or Xpress. If you have a particularly troublesome model, you should investigate setting solver-specific options to improve the numerical stability of each solver. For example, Gurobi has a NumericFocus option."
+    "text": "If you have a particularly troublesome model, you should investigate setting solver-specific options to improve the numerical stability of each solver. For example, Gurobi has a NumericFocus option."
 },
 
 {
@@ -485,7 +485,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate I: risk",
     "title": "Training a risk-averse model",
     "category": "section",
-    "text": "Now that we know what risk measures Kokako.jl supports, lets see how to train a policy using them. There are three possible ways.If the same risk measure is used at every node in the policy graph, we can just pass an instance of one of the risk measures to the risk_measure keyword argument of the Kokako.train function.Kokako.train(\n    model,\n    risk_measure = Kokako.WorstCase(),\n    iteration_limit = 10\n)However, if you want different risk measures at different nodes, there are two options. First, you can pass risk_measure a dictionary of risk measures, with one entry for each node. The keys of the dictionary are the indices of the nodes.Kokako.train(\n    model,\n    risk_measure = Dict(\n        1 => Kokako.Expectation(),\n        2 => Kokako.WorstCase()\n    ),\n    iteration_limit = 10\n)An alternative method is to pass risk_measure a function that takes one argument, the index of a node, and returns an instance of a risk measure:Kokako.train(\n    model,\n    risk_measure = (node_index) -> begin\n        if node_index == 1\n            return Kokako.Expectation()\n        else\n            return Kokako.WorstCase()\n        end\n    end,\n    iteration_limit = 10\n)note: Note\nIf you simulate the policy, the simulated value is the risk-neutral value of the policy.This concludes our first intermediate tutorial.DocTestSetup = nothing"
+    "text": "Now that we know what risk measures Kokako.jl supports, lets see how to train a policy using them. There are three possible ways.If the same risk measure is used at every node in the policy graph, we can just pass an instance of one of the risk measures to the risk_measure keyword argument of the Kokako.train function.Kokako.train(\n    model,\n    risk_measure = Kokako.WorstCase(),\n    iteration_limit = 10\n)However, if you want different risk measures at different nodes, there are two options. First, you can pass risk_measure a dictionary of risk measures, with one entry for each node. The keys of the dictionary are the indices of the nodes.Kokako.train(\n    model,\n    risk_measure = Dict(\n        1 => Kokako.Expectation(),\n        2 => Kokako.WorstCase()\n    ),\n    iteration_limit = 10\n)An alternative method is to pass risk_measure a function that takes one argument, the index of a node, and returns an instance of a risk measure:Kokako.train(\n    model,\n    risk_measure = (node_index) -> begin\n        if node_index == 1\n            return Kokako.Expectation()\n        else\n            return Kokako.WorstCase()\n        end\n    end,\n    iteration_limit = 10\n)note: Note\nIf you simulate the policy, the simulated value is the risk-neutral value of the policy.This concludes our first intermediate tutorial. In the next tutorial, Intermediate II: stopping rules, we discuss different ways that the training can be terminated.DocTestSetup = nothing"
 },
 
 {
@@ -549,7 +549,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate II: stopping rules",
     "title": "Stopping rules",
     "category": "section",
-    "text": "In addition to the limits provided as keyword arguments, a variety of other stopping rules are available. These can be passed to Kokako.train as a vector to the stopping_rules keyword. For example:Kokako.train(model, stopping_rules = [Kokako.BoundStalling(10, 1e-4)])Here are the stopping rules implemented in Kokako.jl:Kokako.IterationLimit\nKokako.TimeLimit\nKokako.Statistical\nKokako.BoundStalling"
+    "text": "In addition to the limits provided as keyword arguments, a variety of other stopping rules are available. These can be passed to Kokako.train as a vector to the stopping_rules keyword. For example:Kokako.train(model, stopping_rules = [Kokako.BoundStalling(10, 1e-4)])Here are the stopping rules implemented in Kokako.jl:Kokako.IterationLimit\nKokako.TimeLimit\nKokako.Statistical\nKokako.BoundStallingIn the next tutorial, Intermediate III: policy graphs, we discuss generic extensions to Kokako.LinearPolicyGraph and Kokako.MarkovianPolicyGraph."
 },
 
 {
@@ -565,23 +565,47 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate III: policy graphs",
     "title": "Intermediate III: policy graphs",
     "category": "section",
-    "text": ""
+    "text": "In the next tutorial, Intermediate IV: objective states, we discuss how to model problems with stagewise-dependent objective uncertainty."
 },
 
 {
-    "location": "tutorial/14_price_interpolation/#",
-    "page": "Intermediate IV: price interpolation",
-    "title": "Intermediate IV: price interpolation",
+    "location": "tutorial/14_objective_states/#",
+    "page": "Intermediate IV: objective states",
+    "title": "Intermediate IV: objective states",
     "category": "page",
     "text": ""
 },
 
 {
-    "location": "tutorial/14_price_interpolation/#Intermediate-IV:-price-interpolation-1",
-    "page": "Intermediate IV: price interpolation",
-    "title": "Intermediate IV: price interpolation",
+    "location": "tutorial/14_objective_states/#Intermediate-IV:-objective-states-1",
+    "page": "Intermediate IV: objective states",
+    "title": "Intermediate IV: objective states",
     "category": "section",
-    "text": ""
+    "text": "There are many applications in which we want to model a price process that follows some auto-regressive process. Common examples include stock prices on financial exchanges and spot-prices in energy markets.However, it is well known that these cannot be incorporated in to SDDP because they result in cost-to-go functions that are convex with respect to some state variables (e.g., the reservoir levels) and concave with respect to other state variables (e.g., the spot price in the current stage).To overcome this problem, the approach in the literature has been to discretize the price process in order to model it using a Markovian policy graph like those discussed in Basics IV: Markov uncertainty.However, recent work offers a way to include stagewise-dependent objective uncertainty into the objective function of SDDP subproblems. Readers are directed to the following works for an introduction:Downward, A., Dowson, O., and Baucke, R. (2017). Stochastic dual dynamic programming with stagewise dependent objective uncertainty. Optimization Online. link\nDowson, O. PhD Thesis. University of Auckland, 2018. linkThe method discussed in the above works introduces the concept of an objective state into SDDP. Unlike normal state variables in SDDP (e.g., the volume of water in the reservoir), the cost-to-go function is concave with respect to the objective states. Thus, the method builds an outer approximation of the cost-to-go function in the normal state-space, and an inner approximation of the cost-to-go function in the objective state-space.warn: Warn\nSupport for objective states in SDDP.jl is experimental. Models are considerably more computational intensive, the interface is less user-friendly, and there are subtle gotchas to be aware of. Only use this if you have read and understood the theory behind the method."
+},
+
+{
+    "location": "tutorial/14_objective_states/#One-dimensional-objective-states-1",
+    "page": "Intermediate IV: objective states",
+    "title": "One-dimensional objective states",
+    "category": "section",
+    "text": "Let\'s assume that the fuel cost is not fixed, but instead evolves according to a multiplicative auto-regressive process: fuel_cost[t] = ω * fuel_cost[t-1], where ω is drawn from the sample space [0.75, 0.9, 1.1, 1.25] with equal probability.An objective state can be added to a subproblem using the Kokako.add_objective_state function. This can only be called once per subproblem. If you want to add a multi-dimensional objective state, read Multi-dimensional objective states. Kokako.add_objective_state takes a number of keyword arguments. The two required ones areinitial_value: the value of the objective state at the root node of the policy graph (i.e., identical to the initial_value when defining normal state variables.\nlipschitz: the Lipschitz constant of the cost-to-go function with respect to the objective state. In other words, this value is the maximum change in the cost-to-go function at any point in the state space, given a one-unit change in the objective state.There are also two optional keyword arguments: lower_bound and upper_bound, which give SDDP.jl hints (importantly, not constraints) about the domain of the objective state. Setting these bounds appropriately can improve the speed of convergence.Finally, Kokako.add_objective_state requires an update function. This function takes two arguments. The first is the incoming value of the objective state, and the second is the realization of the stagewise-independent noise term (set using Kokako.parameterize). The function should return the value of the objective state to be used in the current subproblem.This connection with the stagewise-independent noise term means that Kokako.parameterize must be called in a subproblem that defines an objective state. Inside Kokako.parameterize, the value of the objective state to be used in the current subproblem (i.e., after the update function), can be queried using Kokako.objective_state.Here is the full model with the objective state.using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3, sense = :Min, lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        demand_constraint, thermal_generation + hydro_generation == 150.0\n    end)\n\n    ###\n    ### Add an objective state. ω will be the same value that is called in\n    ### `Kokako.parameterize`.\n    ###\n\n    Kokako.add_objective_state(\n            subproblem, initial_value = 50.0, lipschitz = 10_000.0,\n            lower_bound = 50.0, upper_bound = 150.0) do fuel_cost, ω\n        return ω.fuel * fuel_cost\n    end\n\n    ###\n    ### Create the cartesian product of a multi-dimensional random variable.\n    ###\n\n    Ω = [\n        (fuel = f, inflow = w)\n        for f in [0.75, 0.9, 1.1, 1.25] for w in [0.0, 50.0, 100.0]\n    ]\n\n    Kokako.parameterize(subproblem, Ω) do ω\n        ###\n        ### Query the current fuel cost.\n        ###\n\n        fuel_cost = Kokako.objective_state(subproblem)\n\n        @stageobjective(subproblem, fuel_cost * thermal_generation)\n        JuMP.fix(inflow, ω.inflow)\n    end\nend\n\n# output\n\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3After creating our model, we can train and simulate as usual.Kokako.train(model, iteration_limit = 10)\n\nsimulations = Kokako.simulate(model, 1)\n\nprint(\"Finished training and simulating.\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     7.031K |     4.018K |     0.029\n         2 |     0.000  |     4.557K |     0.031\n         3 |     4.171K |     4.573K |     0.034\n         4 |     7.148K |     4.573K |     0.036\n         5 |     0.000  |     4.573K |     0.038\n         6 |     1.822K |     4.573K |     0.041\n         7 |     2.109K |     4.573K |     0.043\n         8 |     7.481K |     4.573K |     0.045\n         9 |     5.231K |     4.573K |     0.048\n        10 |     6.300K |     4.573K |     0.050\nFinished training and simulating.To demonstrate how the objective states are updated, consider the sequence of noise observations:julia> [stage[:noise_term] for stage in simulations[1]]\n3-element Array{NamedTuple{(:fuel, :inflow),Tuple{Float64,Float64}},1}:\n (fuel = 0.75, inflow = 0.0)\n (fuel = 0.9, inflow = 50.0)\n (fuel = 1.25, inflow = 50.0)This, the fuel cost in the first stage should be 0.75 * 50 = 37.5. The fuel cost in the second stage should be 0.9 * 37.5 = 33.75. The fuel cost in the third stage should be 1.25 * 33.75 = 42.1875.To confirm this, the values of the objective state in a simulation can be queried using the :objective_state key.julia> [stage[:objective_state] for stage in simulations[1]]\n3-element Array{Float64,1}:\n 37.5\n 33.75\n 42.1875"
+},
+
+{
+    "location": "tutorial/14_objective_states/#Multi-dimensional-objective-states-1",
+    "page": "Intermediate IV: objective states",
+    "title": "Multi-dimensional objective states",
+    "category": "section",
+    "text": "You can construct multi-dimensional price processes using NTuples. Just replace every scalar value associated with the objective state by a tuple. For example, initial_value = 1.0 becomes initial_value = (1.0, 2.0).Here is an example:model = Kokako.LinearPolicyGraph(\n            stages = 3, sense = :Min, lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        demand_constraint, thermal_generation + hydro_generation == 150.0\n    end)\n\n    Kokako.add_objective_state(\n            subproblem, initial_value = (50.0, 50.0),\n            lipschitz = (10_000.0, 10_000.0), lower_bound = (50.0, 50.0),\n            upper_bound = (150.0, 150.0)) do fuel_cost, ω\n        fuel_cost′ = fuel_cost[1] + 0.5 * (fuel_cost[1] - fuel_cost[2]) + ω.fuel\n        return (fuel_cost′, fuel_cost[1])\n    end\n\n    Ω = [\n        (fuel = f, inflow = w)\n        for f in [-10.0, -5.0, 5.0, 10.0] for w in [0.0, 50.0, 100.0]\n    ]\n\n    Kokako.parameterize(subproblem, Ω) do ω\n        (fuel_cost, fuel_cost_old) = Kokako.objective_state(subproblem)\n        @stageobjective(subproblem, fuel_cost * thermal_generation)\n        JuMP.fix(inflow, ω.inflow)\n    end\nend\n\nKokako.train(model, iteration_limit = 10)\n\nsimulations = Kokako.simulate(model, 1)\n\nprint(\"Finished training and simulating.\")\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |     7.031K |     4.018K |     0.029\n         2 |     0.000  |     4.557K |     0.031\n         3 |     4.171K |     4.573K |     0.034\n         4 |     7.148K |     4.573K |     0.036\n         5 |     0.000  |     4.573K |     0.038\n         6 |     1.822K |     4.573K |     0.041\n         7 |     2.109K |     4.573K |     0.043\n         8 |     7.481K |     4.573K |     0.045\n         9 |     5.231K |     4.573K |     0.048\n        10 |     6.300K |     4.573K |     0.050\nFinished training and simulating.This time, since our objective state is two-dimensional, the objective states are tuples with two elements:julia> [stage[:objective_state] for stage in simulations[1]]\n3-element Array{Tuple{Float64,Float64},1}:\n (55.0, 50.0)\n (52.5, 55.0)\n (56.25, 52.5)"
+},
+
+{
+    "location": "tutorial/14_objective_states/#objective_state_warnings-1",
+    "page": "Intermediate IV: objective states",
+    "title": "Warnings",
+    "category": "section",
+    "text": "There are number of things to be aware of when using objective states.The key assumption is that price is independent of the states and actions in  the model.\nThat means that the price cannot appear in any @constraints. Nor can you  use any @variables in the update function.\nChoosing an appropriate Lipschitz constant is difficult.\nThe points discussed in Choosing an initial bound are relevant. The  Lipschitz constant should not be chosen as large as possible (since this  will help with convergence and the numerical issues discussed above), but if  chosen to small, it may cut of the feasible region and lead to a sub-optimal  solution.\nYou need to ensure that the cost-to-go function is concave with respect to  the objective state before the update.\nV(x y) = minY(y) x  Ax ge b\nIf the update function is linear, this is always the case. In some  situations, the update function can be nonlinear (e.g., multiplicative as we  have above). In general, placing constraints on the price (e.g.,  clamp(price, 0, 1)) will destroy concavity. Caveat  emptor. It\'s up to you if this  is a problem. If it isn\'t you\'ll get a good heuristic with no guarantee of  global optimality.In the next tutorial, Intermediate V: performance, we discuss how to improve the computational performance of SDDP.jl models."
 },
 
 {
@@ -681,11 +705,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "apireference/#Kokako.add_objective_state",
+    "page": "Reference",
+    "title": "Kokako.add_objective_state",
+    "category": "function",
+    "text": "add_objective_state(update::Function, subproblem::JuMP.Model; kwargs...)\n\nAdd an objective state variable to subproblem.\n\nRequired kwargs are:\n\ninitial_value: The initial value of the objective state variable at the  root node.\nlipschitz: The lipschitz constant of the objective state variable.\n\nSetting a tight value for the lipschitz constant can significantly improve the speed of convergence.\n\nOptional kwargs are:\n\nlower_bound: A valid lower bound for the objective state variable. Can be  -Inf.\nupper_bound: A valid upper bound for the objective state variable. Can be  +Inf.\n\nSetting tight values for these optional variables can significantly improve the speed of convergence.\n\nIf the objective state is N-dimensional, each keyword argument must be an NTuple{N, Float64}. For example, initial_value = (0.0, 1.0).\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.objective_state",
+    "page": "Reference",
+    "title": "Kokako.objective_state",
+    "category": "function",
+    "text": "objective_state(subproblem::JuMP.Model)\n\n\n\n\n\n"
+},
+
+{
     "location": "apireference/#Subproblem-definition-1",
     "page": "Reference",
     "title": "Subproblem definition",
     "category": "section",
-    "text": "@stageobjective\nKokako.parameterize"
+    "text": "@stageobjective\nKokako.parameterize\nKokako.add_objective_state\nKokako.objective_state"
 },
 
 {
