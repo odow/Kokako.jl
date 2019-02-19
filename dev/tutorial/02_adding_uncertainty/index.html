@@ -34,12 +34,7 @@ end
 # output
 
 A policy graph with 3 nodes.
- Node indices: 1, 2, 3</code></pre><p>Note how we use the JuMP function <code>JuMP.fix</code> to set the value of the <code>inflow</code> variable to <code>ω</code>.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p><a href="../../apireference/#Kokako.parameterize"><code>Kokako.parameterize</code></a> can only be called once in each subproblem definition!</p></div></div><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in <a href="../01_first_steps/#Basic-I:-first-steps-1">Basic I: first steps</a>, we train the policy:</p><pre><code class="language-julia">training_results = Kokako.train(model; iteration_limit = 10)
-
-println(&quot;Termination status is: &quot;, Kokako.termination_status(training_results))
-
-# output
-
+ Node indices: 1, 2, 3</code></pre><p>Note how we use the JuMP function <a href="http://www.juliaopt.org/JuMP.jl/v0.19/variables/#JuMP.fix"><code>JuMP.fix</code></a> to set the value of the <code>inflow</code> variable to <code>ω</code>.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p><a href="../../apireference/#Kokako.parameterize"><code>Kokako.parameterize</code></a> can only be called once in each subproblem definition!</p></div></div><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in <a href="../01_first_steps/#Basic-I:-first-steps-1">Basic I: first steps</a>, we train the policy:</p><pre><code class="language-julia-repl">julia&gt; Kokako.train(model; iteration_limit = 10);
 ———————————————————————————————————————————————————————————————————————————————
                         Kokako - © Oscar Dowson, 2018-19.
 ———————————————————————————————————————————————————————————————————————————————
@@ -54,36 +49,31 @@ println(&quot;Termination status is: &quot;, Kokako.termination_status(training_
          7 |     5.000K |     8.333K |     0.013
          8 |    12.500K |     8.333K |     0.014
          9 |     7.500K |     8.333K |     0.014
-        10 |     5.000K |     8.333K |     0.016
-Termination status is: iteration_limit</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Since SDDP is a stochastic algorithm, you might get slightly different numerical results.</p></div></div><p>We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.</p><p>In addition to the confidence interval, we can calculate the lower bound using <a href="../../apireference/#Kokako.calculate_bound"><code>Kokako.calculate_bound</code></a>.</p><pre><code class="language-julia">simulations = Kokako.simulate(model, 500)
+        10 |     5.000K |     8.333K |     0.016</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Since SDDP is a stochastic algorithm, you might get slightly different numerical results.</p></div></div><p>We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.</p><p>In addition to the confidence interval, we can calculate the lower bound using <a href="../../apireference/#Kokako.calculate_bound"><code>Kokako.calculate_bound</code></a>.</p><pre><code class="language-julia-repl">julia&gt; simulations = Kokako.simulate(model, 500);
 
-objective_values = [
-    sum(stage[:stage_objective] for stage in sim) for sim in simulations
-]
+julia&gt; objective_values = [
+           sum(stage[:stage_objective] for stage in sim) for sim in simulations
+       ];
 
-using Statistics
+julia&gt; using Statistics
 
-μ = round(mean(objective_values), digits = 2)
-ci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)
+julia&gt; μ = round(mean(objective_values), digits = 2);
 
-println(&quot;Confidence interval: &quot;, μ, &quot; ± &quot;, ci)
-println(&quot;Lower bound: &quot;, round(Kokako.calculate_bound(model), digits = 2))
+julia&gt; ci = round(1.96 * std(objective_values) / sqrt(500), digits = 2);
 
-# output
-
+julia&gt; println(&quot;Confidence interval: &quot;, μ, &quot; ± &quot;, ci)
 Confidence interval: 8400.00 ± 409.34
-Lower bound: 8333.33</code></pre><p>In addition to simulating the primal values of variables, we can also pass <code>Kokako.jl</code> custom recorder functions. Each of these functions takes one argument, the JuMP subproblem, and returns anything you can compute. For example, the dual of the demand constraint (which we named <code>demand_constraint</code>) corresponds to the price we should charge for electricity, since it represents the cost of each additional unit of demand. To calculate this, we can go</p><pre><code class="language-julia">simulations = Kokako.simulate(
-    model,
-    1,
-    custom_recorders = Dict{Symbol, Function}(
-        :price =&gt; (sp) -&gt; JuMP.dual(sp[:demand_constraint])
-    )
-)
 
-electricity_price = [stage[:price] for stage in simulations[1]]
+julia&gt; println(&quot;Lower bound: &quot;, round(Kokako.calculate_bound(model), digits = 2))
+Lower bound: 8333.33</code></pre><p>In addition to simulating the primal values of variables, we can also pass <code>Kokako.jl</code> custom recorder functions. Each of these functions takes one argument, the JuMP subproblem, and returns anything you can compute. For example, the dual of the demand constraint (which we named <code>demand_constraint</code>) corresponds to the price we should charge for electricity, since it represents the cost of each additional unit of demand. To calculate this, we can go</p><pre><code class="language-julia-repl">julia&gt; simulations = Kokako.simulate(
+           model,
+           1,
+           custom_recorders = Dict{Symbol, Function}(
+               :price =&gt; (sp) -&gt; JuMP.dual(sp[:demand_constraint])
+           )
+       );
 
-# output
-
+julia&gt; [stage[:price] for stage in simulations[1]]
 3-element Array{Float64,1}:
   50.0
  100.0

@@ -55,7 +55,7 @@ end
 # output
 
 A policy graph with 5 nodes.
- Node indices: (1, 1), (2, 1), (2, 2), (3, 1), (3, 2)</code></pre><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in the previous three tutorials, we train the policy:</p><pre><code class="language-julia">training_results = Kokako.train(model; iteration_limit = 10)
+ Node indices: (1, 1), (2, 1), (2, 2), (3, 1), (3, 2)</code></pre><div class="admonition info"><div class="admonition-title">Info</div><div class="admonition-text"><p>For more information on <a href="../../apireference/#Kokako.MarkovianPolicyGraph"><code>Kokako.MarkovianPolicyGraph</code></a>s, read <a href="../13_generic_graphs/#Intermediate-III:-policy-graphs-1">Intermediate III: policy graphs</a>.</p></div></div><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in the previous three tutorials, we train the policy:</p><pre><code class="language-julia">training_results = Kokako.train(model; iteration_limit = 10)
 
 println(&quot;Termination status is: &quot;, Kokako.termination_status(training_results))
 

@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basic I: first steps",
     "title": "Creating a Kokako model",
     "category": "section",
-    "text": "using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    # Define the objective for each stage `t`. Note that we can use `t` as an\n    # index for t = 1, 2, 3.\n    fuel_cost = [50.0, 100.0, 150.0]\n    @stageobjective(subproblem, fuel_cost[t] * thermal_generation)\nend\n\n# output\n\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3Wasn\'t that easy! Let\'s walk through some of the non-obvious features."
+    "text": "using Kokako, GLPK\n\nmodel = Kokako.LinearPolicyGraph(\n            stages = 3,\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    # Define the objective for each stage `t`. Note that we can use `t` as an\n    # index for t = 1, 2, 3.\n    fuel_cost = [50.0, 100.0, 150.0]\n    @stageobjective(subproblem, fuel_cost[t] * thermal_generation)\nend\n\n# output\n\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3Wasn\'t that easy! Let\'s walk through some of the non-obvious features.info: Info\nFor more information on Kokako.LinearPolicyGraphs, read Intermediate III: policy graphs."
 },
 
 {
@@ -189,7 +189,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basic II: adding uncertainty",
     "title": "Training and simulating the policy",
     "category": "section",
-    "text": "As in Basic I: first steps, we train the policy:training_results = Kokako.train(model; iteration_limit = 10)\n\nprintln(\"Termination status is: \", Kokako.termination_status(training_results))\n\n# output\n\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |    12.500K |     5.000K |     0.007\n         2 |    12.500K |     8.333K |     0.007\n         3 |    12.500K |     8.333K |     0.008\n         4 |    12.500K |     8.333K |     0.009\n         5 |     2.500K |     8.333K |     0.011\n         6 |     5.000K |     8.333K |     0.012\n         7 |     5.000K |     8.333K |     0.013\n         8 |    12.500K |     8.333K |     0.014\n         9 |     7.500K |     8.333K |     0.014\n        10 |     5.000K |     8.333K |     0.016\nTermination status is: iteration_limitnote: Note\nSince SDDP is a stochastic algorithm, you might get slightly different numerical results.We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.In addition to the confidence interval, we can calculate the lower bound using Kokako.calculate_bound.simulations = Kokako.simulate(model, 500)\n\nobjective_values = [\n    sum(stage[:stage_objective] for stage in sim) for sim in simulations\n]\n\nusing Statistics\n\nμ = round(mean(objective_values), digits = 2)\nci = round(1.96 * std(objective_values) / sqrt(500), digits = 2)\n\nprintln(\"Confidence interval: \", μ, \" ± \", ci)\nprintln(\"Lower bound: \", round(Kokako.calculate_bound(model), digits = 2))\n\n# output\n\nConfidence interval: 8400.00 ± 409.34\nLower bound: 8333.33In addition to simulating the primal values of variables, we can also pass Kokako.jl custom recorder functions. Each of these functions takes one argument, the JuMP subproblem, and returns anything you can compute. For example, the dual of the demand constraint (which we named demand_constraint) corresponds to the price we should charge for electricity, since it represents the cost of each additional unit of demand. To calculate this, we can gosimulations = Kokako.simulate(\n    model,\n    1,\n    custom_recorders = Dict{Symbol, Function}(\n        :price => (sp) -> JuMP.dual(sp[:demand_constraint])\n    )\n)\n\nelectricity_price = [stage[:price] for stage in simulations[1]]\n\n# output\n\n3-element Array{Float64,1}:\n  50.0\n 100.0\n  -0.0This concludes our second tutorial for Kokako.jl. In the next tutorial, Basic III: objective uncertainty, we extend the uncertainty to the fuel cost."
+    "text": "As in Basic I: first steps, we train the policy:julia> Kokako.train(model; iteration_limit = 10);\n———————————————————————————————————————————————————————————————————————————————\n                        Kokako - © Oscar Dowson, 2018-19.\n———————————————————————————————————————————————————————————————————————————————\n Iteration | Simulation |      Bound |   Time (s)\n———————————————————————————————————————————————————————————————————————————————\n         1 |    12.500K |     5.000K |     0.007\n         2 |    12.500K |     8.333K |     0.007\n         3 |    12.500K |     8.333K |     0.008\n         4 |    12.500K |     8.333K |     0.009\n         5 |     2.500K |     8.333K |     0.011\n         6 |     5.000K |     8.333K |     0.012\n         7 |     5.000K |     8.333K |     0.013\n         8 |    12.500K |     8.333K |     0.014\n         9 |     7.500K |     8.333K |     0.014\n        10 |     5.000K |     8.333K |     0.016note: Note\nSince SDDP is a stochastic algorithm, you might get slightly different numerical results.We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.In addition to the confidence interval, we can calculate the lower bound using Kokako.calculate_bound.julia> simulations = Kokako.simulate(model, 500);\n\njulia> objective_values = [\n           sum(stage[:stage_objective] for stage in sim) for sim in simulations\n       ];\n\njulia> using Statistics\n\njulia> μ = round(mean(objective_values), digits = 2);\n\njulia> ci = round(1.96 * std(objective_values) / sqrt(500), digits = 2);\n\njulia> println(\"Confidence interval: \", μ, \" ± \", ci)\nConfidence interval: 8400.00 ± 409.34\n\njulia> println(\"Lower bound: \", round(Kokako.calculate_bound(model), digits = 2))\nLower bound: 8333.33In addition to simulating the primal values of variables, we can also pass Kokako.jl custom recorder functions. Each of these functions takes one argument, the JuMP subproblem, and returns anything you can compute. For example, the dual of the demand constraint (which we named demand_constraint) corresponds to the price we should charge for electricity, since it represents the cost of each additional unit of demand. To calculate this, we can gojulia> simulations = Kokako.simulate(\n           model,\n           1,\n           custom_recorders = Dict{Symbol, Function}(\n               :price => (sp) -> JuMP.dual(sp[:demand_constraint])\n           )\n       );\n\njulia> [stage[:price] for stage in simulations[1]]\n3-element Array{Float64,1}:\n  50.0\n 100.0\n  -0.0This concludes our second tutorial for Kokako.jl. In the next tutorial, Basic III: objective uncertainty, we extend the uncertainty to the fuel cost."
 },
 
 {
@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basic IV: Markov uncertainty",
     "title": "Creating a Kokako model",
     "category": "section",
-    "text": "using Kokako, GLPK\n\nΩ = [\n    (inflow = 0.0, fuel_multiplier = 1.5),\n    (inflow = 50.0, fuel_multiplier = 1.0),\n    (inflow = 100.0, fuel_multiplier = 0.75)\n]\n\nmodel = Kokako.MarkovianPolicyGraph(\n            transition_matrices = Array{Float64, 2}[\n                [ 1.0 ]\',\n                [ 0.75 0.25 ],\n                [ 0.75 0.25 ; 0.25 0.75 ]\n            ],\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, node\n    # Unpack the stage and Markov index.\n    t, markov_state = node\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    # Note how we can use `markov_state` to dispatch an `if` statement.\n    probability = if markov_state == 1  # wet climate state\n        [1/6, 1/3, 1/2]\n    else  # dry climate state\n        [1/2, 1/3, 1/6]\n    end\n\n    fuel_cost = [50.0, 100.0, 150.0]\n    Kokako.parameterize(subproblem, Ω, probability) do ω\n        JuMP.fix(inflow, ω.inflow)\n        @stageobjective(subproblem,\n            ω.fuel_multiplier * fuel_cost[t] * thermal_generation)\n    end\nend\n\n# output\n\nA policy graph with 5 nodes.\n Node indices: (1, 1), (2, 1), (2, 2), (3, 1), (3, 2)"
+    "text": "using Kokako, GLPK\n\nΩ = [\n    (inflow = 0.0, fuel_multiplier = 1.5),\n    (inflow = 50.0, fuel_multiplier = 1.0),\n    (inflow = 100.0, fuel_multiplier = 0.75)\n]\n\nmodel = Kokako.MarkovianPolicyGraph(\n            transition_matrices = Array{Float64, 2}[\n                [ 1.0 ]\',\n                [ 0.75 0.25 ],\n                [ 0.75 0.25 ; 0.25 0.75 ]\n            ],\n            sense = :Min,\n            lower_bound = 0.0,\n            optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, node\n    # Unpack the stage and Markov index.\n    t, markov_state = node\n    # Define the state variable.\n    @variable(subproblem, 0 <= volume <= 200, Kokako.State, initial_value = 200)\n    # Define the control variables.\n    @variables(subproblem, begin\n        thermal_generation >= 0\n        hydro_generation   >= 0\n        hydro_spill        >= 0\n        inflow\n    end)\n    # Define the constraints\n    @constraints(subproblem, begin\n        volume.out == volume.in + inflow - hydro_generation - hydro_spill\n        thermal_generation + hydro_generation == 150.0\n    end)\n    # Note how we can use `markov_state` to dispatch an `if` statement.\n    probability = if markov_state == 1  # wet climate state\n        [1/6, 1/3, 1/2]\n    else  # dry climate state\n        [1/2, 1/3, 1/6]\n    end\n\n    fuel_cost = [50.0, 100.0, 150.0]\n    Kokako.parameterize(subproblem, Ω, probability) do ω\n        JuMP.fix(inflow, ω.inflow)\n        @stageobjective(subproblem,\n            ω.fuel_multiplier * fuel_cost[t] * thermal_generation)\n    end\nend\n\n# output\n\nA policy graph with 5 nodes.\n Node indices: (1, 1), (2, 1), (2, 2), (3, 1), (3, 2)info: Info\nFor more information on Kokako.MarkovianPolicyGraphs, read Intermediate III: policy graphs."
 },
 
 {
@@ -373,7 +373,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basic VII: modelling tips",
     "title": "Multi-dimensional state variables",
     "category": "section",
-    "text": "Just like normal JuMP variables, it is possible to create containers of state variables.Kokako.LinearPolicyGraph(\n        stages=1, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    # A scalar state variable.\n    @variable(subproblem, x >= 0, Kokako.State, initial_value = 0)\n    println(\"Lower bound of outgoing x is: \", JuMP.lower_bound(x.out))\n\n    # A vector of state variables.\n    @variable(subproblem, y[i = 1:2] >= i, Kokako.State, initial_value = i)\n    println(\"Lower bound of outgoing y[1] is: \", JuMP.lower_bound(y[1].out))\n\n    # A JuMP.Containers.DenseAxisArray of state variables.\n    @variable(subproblem,\n        z[i = 3:4, j = [:A, :B]] >= i, Kokako.State, initial_value = i)\n    println(\"Lower bound of outgoing z[3, :B] is: \", JuMP.lower_bound(z[3, :B].out))\nend\n\nnothing # hide\n\n# output\n\nLower bound of outgoing x is: 0.0\nLower bound of outgoing y[1] is: 1.0\nLower bound of outgoing z[3, :B] is: 3.0"
+    "text": "Just like normal JuMP variables, it is possible to create containers of state variables.julia> model = Kokako.LinearPolicyGraph(\n               stages=1, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)\n               ) do subproblem, t\n           # A scalar state variable.\n           @variable(subproblem, x >= 0, Kokako.State, initial_value = 0)\n           println(\"Lower bound of outgoing x is: \", JuMP.lower_bound(x.out))\n           # A vector of state variables.\n           @variable(subproblem, y[i = 1:2] >= i, Kokako.State, initial_value = i)\n           println(\"Lower bound of outgoing y[1] is: \", JuMP.lower_bound(y[1].out))\n           # A JuMP.Containers.DenseAxisArray of state variables.\n           @variable(subproblem,\n               z[i = 3:4, j = [:A, :B]] >= i, Kokako.State, initial_value = i)\n           println(\"Lower bound of outgoing z[3, :B] is: \", JuMP.lower_bound(z[3, :B].out))\n       end;\nLower bound of outgoing x is: 0.0\nLower bound of outgoing y[1] is: 1.0\nLower bound of outgoing z[3, :B] is: 3.0"
 },
 
 {
@@ -381,7 +381,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Basic VII: modelling tips",
     "title": "Multi-dimensional noise terms",
     "category": "section",
-    "text": "Multi-dimensional stagewise-independent random variables can be created by forming the Cartesian product of the random variables.model = Kokako.LinearPolicyGraph(\n        stages=3, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)\n        ) do subproblem, t\n    @variable(subproblem, x, Kokako.State, initial_value = 0.0)\n\n    support = [(value = v, coefficient = c) for v in [1, 2] for c in [3, 4, 5]]\n    probability = [pv * pc for pv in [0.5, 0.5] for pc in [0.3, 0.5, 0.2]]\n    Kokako.parameterize(subproblem, support, probability) do ω\n        JuMP.fix(x.out, ω.value)\n        @stageobjective(subproblem, ω.coefficient * x.out)\n        println(\"ω is: \", ω)\n    end\nend\n\nKokako.simulate(model, 1)\n\nnothing # hide\n\n# output\n\nω is: (value = 1, coefficient = 4)\nω is: (value = 1, coefficient = 3)\nω is: (value = 2, coefficient = 4)This concludes or series of basic introductory tutorials for Kokako.jl. When you\'re ready, continue to our intermediate series of tutorials, beginning with Intermediate I: risk."
+    "text": "Multi-dimensional stagewise-independent random variables can be created by forming the Cartesian product of the random variables.julia> model = Kokako.LinearPolicyGraph(\n               stages=3, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)\n               ) do subproblem, t\n           @variable(subproblem, x, Kokako.State, initial_value = 0.0)\n           support = [(value = v, coefficient = c) for v in [1, 2] for c in [3, 4, 5]]\n           probability = [pv * pc for pv in [0.5, 0.5] for pc in [0.3, 0.5, 0.2]]\n           Kokako.parameterize(subproblem, support, probability) do ω\n               JuMP.fix(x.out, ω.value)\n               @stageobjective(subproblem, ω.coefficient * x.out)\n               println(\"ω is: \", ω)\n           end\n       end;\n\njulia> Kokako.simulate(model, 1);\nω is: (value = 1, coefficient = 4)\nω is: (value = 1, coefficient = 3)\nω is: (value = 2, coefficient = 4)"
+},
+
+{
+    "location": "tutorial/07_advanced_modelling/#Noise-in-the-constraint-matrix-1",
+    "page": "Basic VII: modelling tips",
+    "title": "Noise in the constraint matrix",
+    "category": "section",
+    "text": "SDDP.jl supports coefficients in the constraint matrix through the JuMP.set_coefficient function.julia> model = Kokako.LinearPolicyGraph(\n               stages=3, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)\n               ) do subproblem, t\n           @variable(subproblem, x, Kokako.State, initial_value = 0.0)\n           @constraint(subproblem, emissions, 1x.out <= 1)\n           Kokako.parameterize(subproblem, [0.2, 0.5, 1.0]) do ω\n               JuMP.set_coefficient(emissions, x.out, ω)\n               println(emissions)\n           end\n           @stageobjective(subproblem, -x.out)\n       end\nA policy graph with 3 nodes.\n Node indices: 1, 2, 3\n\njulia> Kokako.simulate(model, 1);\nemissions : x_out <= 1.0\nemissions : 0.2 x_out <= 1.0\nemissions : 0.5 x_out <= 1.0note: Note\nJuMP will canonicalize constraints by moving all variables to the left-hand side. Thus, @constraint(model, 0 <= 1 - x.out) becomes x.out <= 1. JuMP.set_coefficient sets the coefficient on the canonicalized constraint.This concludes or series of basic introductory tutorials for Kokako.jl. When you\'re ready, continue to our intermediate series of tutorials, beginning with Intermediate I: risk."
 },
 
 {
@@ -597,7 +605,55 @@ var documenterSearchIndex = {"docs": [
     "page": "Intermediate III: policy graphs",
     "title": "Intermediate III: policy graphs",
     "category": "section",
-    "text": "In the next tutorial, Intermediate IV: objective states, we discuss how to model problems with stagewise-dependent objective uncertainty."
+    "text": "DocTestSetup = quote\n    using Kokako, GLPK\nendSDDP.jl uses the concept of a policy graph to formulate multistage stochastic programming problems. We highly recommend that you read the following paper before continuing with this tutorial.Dowson, O. (2018). The policy graph decomposition of multistage stochastic optimization problems. Optimization Online. link"
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#Creating-a-[Kokako.Graph](@ref)-1",
+    "page": "Intermediate III: policy graphs",
+    "title": "Creating a Kokako.Graph",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#Linear-graphs-1",
+    "page": "Intermediate III: policy graphs",
+    "title": "Linear graphs",
+    "category": "section",
+    "text": "Linear policy graphs can be created using the Kokako.LinearGraph function.julia> graph = Kokako.LinearGraph(3)\nRoot\n 0\nNodes\n 1\n 2\n 3\nArcs\n 0 => 1 w.p. 1.0\n 1 => 2 w.p. 1.0\n 2 => 3 w.p. 1.0We can add nodes to a graph using Kokako.add_node and edges using Kokako.add_edge.julia> Kokako.add_node(graph, 4)\n\njulia> Kokako.add_edge(graph, 3 => 4, 1.0)\n\njulia> Kokako.add_edge(graph, 4 => 1, 0.9)\n\njulia> graph\nRoot\n 0\nNodes\n 1\n 2\n 3\n 4\nArcs\n 0 => 1 w.p. 1.0\n 1 => 2 w.p. 1.0\n 2 => 3 w.p. 1.0\n 3 => 4 w.p. 1.0\n 4 => 1 w.p. 0.9Look! We just made a cyclic graph! SDDP.jl can solve infinite horizon problems. The probability on the arc that completes a cycle should be interpreted as a discount factor."
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#Markovian-policy-graphs-1",
+    "page": "Intermediate III: policy graphs",
+    "title": "Markovian policy graphs",
+    "category": "section",
+    "text": "Markovian policy graphs can be created using the Kokako.MarkovianGraph function.julia> Kokako.MarkovianGraph(Matrix{Float64}[[1.0]\', [0.4 0.6]])\nRoot\n (0, 1)\nNodes\n (1, 1)\n (2, 1)\n (2, 2)\nArcs\n (0, 1) => (1, 1) w.p. 1.0\n (1, 1) => (2, 1) w.p. 0.4\n (1, 1) => (2, 2) w.p. 0.6"
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#General-graphs-1",
+    "page": "Intermediate III: policy graphs",
+    "title": "General graphs",
+    "category": "section",
+    "text": "Arbitrarily complicated graphs can be constructed using Kokako.Graph, Kokako.add_node and Kokako.add_edge. For examplejulia> graph = Kokako.Graph(:root_node)\nRoot\n root_node\nNodes\nArcs\n\njulia> Kokako.add_node(graph, :decision_node)\n\njulia> Kokako.add_edge(graph, :root_node => :decision_node, 1.0)\n\njulia> Kokako.add_edge(graph, :decision_node => :decision_node, 0.9)\n\njulia> graph\nRoot\n root_node\nNodes\n decision_node\nArcs\n root_node => decision_node w.p. 1.0\n decision_node => decision_node w.p. 0.9"
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#Creating-a-policy-graph-1",
+    "page": "Intermediate III: policy graphs",
+    "title": "Creating a policy graph",
+    "category": "section",
+    "text": "Once you have constructed an instance of [Kokako.Graph], you can create a policy graph by passing the graph as the first argument.julia> graph = Kokako.Graph(\n           :root_node,\n           [:decision_node],\n           [\n               (:root_node => :decision_node, 1.0),\n               (:decision_node => :decision_node, 0.9)\n           ]);\n\njulia> model = Kokako.PolicyGraph(\n               graph,\n               lower_bound = 0,\n               optimizer = with_optimizer(GLPK.Optimizer)) do subproblem, node\n           println(\"Called from node: \", node)\n       end;\nCalled from node: decision_node"
+},
+
+{
+    "location": "tutorial/13_generic_graphs/#Special-cases-1",
+    "page": "Intermediate III: policy graphs",
+    "title": "Special cases",
+    "category": "section",
+    "text": "There are two special cases which cover the majority of models in the literature.Kokako.LinearPolicyGraph is a special case where a Kokako.LinearGraph is passed as the first argument.\nKokako.MarkovianPolicyGraph is a special case where a Kokako.MarkovianGraph is passed as the first argument.Note that the type of the names of all nodes (including the root node) must be the same. In this case, they are Symbols.In the next tutorial, Intermediate IV: objective states, we discuss how to model problems with stagewise-dependent objective uncertainty."
 },
 
 {
@@ -689,6 +745,46 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "apireference/#Kokako.Graph",
+    "page": "Reference",
+    "title": "Kokako.Graph",
+    "category": "type",
+    "text": "Graph(root_node::T) where T\n\nCreate an empty graph struture with the root node root_node.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.add_node",
+    "page": "Reference",
+    "title": "Kokako.add_node",
+    "category": "function",
+    "text": "add_node(graph::Graph{T}, node::T) where T\n\nAdd a node to the graph graph.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.add_edge",
+    "page": "Reference",
+    "title": "Kokako.add_edge",
+    "category": "function",
+    "text": "add_node(graph::Graph{T}, node::T) where T\n\nAdd an edge to the graph graph.\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.LinearGraph",
+    "page": "Reference",
+    "title": "Kokako.LinearGraph",
+    "category": "function",
+    "text": "LinearGraph(stages::Int)\n\n\n\n\n\n"
+},
+
+{
+    "location": "apireference/#Kokako.MarkovianGraph",
+    "page": "Reference",
+    "title": "Kokako.MarkovianGraph",
+    "category": "function",
+    "text": "MarkovianGraph(transition_matrices::Vector{Matrix{Float64}})\n\n\n\n\n\nMarkovianGraph(; stages::Int,\n               transition_matrix::Matrix{Float64},\n               root_node_transition::Vector{Float64})\n\nConstruct a Markovian graph object.\n\n\n\n\n\n"
+},
+
+{
     "location": "apireference/#Kokako.LinearPolicyGraph",
     "page": "Reference",
     "title": "Kokako.LinearPolicyGraph",
@@ -717,7 +813,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "Policy graphs",
     "category": "section",
-    "text": "Kokako.LinearPolicyGraph\nKokako.MarkovianPolicyGraph\nKokako.PolicyGraph"
+    "text": "Kokako.Graph\nKokako.add_node\nKokako.add_edge\nKokako.LinearGraph\nKokako.MarkovianGraph\nKokako.LinearPolicyGraph\nKokako.MarkovianPolicyGraph\nKokako.PolicyGraph"
 },
 
 {

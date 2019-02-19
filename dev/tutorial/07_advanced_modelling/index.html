@@ -1,47 +1,51 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basic VII: modelling tips · Kokako.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../../logo.ico" rel="icon" type="image/x-icon"/></head><body><nav class="toc"><a href="../../index.html"><img class="logo" src="../../assets/logo.png" alt="Kokako.jl logo"/></a><h1>Kokako.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Tutorials</span><ul><li><span class="toctext">Basic</span><ul><li><a class="toctext" href="../01_first_steps/">Basic I: first steps</a></li><li><a class="toctext" href="../02_adding_uncertainty/">Basic II: adding uncertainty</a></li><li><a class="toctext" href="../03_objective_uncertainty/">Basic III: objective uncertainty</a></li><li><a class="toctext" href="../04_markov_uncertainty/">Basic IV: Markov uncertainty</a></li><li><a class="toctext" href="../05_plotting/">Basic V: plotting</a></li><li><a class="toctext" href="../06_warnings/">Basic VI: words of warning</a></li><li class="current"><a class="toctext" href>Basic VII: modelling tips</a><ul class="internal"><li><a class="toctext" href="#Multi-dimensional-state-variables-1">Multi-dimensional state variables</a></li><li><a class="toctext" href="#Multi-dimensional-noise-terms-1">Multi-dimensional noise terms</a></li></ul></li></ul></li><li><span class="toctext">Intermediate</span><ul><li><a class="toctext" href="../11_risk/">Intermediate I: risk</a></li><li><a class="toctext" href="../12_stopping_rules/">Intermediate II: stopping rules</a></li><li><a class="toctext" href="../13_generic_graphs/">Intermediate III: policy graphs</a></li><li><a class="toctext" href="../14_objective_states/">Intermediate IV: objective states</a></li><li><a class="toctext" href="../15_performance/">Intermediate V: performance</a></li></ul></li></ul></li><li><a class="toctext" href="../../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li>Basic</li><li><a href>Basic VII: modelling tips</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/tutorial/07_advanced_modelling.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basic VII: modelling tips</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basic-VII:-modelling-tips-1" href="#Basic-VII:-modelling-tips-1">Basic VII: modelling tips</a></h1><p>This tutorial discusses some different modelling tips.</p><h2><a class="nav-anchor" id="Multi-dimensional-state-variables-1" href="#Multi-dimensional-state-variables-1">Multi-dimensional state variables</a></h2><p>Just like normal JuMP variables, it is possible to create containers of state variables.</p><pre><code class="language-julia">Kokako.LinearPolicyGraph(
-        stages=1, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)
-        ) do subproblem, t
-    # A scalar state variable.
-    @variable(subproblem, x &gt;= 0, Kokako.State, initial_value = 0)
-    println(&quot;Lower bound of outgoing x is: &quot;, JuMP.lower_bound(x.out))
-
-    # A vector of state variables.
-    @variable(subproblem, y[i = 1:2] &gt;= i, Kokako.State, initial_value = i)
-    println(&quot;Lower bound of outgoing y[1] is: &quot;, JuMP.lower_bound(y[1].out))
-
-    # A JuMP.Containers.DenseAxisArray of state variables.
-    @variable(subproblem,
-        z[i = 3:4, j = [:A, :B]] &gt;= i, Kokako.State, initial_value = i)
-    println(&quot;Lower bound of outgoing z[3, :B] is: &quot;, JuMP.lower_bound(z[3, :B].out))
-end
-
-nothing # hide
-
-# output
-
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basic VII: modelling tips · Kokako.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../../logo.ico" rel="icon" type="image/x-icon"/></head><body><nav class="toc"><a href="../../index.html"><img class="logo" src="../../assets/logo.png" alt="Kokako.jl logo"/></a><h1>Kokako.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Tutorials</span><ul><li><span class="toctext">Basic</span><ul><li><a class="toctext" href="../01_first_steps/">Basic I: first steps</a></li><li><a class="toctext" href="../02_adding_uncertainty/">Basic II: adding uncertainty</a></li><li><a class="toctext" href="../03_objective_uncertainty/">Basic III: objective uncertainty</a></li><li><a class="toctext" href="../04_markov_uncertainty/">Basic IV: Markov uncertainty</a></li><li><a class="toctext" href="../05_plotting/">Basic V: plotting</a></li><li><a class="toctext" href="../06_warnings/">Basic VI: words of warning</a></li><li class="current"><a class="toctext" href>Basic VII: modelling tips</a><ul class="internal"><li><a class="toctext" href="#Multi-dimensional-state-variables-1">Multi-dimensional state variables</a></li><li><a class="toctext" href="#Multi-dimensional-noise-terms-1">Multi-dimensional noise terms</a></li><li><a class="toctext" href="#Noise-in-the-constraint-matrix-1">Noise in the constraint matrix</a></li></ul></li></ul></li><li><span class="toctext">Intermediate</span><ul><li><a class="toctext" href="../11_risk/">Intermediate I: risk</a></li><li><a class="toctext" href="../12_stopping_rules/">Intermediate II: stopping rules</a></li><li><a class="toctext" href="../13_generic_graphs/">Intermediate III: policy graphs</a></li><li><a class="toctext" href="../14_objective_states/">Intermediate IV: objective states</a></li><li><a class="toctext" href="../15_performance/">Intermediate V: performance</a></li></ul></li></ul></li><li><a class="toctext" href="../../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li>Basic</li><li><a href>Basic VII: modelling tips</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/tutorial/07_advanced_modelling.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basic VII: modelling tips</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basic-VII:-modelling-tips-1" href="#Basic-VII:-modelling-tips-1">Basic VII: modelling tips</a></h1><p>This tutorial discusses some different modelling tips.</p><h2><a class="nav-anchor" id="Multi-dimensional-state-variables-1" href="#Multi-dimensional-state-variables-1">Multi-dimensional state variables</a></h2><p>Just like normal JuMP variables, it is possible to create containers of state variables.</p><pre><code class="language-julia-repl">julia&gt; model = Kokako.LinearPolicyGraph(
+               stages=1, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)
+               ) do subproblem, t
+           # A scalar state variable.
+           @variable(subproblem, x &gt;= 0, Kokako.State, initial_value = 0)
+           println(&quot;Lower bound of outgoing x is: &quot;, JuMP.lower_bound(x.out))
+           # A vector of state variables.
+           @variable(subproblem, y[i = 1:2] &gt;= i, Kokako.State, initial_value = i)
+           println(&quot;Lower bound of outgoing y[1] is: &quot;, JuMP.lower_bound(y[1].out))
+           # A JuMP.Containers.DenseAxisArray of state variables.
+           @variable(subproblem,
+               z[i = 3:4, j = [:A, :B]] &gt;= i, Kokako.State, initial_value = i)
+           println(&quot;Lower bound of outgoing z[3, :B] is: &quot;, JuMP.lower_bound(z[3, :B].out))
+       end;
 Lower bound of outgoing x is: 0.0
 Lower bound of outgoing y[1] is: 1.0
-Lower bound of outgoing z[3, :B] is: 3.0</code></pre><h2><a class="nav-anchor" id="Multi-dimensional-noise-terms-1" href="#Multi-dimensional-noise-terms-1">Multi-dimensional noise terms</a></h2><p>Multi-dimensional stagewise-independent random variables can be created by forming the Cartesian product of the random variables.</p><pre><code class="language-julia">model = Kokako.LinearPolicyGraph(
-        stages=3, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)
-        ) do subproblem, t
-    @variable(subproblem, x, Kokako.State, initial_value = 0.0)
+Lower bound of outgoing z[3, :B] is: 3.0</code></pre><h2><a class="nav-anchor" id="Multi-dimensional-noise-terms-1" href="#Multi-dimensional-noise-terms-1">Multi-dimensional noise terms</a></h2><p>Multi-dimensional stagewise-independent random variables can be created by forming the Cartesian product of the random variables.</p><pre><code class="language-julia-repl">julia&gt; model = Kokako.LinearPolicyGraph(
+               stages=3, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)
+               ) do subproblem, t
+           @variable(subproblem, x, Kokako.State, initial_value = 0.0)
+           support = [(value = v, coefficient = c) for v in [1, 2] for c in [3, 4, 5]]
+           probability = [pv * pc for pv in [0.5, 0.5] for pc in [0.3, 0.5, 0.2]]
+           Kokako.parameterize(subproblem, support, probability) do ω
+               JuMP.fix(x.out, ω.value)
+               @stageobjective(subproblem, ω.coefficient * x.out)
+               println(&quot;ω is: &quot;, ω)
+           end
+       end;
 
-    support = [(value = v, coefficient = c) for v in [1, 2] for c in [3, 4, 5]]
-    probability = [pv * pc for pv in [0.5, 0.5] for pc in [0.3, 0.5, 0.2]]
-    Kokako.parameterize(subproblem, support, probability) do ω
-        JuMP.fix(x.out, ω.value)
-        @stageobjective(subproblem, ω.coefficient * x.out)
-        println(&quot;ω is: &quot;, ω)
-    end
-end
-
-Kokako.simulate(model, 1)
-
-nothing # hide
-
-# output
-
+julia&gt; Kokako.simulate(model, 1);
 ω is: (value = 1, coefficient = 4)
 ω is: (value = 1, coefficient = 3)
-ω is: (value = 2, coefficient = 4)</code></pre><p>This concludes or series of basic introductory tutorials for <code>Kokako.jl</code>. When you&#39;re ready, continue to our intermediate series of tutorials, beginning with <a href="../11_risk/#Intermediate-I:-risk-1">Intermediate I: risk</a>.</p><footer><hr/><a class="previous" href="../06_warnings/"><span class="direction">Previous</span><span class="title">Basic VI: words of warning</span></a><a class="next" href="../11_risk/"><span class="direction">Next</span><span class="title">Intermediate I: risk</span></a></footer></article></body></html>
+ω is: (value = 2, coefficient = 4)</code></pre><h2><a class="nav-anchor" id="Noise-in-the-constraint-matrix-1" href="#Noise-in-the-constraint-matrix-1">Noise in the constraint matrix</a></h2><p><code>SDDP.jl</code> supports coefficients in the constraint matrix through the <a href="http://www.juliaopt.org/JuMP.jl/v0.19/constraints/#JuMP.set_coefficient"><code>JuMP.set_coefficient</code></a> function.</p><pre><code class="language-julia-repl">julia&gt; model = Kokako.LinearPolicyGraph(
+               stages=3, lower_bound = 0, optimizer = with_optimizer(GLPK.Optimizer)
+               ) do subproblem, t
+           @variable(subproblem, x, Kokako.State, initial_value = 0.0)
+           @constraint(subproblem, emissions, 1x.out &lt;= 1)
+           Kokako.parameterize(subproblem, [0.2, 0.5, 1.0]) do ω
+               JuMP.set_coefficient(emissions, x.out, ω)
+               println(emissions)
+           end
+           @stageobjective(subproblem, -x.out)
+       end
+A policy graph with 3 nodes.
+ Node indices: 1, 2, 3
+
+julia&gt; Kokako.simulate(model, 1);
+emissions : x_out &lt;= 1.0
+emissions : 0.2 x_out &lt;= 1.0
+emissions : 0.5 x_out &lt;= 1.0</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>JuMP will canonicalize constraints by moving all variables to the left-hand side. Thus, <code>@constraint(model, 0 &lt;= 1 - x.out)</code> becomes <code>x.out &lt;= 1</code>. <code>JuMP.set_coefficient</code> sets the coefficient on the <em>canonicalized</em> constraint.</p></div></div><p>This concludes or series of basic introductory tutorials for <code>Kokako.jl</code>. When you&#39;re ready, continue to our intermediate series of tutorials, beginning with <a href="../11_risk/#Intermediate-I:-risk-1">Intermediate I: risk</a>.</p><footer><hr/><a class="previous" href="../06_warnings/"><span class="direction">Previous</span><span class="title">Basic VI: words of warning</span></a><a class="next" href="../11_risk/"><span class="direction">Next</span><span class="title">Intermediate I: risk</span></a></footer></article></body></html>
