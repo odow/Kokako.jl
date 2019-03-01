@@ -36,3 +36,6 @@ speed-ups.
   pay to change these. In particular, forcing solvers to use the dual simplex
   algorithm (e.g., [`Method=1` in Gurobi](https://www.gurobi.com/documentation/8.1/refman/method.html)
   ) is usually a performance win.
+
+In the next tutorial, [Intermediate VI: stochastic processes](@ref), we discuss
+different stochastic processes that can be incorporated into SDDP.
