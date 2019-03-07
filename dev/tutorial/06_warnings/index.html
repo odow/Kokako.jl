@@ -17,8 +17,6 @@ end
 
 Kokako.train(model, iteration_limit = 5)
 
-println(&quot;Finished training!&quot;)
-
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
@@ -31,7 +29,9 @@ println(&quot;Finished training!&quot;)
          3 |     3.500  |     3.500  |     0.004
          4 |     3.500  |     3.500  |     0.004
          5 |     3.500  |     3.500  |     0.005
-Finished training!</code></pre><p>Now consider the case when we set the <code>lower_bound</code> to <code>10.0</code>:</p><pre><code class="language-julia">using Kokako, GLPK
+———————————————————————————————————————————————————————————————————————————————
+ Terminating training with status: iteration_limit
+———————————————————————————————————————————————————————————————————————————————</code></pre><p>Now consider the case when we set the <code>lower_bound</code> to <code>10.0</code>:</p><pre><code class="language-julia">using Kokako, GLPK
 
 model = Kokako.LinearPolicyGraph(
             stages = 3,
@@ -49,8 +49,6 @@ end
 
 Kokako.train(model, iteration_limit = 5)
 
-println(&quot;Finished training!&quot;)
-
 # output
 
 ———————————————————————————————————————————————————————————————————————————————
@@ -63,4 +61,6 @@ println(&quot;Finished training!&quot;)
          3 |     5.500  |    11.000  |     0.002
          4 |     5.500  |    11.000  |     0.003
          5 |     5.500  |    11.000  |     0.006
-Finished training!</code></pre><p>How do we tell which is more appropriate? There are a few clues that you should look out for.</p><ul><li><p>The bound converges to a value above (if minimizing) the simulated cost of the policy. In this case, the problem is deterministic, so it is easy to tell. But you can also check by performing a Monte Carlo simulation like we did in <a href="../02_adding_uncertainty/#Basic-II:-adding-uncertainty-1">Basic II: adding uncertainty</a>.</p></li><li><p>The bound converges to different values when we change the bound. This is another clear give-away. The bound provided by the user is only used in the initial iterations. <strong>It should not change the value of the converged policy.</strong> Thus, if you don&#39;t know an appropriate value for the bound, choose an initial value, and then increase (or decrease) the value of the bound to confirm that the value of the policy doesn&#39;t change.</p></li><li><p>The bound converges to a value <em>close</em> to the bound provided by the user. This varies between models, but notice that <code>11.0</code> is quite close to <code>10.0</code> compared with <code>3.5</code> and <code>0.0</code>.</p></li></ul><p>This concludes our sixth tutorial for <code>SDDP.jl</code>. In our final basics tutorial, <a href="../07_advanced_modelling/#Basic-VII:-modelling-tips-1">Basic VII: modelling tips</a> we discuss some additional modelling tips.</p><footer><hr/><a class="previous" href="../05_plotting/"><span class="direction">Previous</span><span class="title">Basic V: plotting</span></a><a class="next" href="../07_advanced_modelling/"><span class="direction">Next</span><span class="title">Basic VII: modelling tips</span></a></footer></article></body></html>
+———————————————————————————————————————————————————————————————————————————————
+ Terminating training with status: iteration_limit
+———————————————————————————————————————————————————————————————————————————————</code></pre><p>How do we tell which is more appropriate? There are a few clues that you should look out for.</p><ul><li><p>The bound converges to a value above (if minimizing) the simulated cost of the policy. In this case, the problem is deterministic, so it is easy to tell. But you can also check by performing a Monte Carlo simulation like we did in <a href="../02_adding_uncertainty/#Basic-II:-adding-uncertainty-1">Basic II: adding uncertainty</a>.</p></li><li><p>The bound converges to different values when we change the bound. This is another clear give-away. The bound provided by the user is only used in the initial iterations. <strong>It should not change the value of the converged policy.</strong> Thus, if you don&#39;t know an appropriate value for the bound, choose an initial value, and then increase (or decrease) the value of the bound to confirm that the value of the policy doesn&#39;t change.</p></li><li><p>The bound converges to a value <em>close</em> to the bound provided by the user. This varies between models, but notice that <code>11.0</code> is quite close to <code>10.0</code> compared with <code>3.5</code> and <code>0.0</code>.</p></li></ul><p>This concludes our sixth tutorial for <code>SDDP.jl</code>. In our final basics tutorial, <a href="../07_advanced_modelling/#Basic-VII:-modelling-tips-1">Basic VII: modelling tips</a> we discuss some additional modelling tips.</p><footer><hr/><a class="previous" href="../05_plotting/"><span class="direction">Previous</span><span class="title">Basic V: plotting</span></a><a class="next" href="../07_advanced_modelling/"><span class="direction">Next</span><span class="title">Basic VII: modelling tips</span></a></footer></article></body></html>

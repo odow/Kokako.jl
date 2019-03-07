@@ -64,6 +64,9 @@ println(&quot;Completed $(length(simulations)) simulations.&quot;)
         18 |     5.000K |     8.073K |     0.065
         19 |     1.875K |     8.073K |     0.066
         20 |    11.250K |     8.073K |     0.069
+———————————————————————————————————————————————————————————————————————————————
+ Terminating training with status: iteration_limit
+———————————————————————————————————————————————————————————————————————————————
 Completed 100 simulations.</code></pre><p>Great! Now we have some data in <code>simulations</code> to visualize.</p><h2><a class="nav-anchor" id="Spaghetti-plots-1" href="#Spaghetti-plots-1">Spaghetti plots</a></h2><p>The first plotting utility we discuss is a <em>spaghetti</em> plot (you&#39;ll understand the name when you see the graph).</p><p>To create a spaghetti plot, begin by creating a new <a href="../../apireference/#Kokako.SpaghettiPlot"><code>Kokako.SpaghettiPlot</code></a> instance as follows:</p><pre><code class="language-julia-repl">julia&gt; plt = Kokako.SpaghettiPlot(simulations)
 A spaghetti plot with 100 scenarios and 3 stages.</code></pre><p>We can add plots to <code>plt</code> using the <a href="../../apireference/#Kokako.add_spaghetti"><code>Kokako.add_spaghetti</code></a> function.</p><pre><code class="language-julia-repl">julia&gt; Kokako.add_spaghetti(plt; title = &quot;Reservoir volume&quot;) do data
            return data[:volume].out

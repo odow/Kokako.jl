@@ -38,9 +38,7 @@ end
 # output
 
 A policy graph with 3 nodes.
- Node indices: 1, 2, 3</code></pre><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in the previous two tutorials, we train the policy:</p><pre><code class="language-julia">training_results = Kokako.train(model; iteration_limit = 10)
-
-println(&quot;Termination status is: &quot;, Kokako.termination_status(training_results))
+ Node indices: 1, 2, 3</code></pre><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in the previous two tutorials, we train the policy:</p><pre><code class="language-julia">Kokako.train(model; iteration_limit = 10)
 
 simulations = Kokako.simulate(model, 500)
 
@@ -73,6 +71,8 @@ println(&quot;Lower bound: &quot;, round(Kokako.calculate_bound(model), digits =
          8 |    27.500K |    10.625K |     0.058
          9 |    11.250K |    10.625K |     0.060
         10 |    11.250K |    10.625K |     0.061
-Termination status is: iteration_limit
+———————————————————————————————————————————————————————————————————————————————
+ Terminating training with status: iteration_limit
+———————————————————————————————————————————————————————————————————————————————
 Confidence interval: 11342.5 ± 753.02
 Lower bound: 10625.0</code></pre><p>This concludes our third tutorial for <code>SDDP.jl</code>. In the next tutorial, <a href="../04_markov_uncertainty/#Basic-IV:-Markov-uncertainty-1">Basic IV: Markov uncertainty</a>, we add stagewise-dependence to the inflows using a Markov chain.</p><footer><hr/><a class="previous" href="../02_adding_uncertainty/"><span class="direction">Previous</span><span class="title">Basic II: adding uncertainty</span></a><a class="next" href="../04_markov_uncertainty/"><span class="direction">Next</span><span class="title">Basic IV: Markov uncertainty</span></a></footer></article></body></html>
