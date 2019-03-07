@@ -34,6 +34,12 @@ model = Model(with_optimizer(GLPK.Optimizer))</code></pre><h4><a class="nav-anch
 ———————————————————————————————————————————————————————————————————————————————
                         SDDP.jl - © Oscar Dowson, 2017-19.
 ———————————————————————————————————————————————————————————————————————————————
+Numerical stability report
+  Non-zero Matrix range     [1e+00, 1e+00]
+  Non-zero Objective range  [1e+00, 2e+02]
+  Non-zero Bounds range     [2e+02, 2e+02]
+  Non-zero RHS range        [2e+02, 2e+02]
+———————————————————————————————————————————————————————————————————————————————
  Iteration | Simulation |      Bound |   Time (s)
 ———————————————————————————————————————————————————————————————————————————————
          1 |    32.500K |    15.000K |     0.001
@@ -41,7 +47,7 @@ model = Model(with_optimizer(GLPK.Optimizer))</code></pre><h4><a class="nav-anch
          3 |    17.500K |    17.500K |     0.002
 ———————————————————————————————————————————————————————————————————————————————
  Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————</code></pre><h2><a class="nav-anchor" id="Simulating-the-policy-1" href="#Simulating-the-policy-1">Simulating the policy</a></h2><p>Once you have a trained policy, you can simulate it using <a href="../../apireference/#Kokako.simulate"><code>Kokako.simulate</code></a>. The return value from <code>simulate</code> is a vector with one element for each replication. Each element is itself a vector, with one element for each stage. Each element, corresponding to a particular stage in a particular replication, is a dictionary that records information from the simulation.</p><pre><code class="language-julia">simulations = Kokako.simulate(
+———————————————————————————————————————————————————————————————————————————————</code></pre><div class="admonition info"><div class="admonition-title">Info</div><div class="admonition-text"><p>For more information on the numerical stability report, read the section on <a href="../06_warnings/#Problem-scaling-1">Problem scaling</a>.</p></div></div><h2><a class="nav-anchor" id="Simulating-the-policy-1" href="#Simulating-the-policy-1">Simulating the policy</a></h2><p>Once you have a trained policy, you can simulate it using <a href="../../apireference/#Kokako.simulate"><code>Kokako.simulate</code></a>. The return value from <code>simulate</code> is a vector with one element for each replication. Each element is itself a vector, with one element for each stage. Each element, corresponding to a particular stage in a particular replication, is a dictionary that records information from the simulation.</p><pre><code class="language-julia">simulations = Kokako.simulate(
     # The trained model to simulate.
     model,
     # The number of replications.
