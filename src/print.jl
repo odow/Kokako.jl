@@ -4,16 +4,16 @@
 #  http://mozilla.org/MPL/2.0/.
 
 function print_banner(io=stdout)
-    println(io, "----------------------------------------------------")
+    println(io, "-------------------------------------------------------")
     println(io, "         SDDP.jl (c) Oscar Dowson, 2017-19")
     println(io)
 end
 
 function print_iteration_header(io=stdout)
-    println(io, " Iteration   Simulation      Bound        Time (s)")
+    println(io, " Iteration    Simulation       Bound         Time (s)")
 end
 
-print_value(x::Real) = lpad(Printf.@sprintf("%1.6e", x), 12)
+print_value(x::Real) = lpad(Printf.@sprintf("%1.6e", x), 13)
 print_value(x::Int) = Printf.@sprintf("%9d", x)
 
 function print_iteration(io, log::Log)
@@ -26,7 +26,7 @@ end
 
 function print_footer(io, training_results)
     println(io, "\nTerminating training with status: $(training_results.status)")
-    println(io, "----------------------------------------------------")
+    println(io, "-------------------------------------------------------")
 end
 
 ###
