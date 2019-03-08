@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = Kokako
+```
+
 # Basic VI: words of warning
 
 SDDP is a powerful solution technique for multistage stochastic programming.
@@ -74,7 +78,6 @@ WARNING: numerical stability issues detected
   - RHS range contains small coefficients
 These coefficients can cause numerical stability issues. Consider reformulating
 the model.
-———————————————————————————————————————————————————————————————————————————————
 ```
 
 By default, a numerical stability check is run when you call
@@ -99,7 +102,7 @@ convergence and the numerical issues discussed above), but if chosen to small,
 it may cut of the feasible region and lead to a sub-optimal solution.
 
 Consider the following simple model, where we first set `lower_bound` to `0.0`.
-```jldoctest; filter=r"\|.+?\n"
+```jldoctest
 using Kokako, GLPK
 
 model = Kokako.LinearPolicyGraph(
@@ -120,24 +123,22 @@ Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false
 
 # output
 
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     6.500  |     3.000  |     0.001
-         2 |     3.500  |     3.500  |     0.001
-         3 |     3.500  |     3.500  |     0.004
-         4 |     3.500  |     3.500  |     0.004
-         5 |     3.500  |     3.500  |     0.005
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————
+
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
+ Iteration   Simulation      Bound        Time (s)
+         1  6.500000e+00  3.000000e+00  9.999275e-04
+         2  3.500000e+00  3.500000e+00  9.999275e-04
+         3  3.500000e+00  3.500000e+00  9.999275e-04
+         4  3.500000e+00  3.500000e+00  9.999275e-04
+         5  3.500000e+00  3.500000e+00  1.999855e-03
+
+Terminating training with status: iteration_limit
 ```
 
 Now consider the case when we set the `lower_bound` to `10.0`:
 
-```jldoctest; filter=r"\|.+?\n"
+```jldoctest
 using Kokako, GLPK
 
 model = Kokako.LinearPolicyGraph(
@@ -158,19 +159,17 @@ Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false
 
 # output
 
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     6.500  |    11.000  |     0.001
-         2 |     5.500  |    11.000  |     0.002
-         3 |     5.500  |    11.000  |     0.002
-         4 |     5.500  |    11.000  |     0.003
-         5 |     5.500  |    11.000  |     0.006
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————
+
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
+ Iteration   Simulation      Bound        Time (s)
+         1  6.500000e+00  1.100000e+01  0.000000e+00
+         2  5.500000e+00  1.100000e+01  1.000166e-03
+         3  5.500000e+00  1.100000e+01  1.000166e-03
+         4  5.500000e+00  1.100000e+01  1.000166e-03
+         5  5.500000e+00  1.100000e+01  2.000093e-03
+
+Terminating training with status: iteration_limit
 ```
 
 How do we tell which is more appropriate? There are a few clues that you should

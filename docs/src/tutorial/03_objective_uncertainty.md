@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = Kokako
+```
+
 # Basic III: objective uncertainty
 
 In the previous tutorial, [Basic II: adding uncertainty](@ref), we created a
@@ -73,7 +77,7 @@ A policy graph with 3 nodes.
 ## Training and simulating the policy
 
 As in the previous two tutorials, we train the policy:
-```jldoctest tutorial_two; filter=[r"\|.+?\n", r"Confidence interval.+?\n"]
+```jldoctest tutorial_two; filter=r"Confidence interval.+?\n"
 Kokako.train(model; iteration_limit = 10)
 
 simulations = Kokako.simulate(model, 500)
@@ -92,31 +96,29 @@ println("Lower bound: ", round(Kokako.calculate_bound(model), digits = 2))
 
 # output
 
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
+
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
 Numerical stability report
   Non-zero Matrix range     [1e+00, 1e+00]
   Non-zero Objective range  [1e+00, 2e+02]
   Non-zero Bounds range     [2e+02, 2e+02]
   Non-zero RHS range        [2e+02, 2e+02]
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     7.500K |     8.173K |     0.046
-         2 |    13.654K |    10.506K |     0.047
-         3 |    31.607K |    10.625K |     0.049
-         4 |    22.500K |    10.625K |     0.051
-         5 |     1.875K |    10.625K |     0.053
-         6 |     1.875K |    10.625K |     0.054
-         7 |    24.375K |    10.625K |     0.055
-         8 |    27.500K |    10.625K |     0.058
-         9 |    11.250K |    10.625K |     0.060
-        10 |    11.250K |    10.625K |     0.061
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————
-Confidence interval: 11342.5 ± 753.02
+
+ Iteration   Simulation      Bound        Time (s)
+         1  4.125000e+04  8.173077e+03  2.500010e-02
+         2  5.000000e+03  1.050595e+04  2.600002e-02
+         3  1.875000e+03  1.050595e+04  2.699995e-02
+         4  1.875000e+03  1.050595e+04  2.699995e-02
+         5  5.000000e+03  1.050595e+04  2.800012e-02
+         6  1.125000e+04  1.062500e+04  5.599999e-02
+         7  1.125000e+04  1.062500e+04  5.699992e-02
+         8  1.875000e+03  1.062500e+04  5.800009e-02
+         9  5.000000e+03  1.062500e+04  5.800009e-02
+        10  5.000000e+03  1.062500e+04  5.900002e-02
+
+Terminating training with status: iteration_limit
+Confidence interval: 10883.75 ± 744.06
 Lower bound: 10625.0
 ```
 

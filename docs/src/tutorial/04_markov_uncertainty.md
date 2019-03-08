@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = Kokako
+```
+
 # Basic IV: Markov uncertainty
 
 In our three tutorials ([Basic I: first steps](@ref),
@@ -114,32 +118,30 @@ A policy graph with 5 nodes.
 ## Training and simulating the policy
 
 As in the previous three tutorials, we train the policy:
-```jldoctest tutorial_four; filter=[r"\|.+?\n", r"Confidence interval.+?\n"]
+```jldoctest tutorial_four
 julia> Kokako.train(model; iteration_limit = 10)
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
+
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
 Numerical stability report
   Non-zero Matrix range     [1e+00, 1e+00]
   Non-zero Objective range  [1e+00, 2e+02]
   Non-zero Bounds range     [2e+02, 2e+02]
   Non-zero RHS range        [2e+02, 2e+02]
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     5.625K |     5.329K |     0.031
-         2 |    11.250K |     7.975K |     0.034
-         3 |     5.000K |     7.975K |     0.035
-         4 |    22.440K |     8.073K |     0.068
-         5 |     5.000K |     8.073K |     0.084
-         6 |     5.000K |     8.073K |     0.087
-         7 |     1.875K |     8.073K |     0.089
-         8 |    13.125K |     8.073K |     0.092
-         9 |    11.250K |     8.073K |     0.096
-        10 |     1.875K |     8.073K |     0.099
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————
+
+ Iteration   Simulation      Bound        Time (s)
+         1  3.000000e+04  3.753370e+03  3.999949e-03
+         2  2.503511e+04  7.975336e+03  7.999897e-03
+         3  1.875000e+03  8.072917e+03  1.099992e-02
+         4  5.000000e+03  8.072917e+03  1.399994e-02
+         5  1.875000e+03  8.072917e+03  1.599979e-02
+         6  1.875000e+04  8.072917e+03  1.899981e-02
+         7  1.875000e+03  8.072917e+03  2.099991e-02
+         8  5.000000e+03  8.072917e+03  3.699994e-02
+         9  1.875000e+03  8.072917e+03  4.299998e-02
+        10  5.000000e+03  8.072917e+03  4.600000e-02
+
+Terminating training with status: iteration_limit
 ```
 
 Instead of performing a Monte Carlo simulation like the previous tutorials, we

@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = Kokako
+```
+
 # Basic II: adding uncertainty
 
 In the previous tutorial, [Basic I: first steps](@ref), we created a
@@ -90,32 +94,30 @@ to set the value of the `inflow` variable to `ω`.
 
 As in [Basic I: first steps](@ref), we train the policy:
 
-```jldoctest tutorial_two; filter=r"\|.+"
+```jldoctest tutorial_two
 julia> Kokako.train(model; iteration_limit = 10)
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
+
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
 Numerical stability report
   Non-zero Matrix range     [1e+00, 1e+00]
   Non-zero Objective range  [1e+00, 2e+02]
   Non-zero Bounds range     [2e+02, 2e+02]
   Non-zero RHS range        [2e+02, 2e+02]
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |    12.500K |     5.000K |     0.007
-         2 |    12.500K |     8.333K |     0.007
-         3 |    12.500K |     8.333K |     0.008
-         4 |    12.500K |     8.333K |     0.009
-         5 |     2.500K |     8.333K |     0.011
-         6 |     5.000K |     8.333K |     0.012
-         7 |     5.000K |     8.333K |     0.013
-         8 |    12.500K |     8.333K |     0.014
-         9 |     7.500K |     8.333K |     0.014
-        10 |     5.000K |     8.333K |     0.016
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————
+
+ Iteration   Simulation      Bound        Time (s)
+         1  5.859375e+03  3.333333e+03  4.290001e-01
+         2  2.070313e+04  5.000000e+03  4.349999e-01
+         3  4.500000e+03  5.000000e+03  4.390001e-01
+         4  3.322917e+03  5.059657e+03  4.450002e-01
+         5  5.156250e+03  5.061371e+03  4.500000e-01
+         6  8.250000e+03  5.061371e+03  4.550002e-01
+         7  2.109375e+03  5.085287e+03  4.610000e-01
+         8  3.570647e+03  5.088586e+03  4.670000e-01
+         9  1.750549e+04  5.088586e+03  4.720001e-01
+        10  6.412500e+03  5.088586e+03  4.780002e-01
+
+Terminating training with status: iteration_limit
 ```
 
 !!! note

@@ -51,27 +51,28 @@ end
 #  http://mozilla.org/MPL/2.0/.
 
 function print_banner(io=stdout)
-    println(io, "———————————————————————————————————————————————————————————————————————————————")
-    println(io, "                        SDDP.jl - © Oscar Dowson, 2017-19.")
-    println(io, "———————————————————————————————————————————————————————————————————————————————")
+    println(io)
+    println(io, "         SDDP.jl (c) Oscar Dowson, 2017-19")
+    println(io)
 end
 
 function print_iteration_header(io=stdout)
-    println(io, " Iteration | Simulation |      Bound |   Time (s)")
-    println(io, "———————————————————————————————————————————————————————————————————————————————")
+    println(io, " Iteration   Simulation      Bound        Time (s)")
 end
 
+print_value(x::Real) = Printf.@sprintf("%1.6e", x)
+print_value(x::Int) = Printf.@sprintf("%9d", x)
+
 function print_iteration(io, log::Log)
-    line = string(" ", humanize(log.iteration), " |  ",
-        humanize(log.simulation_value), " |  ", humanize(log.bound), " |  ",
-        humanize(log.time))
-    println(io, line)
+    print(io, " ", print_value(log.iteration))
+    print(io, "  ", print_value(log.simulation_value))
+    print(io, "  ", print_value(log.bound))
+    print(io, "  ", print_value(log.time))
+    println(io)
 end
 
 function print_footer(io, training_results)
-    println(io, "———————————————————————————————————————————————————————————————————————————————")
-    println(io, " Terminating training with status: $(training_results.status)")
-    println(io, "———————————————————————————————————————————————————————————————————————————————")
+    println(io, "\nTerminating training with status: $(training_results.status)")
 end
 
 ###
@@ -225,7 +226,7 @@ function numerical_stability_report(
         print && println(io, "Numerical stability report")
         _print_numerical_stability_report(io, graph_ranges, print, warn)
     end
-    print && println(io, "———————————————————————————————————————————————————————————————————————————————")
+    print && println(io)
     return
 end
 

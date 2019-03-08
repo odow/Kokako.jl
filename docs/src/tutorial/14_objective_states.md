@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = Kokako
+```
+
 # Intermediate IV: objective states
 
 There are many applications in which we want to model a price process that
@@ -137,7 +141,7 @@ A policy graph with 3 nodes.
 
 After creating our model, we can train and simulate as usual.
 
-```jldoctest intermediate_price; filter=r"\|.+?\n"
+```jldoctest intermediate_price
 Kokako.train(model, iteration_limit = 10, perform_numerical_stability_check=false)
 
 simulations = Kokako.simulate(model, 1)
@@ -146,24 +150,22 @@ print("Finished training and simulating.")
 
 # output
 
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     7.031K |     4.018K |     0.029
-         2 |     0.000  |     4.557K |     0.031
-         3 |     4.171K |     4.573K |     0.034
-         4 |     7.148K |     4.573K |     0.036
-         5 |     0.000  |     4.573K |     0.038
-         6 |     1.822K |     4.573K |     0.041
-         7 |     2.109K |     4.573K |     0.043
-         8 |     7.481K |     4.573K |     0.045
-         9 |     5.231K |     4.573K |     0.048
-        10 |     6.300K |     4.573K |     0.050
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————
+
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
+ Iteration   Simulation      Bound        Time (s)
+         1  0.000000e+00  4.408308e+03  3.750000e-01
+         2  6.393750e+03  4.488198e+03  3.789999e-01
+         3  3.515625e+03  4.537935e+03  3.820000e-01
+         4  0.000000e+00  4.742142e+03  3.850000e-01
+         5  2.812500e+03  4.742142e+03  3.880000e-01
+         6  6.562500e+03  4.742142e+03  3.909998e-01
+         7  9.075000e+03  4.742142e+03  3.950000e-01
+         8  3.712500e+03  4.742142e+03  3.980000e-01
+         9  6.562500e+03  4.742142e+03  4.020000e-01
+        10  1.054688e+04  4.930021e+03  4.050000e-01
+
+Terminating training with status: iteration_limit
 Finished training and simulating.
 ```
 
@@ -200,7 +202,7 @@ example, `initial_value = 1.0` becomes `initial_value = (1.0, 2.0)`.
 
 Here is an example:
 
-```jldoctest intermediate_price; filter=r"\|.+?\n"
+```jldoctest intermediate_price
 model = Kokako.LinearPolicyGraph(
             stages = 3, sense = :Min, lower_bound = 0.0,
             optimizer = with_optimizer(GLPK.Optimizer)
@@ -245,24 +247,22 @@ print("Finished training and simulating.")
 
 # output
 
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     7.031K |     4.018K |     0.029
-         2 |     0.000  |     4.557K |     0.031
-         3 |     4.171K |     4.573K |     0.034
-         4 |     7.148K |     4.573K |     0.036
-         5 |     0.000  |     4.573K |     0.038
-         6 |     1.822K |     4.573K |     0.041
-         7 |     2.109K |     4.573K |     0.043
-         8 |     7.481K |     4.573K |     0.045
-         9 |     5.231K |     4.573K |     0.048
-        10 |     6.300K |     4.573K |     0.050
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————
+
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
+ Iteration   Simulation      Bound        Time (s)
+         1  0.000000e+00  4.131611e+03  3.550000e-01
+         2  9.750000e+03  4.596601e+03  3.590000e-01
+         3  8.125000e+02  4.624280e+03  3.629999e-01
+         4  3.125000e+03  4.687985e+03  3.659999e-01
+         5  3.562500e+03  4.821365e+03  3.699999e-01
+         6  8.965682e+03  4.844249e+03  3.740001e-01
+         7  3.000000e+03  5.011009e+03  3.769999e-01
+         8  6.500000e+03  5.011009e+03  3.810000e-01
+         9  6.034191e+03  5.039646e+03  3.850000e-01
+        10  0.000000e+00  5.039646e+03  3.889999e-01
+
+Terminating training with status: iteration_limit
 Finished training and simulating.
 ```
 
