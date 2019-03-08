@@ -24,8 +24,7 @@ WARNING: numerical stability issues detected
   - Bounds range contains large coefficients
   - RHS range contains small coefficients
 These coefficients can cause numerical stability issues. Consider reformulating
-the model.
-———————————————————————————————————————————————————————————————————————————————</code></pre><p>By default, a numerical stability check is run when you call <a href="../../apireference/#Kokako.train"><code>Kokako.train</code></a>, although it can be turned off by passing <code>perform_numerical_stability_check = false</code>.</p><h3><a class="nav-anchor" id="Solver-specific-options-1" href="#Solver-specific-options-1">Solver-specific options</a></h3><p>If you have a particularly troublesome model, you should investigate setting solver-specific options to improve the numerical stability of each solver. For example, Gurobi has a <a href="http://www.gurobi.com/documentation/8.1/refman/numericfocus.html#parameter:NumericFocus"><code>NumericFocus</code> option</a>.</p><h2><a class="nav-anchor" id="Choosing-an-initial-bound-1" href="#Choosing-an-initial-bound-1">Choosing an initial bound</a></h2><p>One of the important requirements when building a SDDP model is to choose an appropriate bound on the objective (lower if minimizing, upper if maximizing). However, it can be hard to choose a bound if you don&#39;t know the solution! (Which is very likely.)</p><p>The bound should not be as large as possible (since this will help with convergence and the numerical issues discussed above), but if chosen to small, it may cut of the feasible region and lead to a sub-optimal solution.</p><p>Consider the following simple model, where we first set <code>lower_bound</code> to <code>0.0</code>.</p><pre><code class="language-julia">using Kokako, GLPK
+the model.</code></pre><p>By default, a numerical stability check is run when you call <a href="../../apireference/#Kokako.train"><code>Kokako.train</code></a>, although it can be turned off by passing <code>perform_numerical_stability_check = false</code>.</p><h3><a class="nav-anchor" id="Solver-specific-options-1" href="#Solver-specific-options-1">Solver-specific options</a></h3><p>If you have a particularly troublesome model, you should investigate setting solver-specific options to improve the numerical stability of each solver. For example, Gurobi has a <a href="http://www.gurobi.com/documentation/8.1/refman/numericfocus.html#parameter:NumericFocus"><code>NumericFocus</code> option</a>.</p><h2><a class="nav-anchor" id="Choosing-an-initial-bound-1" href="#Choosing-an-initial-bound-1">Choosing an initial bound</a></h2><p>One of the important requirements when building a SDDP model is to choose an appropriate bound on the objective (lower if minimizing, upper if maximizing). However, it can be hard to choose a bound if you don&#39;t know the solution! (Which is very likely.)</p><p>The bound should not be as large as possible (since this will help with convergence and the numerical issues discussed above), but if chosen to small, it may cut of the feasible region and lead to a sub-optimal solution.</p><p>Consider the following simple model, where we first set <code>lower_bound</code> to <code>0.0</code>.</p><pre><code class="language-julia">using Kokako, GLPK
 
 model = Kokako.LinearPolicyGraph(
             stages = 3,
@@ -45,19 +44,18 @@ Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false
 
 # output
 
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     6.500  |     3.000  |     0.001
-         2 |     3.500  |     3.500  |     0.001
-         3 |     3.500  |     3.500  |     0.004
-         4 |     3.500  |     3.500  |     0.004
-         5 |     3.500  |     3.500  |     0.005
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————</code></pre><p>Now consider the case when we set the <code>lower_bound</code> to <code>10.0</code>:</p><pre><code class="language-julia">using Kokako, GLPK
+----------------------------------------------------
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
+ Iteration   Simulation      Bound        Time (s)
+         1   6.50000e+00   3.00000e+00   0.00000e+00
+         2   3.50000e+00   3.50000e+00   1.00017e-03
+         3   3.50000e+00   3.50000e+00   1.00017e-03
+         4   3.50000e+00   3.50000e+00   2.00009e-03
+         5   3.50000e+00   3.50000e+00   2.00009e-03
+
+Terminating training with status: iteration_limit
+----------------------------------------------------</code></pre><p>Now consider the case when we set the <code>lower_bound</code> to <code>10.0</code>:</p><pre><code class="language-julia">using Kokako, GLPK
 
 model = Kokako.LinearPolicyGraph(
             stages = 3,
@@ -77,16 +75,15 @@ Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false
 
 # output
 
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     6.500  |    11.000  |     0.001
-         2 |     5.500  |    11.000  |     0.002
-         3 |     5.500  |    11.000  |     0.002
-         4 |     5.500  |    11.000  |     0.003
-         5 |     5.500  |    11.000  |     0.006
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————</code></pre><p>How do we tell which is more appropriate? There are a few clues that you should look out for.</p><ul><li><p>The bound converges to a value above (if minimizing) the simulated cost of the policy. In this case, the problem is deterministic, so it is easy to tell. But you can also check by performing a Monte Carlo simulation like we did in <a href="../02_adding_uncertainty/#Basic-II:-adding-uncertainty-1">Basic II: adding uncertainty</a>.</p></li><li><p>The bound converges to different values when we change the bound. This is another clear give-away. The bound provided by the user is only used in the initial iterations. <strong>It should not change the value of the converged policy.</strong> Thus, if you don&#39;t know an appropriate value for the bound, choose an initial value, and then increase (or decrease) the value of the bound to confirm that the value of the policy doesn&#39;t change.</p></li><li><p>The bound converges to a value <em>close</em> to the bound provided by the user. This varies between models, but notice that <code>11.0</code> is quite close to <code>10.0</code> compared with <code>3.5</code> and <code>0.0</code>.</p></li></ul><p>This concludes our sixth tutorial for <code>SDDP.jl</code>. In our final basics tutorial, <a href="../07_advanced_modelling/#Basic-VII:-modelling-tips-1">Basic VII: modelling tips</a> we discuss some additional modelling tips.</p><footer><hr/><a class="previous" href="../05_plotting/"><span class="direction">Previous</span><span class="title">Basic V: plotting</span></a><a class="next" href="../07_advanced_modelling/"><span class="direction">Next</span><span class="title">Basic VII: modelling tips</span></a></footer></article></body></html>
+----------------------------------------------------
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
+ Iteration   Simulation      Bound        Time (s)
+         1   6.50000e+00   1.10000e+01   0.00000e+00
+         2   5.50000e+00   1.10000e+01   0.00000e+00
+         3   5.50000e+00   1.10000e+01   9.99928e-04
+         4   5.50000e+00   1.10000e+01   9.99928e-04
+         5   5.50000e+00   1.10000e+01   9.99928e-04
+
+Terminating training with status: iteration_limit
+----------------------------------------------------</code></pre><p>How do we tell which is more appropriate? There are a few clues that you should look out for.</p><ul><li><p>The bound converges to a value above (if minimizing) the simulated cost of the policy. In this case, the problem is deterministic, so it is easy to tell. But you can also check by performing a Monte Carlo simulation like we did in <a href="../02_adding_uncertainty/#Basic-II:-adding-uncertainty-1">Basic II: adding uncertainty</a>.</p></li><li><p>The bound converges to different values when we change the bound. This is another clear give-away. The bound provided by the user is only used in the initial iterations. <strong>It should not change the value of the converged policy.</strong> Thus, if you don&#39;t know an appropriate value for the bound, choose an initial value, and then increase (or decrease) the value of the bound to confirm that the value of the policy doesn&#39;t change.</p></li><li><p>The bound converges to a value <em>close</em> to the bound provided by the user. This varies between models, but notice that <code>11.0</code> is quite close to <code>10.0</code> compared with <code>3.5</code> and <code>0.0</code>.</p></li></ul><p>This concludes our sixth tutorial for <code>SDDP.jl</code>. In our final basics tutorial, <a href="../07_advanced_modelling/#Basic-VII:-modelling-tips-1">Basic VII: modelling tips</a> we discuss some additional modelling tips.</p><footer><hr/><a class="previous" href="../05_plotting/"><span class="direction">Previous</span><span class="title">Basic V: plotting</span></a><a class="next" href="../07_advanced_modelling/"><span class="direction">Next</span><span class="title">Basic VII: modelling tips</span></a></footer></article></body></html>

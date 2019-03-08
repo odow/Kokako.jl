@@ -56,30 +56,29 @@ end
 
 A policy graph with 5 nodes.
  Node indices: (1, 1), (2, 1), (2, 2), (3, 1), (3, 2)</code></pre><div class="admonition info"><div class="admonition-title">Info</div><div class="admonition-text"><p>For more information on <a href="../../apireference/#Kokako.MarkovianPolicyGraph"><code>Kokako.MarkovianPolicyGraph</code></a>s, read <a href="../13_generic_graphs/#Intermediate-III:-policy-graphs-1">Intermediate III: policy graphs</a>.</p></div></div><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in the previous three tutorials, we train the policy:</p><pre><code class="language-julia-repl">julia&gt; Kokako.train(model; iteration_limit = 10)
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
+----------------------------------------------------
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
 Numerical stability report
   Non-zero Matrix range     [1e+00, 1e+00]
   Non-zero Objective range  [1e+00, 2e+02]
   Non-zero Bounds range     [2e+02, 2e+02]
   Non-zero RHS range        [2e+02, 2e+02]
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |     5.625K |     5.329K |     0.031
-         2 |    11.250K |     7.975K |     0.034
-         3 |     5.000K |     7.975K |     0.035
-         4 |    22.440K |     8.073K |     0.068
-         5 |     5.000K |     8.073K |     0.084
-         6 |     5.000K |     8.073K |     0.087
-         7 |     1.875K |     8.073K |     0.089
-         8 |    13.125K |     8.073K |     0.092
-         9 |    11.250K |     8.073K |     0.096
-        10 |     1.875K |     8.073K |     0.099
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————</code></pre><p>Instead of performing a Monte Carlo simulation like the previous tutorials, we may want to simulate one particular sequence of noise realizations. This <em>historical</em> simulation can also be conducted by passing a <a href="../../apireference/#Kokako.Historical"><code>Kokako.Historical</code></a> sampling scheme to the <code>sampling_scheme</code> keyword of the <a href="../../apireference/#Kokako.simulate"><code>Kokako.simulate</code></a> function.</p><p>We can confirm that the historical sequence of nodes was visited by querying the <code>:node_index</code> key of the simulation results.</p><pre><code class="language-julia">simulations = Kokako.simulate(
+
+ Iteration   Simulation      Bound        Time (s)
+         1   7.50000e+03   5.58840e+03   9.99928e-04
+         2   5.00000e+03   7.97534e+03   3.00002e-03
+         3   1.31250e+04   8.07292e+03   3.99995e-03
+         4   1.87500e+03   8.07292e+03   6.00004e-03
+         5   1.25000e+04   8.07292e+03   6.99997e-03
+         6   5.00000e+03   8.07292e+03   9.00006e-03
+         7   1.87500e+03   8.07292e+03   9.99999e-03
+         8   5.00000e+03   8.07292e+03   1.09999e-02
+         9   5.00000e+03   8.07292e+03   1.30000e-02
+        10   1.12500e+04   8.07292e+03   1.39999e-02
+
+Terminating training with status: iteration_limit
+----------------------------------------------------</code></pre><p>Instead of performing a Monte Carlo simulation like the previous tutorials, we may want to simulate one particular sequence of noise realizations. This <em>historical</em> simulation can also be conducted by passing a <a href="../../apireference/#Kokako.Historical"><code>Kokako.Historical</code></a> sampling scheme to the <code>sampling_scheme</code> keyword of the <a href="../../apireference/#Kokako.simulate"><code>Kokako.simulate</code></a> function.</p><p>We can confirm that the historical sequence of nodes was visited by querying the <code>:node_index</code> key of the simulation results.</p><pre><code class="language-julia">simulations = Kokako.simulate(
     model,
     sampling_scheme = Kokako.Historical([
         ((1, 1), Ω[1]),

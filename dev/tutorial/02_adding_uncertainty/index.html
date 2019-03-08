@@ -35,30 +35,29 @@ end
 
 A policy graph with 3 nodes.
  Node indices: 1, 2, 3</code></pre><p>Note how we use the JuMP function <a href="http://www.juliaopt.org/JuMP.jl/v0.19/variables/#JuMP.fix"><code>JuMP.fix</code></a> to set the value of the <code>inflow</code> variable to <code>ω</code>.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p><a href="../../apireference/#Kokako.parameterize"><code>Kokako.parameterize</code></a> can only be called once in each subproblem definition!</p></div></div><h2><a class="nav-anchor" id="Training-and-simulating-the-policy-1" href="#Training-and-simulating-the-policy-1">Training and simulating the policy</a></h2><p>As in <a href="../01_first_steps/#Basic-I:-first-steps-1">Basic I: first steps</a>, we train the policy:</p><pre><code class="language-julia-repl">julia&gt; Kokako.train(model; iteration_limit = 10)
-———————————————————————————————————————————————————————————————————————————————
-                        SDDP.jl - © Oscar Dowson, 2017-19.
-———————————————————————————————————————————————————————————————————————————————
+----------------------------------------------------
+         SDDP.jl (c) Oscar Dowson, 2017-19
+
 Numerical stability report
   Non-zero Matrix range     [1e+00, 1e+00]
   Non-zero Objective range  [1e+00, 2e+02]
   Non-zero Bounds range     [2e+02, 2e+02]
   Non-zero RHS range        [2e+02, 2e+02]
-———————————————————————————————————————————————————————————————————————————————
- Iteration | Simulation |      Bound |   Time (s)
-———————————————————————————————————————————————————————————————————————————————
-         1 |    12.500K |     5.000K |     0.007
-         2 |    12.500K |     8.333K |     0.007
-         3 |    12.500K |     8.333K |     0.008
-         4 |    12.500K |     8.333K |     0.009
-         5 |     2.500K |     8.333K |     0.011
-         6 |     5.000K |     8.333K |     0.012
-         7 |     5.000K |     8.333K |     0.013
-         8 |    12.500K |     8.333K |     0.014
-         9 |     7.500K |     8.333K |     0.014
-        10 |     5.000K |     8.333K |     0.016
-———————————————————————————————————————————————————————————————————————————————
- Terminating training with status: iteration_limit
-———————————————————————————————————————————————————————————————————————————————</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Since SDDP is a stochastic algorithm, you might get slightly different numerical results.</p></div></div><p>We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.</p><p>In addition to the confidence interval, we can calculate the lower bound using <a href="../../apireference/#Kokako.calculate_bound"><code>Kokako.calculate_bound</code></a>.</p><pre><code class="language-julia-repl">julia&gt; simulations = Kokako.simulate(model, 500);
+
+ Iteration   Simulation      Bound        Time (s)
+         1   2.00000e+04   5.00000e+03   5.74300e+00
+         2   5.00000e+03   8.33333e+03   5.77900e+00
+         3   7.50000e+03   8.33333e+03   5.78000e+00
+         4   7.50000e+03   8.33333e+03   5.78100e+00
+         5   7.50000e+03   8.33333e+03   5.78200e+00
+         6   7.50000e+03   8.33333e+03   5.78200e+00
+         7   1.25000e+04   8.33333e+03   5.78300e+00
+         8   1.25000e+04   8.33333e+03   5.78400e+00
+         9   7.50000e+03   8.33333e+03   5.78500e+00
+        10   2.50000e+03   8.33333e+03   5.78600e+00
+
+Terminating training with status: iteration_limit
+----------------------------------------------------</code></pre><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Since SDDP is a stochastic algorithm, you might get slightly different numerical results.</p></div></div><p>We can also simulate the policy. Note that this time, the simulation is stochastic. One common approach to quantify the quality of the policy is to perform  a Monte Carlo simulation and then form a confidence interval for the expected cost. This confidence interval is an estimate for the upper bound.</p><p>In addition to the confidence interval, we can calculate the lower bound using <a href="../../apireference/#Kokako.calculate_bound"><code>Kokako.calculate_bound</code></a>.</p><pre><code class="language-julia-repl">julia&gt; simulations = Kokako.simulate(model, 500);
 
 julia&gt; objective_values = [
            sum(stage[:stage_objective] for stage in sim) for sim in simulations
