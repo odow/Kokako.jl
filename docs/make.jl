@@ -54,7 +54,7 @@ makedocs(
         "stochastic_linear_policy_graph.png",
         "stochastic_markovian_policy_graph.png"
     ],
-    doctestfilters = [r"\d\.\d{5}e[\+\-]\d{2}"]
+    doctestfilters = [r"\d\.\d{6}e[\+\-]\d{2}"]
 )
 
 deploydocs(repo = "github.com/odow/Kokako.jl.git")

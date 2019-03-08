@@ -13,12 +13,12 @@ function print_iteration_header(io=stdout)
     println(io, " Iteration   Simulation      Bound        Time (s)")
 end
 
-print_value(x::Real) = lpad(Printf.@sprintf("%1.5e", x), 12)
+print_value(x::Real) = lpad(Printf.@sprintf("%1.6e", x), 12)
 print_value(x::Int) = Printf.@sprintf("%9d", x)
 
 function print_iteration(io, log::Log)
-    print(io, " ", print_value(log.iteration))
-    print(io, "  ", print_value(log.simulation_value))
+    print(io, print_value(log.iteration))
+    print(io, "   ", print_value(log.simulation_value))
     print(io, "  ", print_value(log.bound))
     print(io, "  ", print_value(log.time))
     println(io)
@@ -67,13 +67,18 @@ function _print_numerical_stability_report(
     _print_coefficients(io, "Objective", ranges.objective, print, warnings)
     _print_coefficients(io, "Bounds", ranges.bounds, print, warnings)
     _print_coefficients(io, "RHS", ranges.rhs, print, warnings)
-    if warn && length(warnings) > 0
-        println(io, "WARNING: numerical stability issues detected")
-        for (name, sense) in warnings
-            println(io, "  - $(name) range contains $(sense) coefficients")
+    if warn
+        if length(warnings) > 0
+            println(io, "WARNING: numerical stability issues detected")
+            for (name, sense) in warnings
+                println(io, "  - $(name) range contains $(sense) coefficients")
+            end
+            println(io, "Very large or small absolute values of coefficients ",
+                    "can cause numerical stability issues. Consider ",
+                    "reformulating\nthe model.")
+        else
+            println(io, "No problems detected")
         end
-        println(io, "These coefficients can cause numerical stability issues. ",
-                "Consider reformulating\nthe model.")
     end
     return
 end

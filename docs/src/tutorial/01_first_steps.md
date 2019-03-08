@@ -225,11 +225,12 @@ Numerical stability report
   Non-zero Objective range  [1e+00, 2e+02]
   Non-zero Bounds range     [2e+02, 2e+02]
   Non-zero RHS range        [2e+02, 2e+02]
+No problems detected
 
  Iteration   Simulation      Bound        Time (s)
-         1   3.25000e+04   1.50000e+04   3.10001e-02
-         2   1.75000e+04   1.75000e+04   3.10001e-02
-         3   1.75000e+04   1.75000e+04   3.20001e-02
+        1   3.250000e+04  1.500000e+04  3.700018e-02
+        2   1.750000e+04  1.750000e+04  3.700018e-02
+        3   1.750000e+04  1.750000e+04  3.800011e-02
 
 Terminating training with status: iteration_limit
 ----------------------------------------------------
