@@ -73,9 +73,9 @@ function _print_numerical_stability_report(
             for (name, sense) in warnings
                 println(io, "  - $(name) range contains $(sense) coefficients")
             end
-            println(io, "Very large or small absolute values of coefficients ",
-                    "can cause numerical stability issues. Consider ",
-                    "reformulating\nthe model.")
+            println(io, "Very large or small absolute values of coefficients\n",
+                    "can cause numerical stability issues. Consider\n",
+                    "reformulating the model.")
         else
             println(io, "No problems detected")
         end

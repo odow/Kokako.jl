@@ -238,7 +238,7 @@ Terminating training with status: iteration_limit
 
 !!! info
     For more information on the numerical stability report, read the
-    section on [Problem scaling](@ref).
+    [Numerical stability report](@ref) section.
 
 ## Simulating the policy
 

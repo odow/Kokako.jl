@@ -47,7 +47,7 @@ model = Kokako.MarkovianPolicyGraph(
     end
 end
 
-Kokako.train(model, iteration_limit = 20, perform_numerical_stability_check = false)
+Kokako.train(model, iteration_limit = 20, run_numerical_stability_report = false)
 
 simulations = Kokako.simulate(
     model, 100,

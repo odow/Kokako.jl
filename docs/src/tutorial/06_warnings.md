@@ -76,13 +76,20 @@ WARNING: numerical stability issues detected
   - Objective range contains large coefficients
   - Bounds range contains large coefficients
   - RHS range contains small coefficients
-Very large or small absolute values of coefficients can cause numerical stability issues. Consider reformulating
-the model.
+Very large or small absolute values of coefficients
+can cause numerical stability issues. Consider
+reformulating the model.
 ```
+
+The report analyses the magnitude (in absolute terms) of the coefficients in the
+constraint matrix, the objective function, any variable bounds, and in the RHS
+of the constraints. A warning will be thrown in `SDDP.jl` detects very large or
+small values. As discussed in [Problem scaling](@ref), this is an indication
+that you should reformulate your model.
 
 By default, a numerical stability check is run when you call
 [`Kokako.train`](@ref), although it can be turned off by passing
-`perform_numerical_stability_check = false`.
+`run_numerical_stability_report = false`.
 
 ### Solver-specific options
 
@@ -119,7 +126,7 @@ model = Kokako.LinearPolicyGraph(
     @stageobjective(subproblem, t * v)
 end
 
-Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false)
+Kokako.train(model, iteration_limit = 5, run_numerical_stability_report=false)
 
 # output
 
@@ -156,7 +163,7 @@ model = Kokako.LinearPolicyGraph(
     @stageobjective(subproblem, t * v)
 end
 
-Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false)
+Kokako.train(model, iteration_limit = 5, run_numerical_stability_report=false)
 
 # output
 
