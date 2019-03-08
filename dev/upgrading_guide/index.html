@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Upgrading guide · SDDP.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SDDP.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li class="current"><a class="toctext" href>Upgrading guide</a><ul class="internal"><li><a class="toctext" href="#Syntax-changes-1">Syntax changes</a></li></ul></li><li><span class="toctext">Tutorials</span><ul><li><span class="toctext">Basic</span><ul><li><a class="toctext" href="../tutorial/01_first_steps/">Basic I: first steps</a></li><li><a class="toctext" href="../tutorial/02_adding_uncertainty/">Basic II: adding uncertainty</a></li><li><a class="toctext" href="../tutorial/03_objective_uncertainty/">Basic III: objective uncertainty</a></li><li><a class="toctext" href="../tutorial/04_markov_uncertainty/">Basic IV: Markov uncertainty</a></li><li><a class="toctext" href="../tutorial/05_plotting/">Basic V: plotting</a></li><li><a class="toctext" href="../tutorial/06_warnings/">Basic VI: words of warning</a></li><li><a class="toctext" href="../tutorial/07_advanced_modelling/">Basic VII: modelling tips</a></li></ul></li><li><span class="toctext">Intermediate</span><ul><li><a class="toctext" href="../tutorial/11_risk/">Intermediate I: risk</a></li><li><a class="toctext" href="../tutorial/12_stopping_rules/">Intermediate II: stopping rules</a></li><li><a class="toctext" href="../tutorial/13_generic_graphs/">Intermediate III: policy graphs</a></li><li><a class="toctext" href="../tutorial/14_objective_states/">Intermediate IV: objective states</a></li><li><a class="toctext" href="../tutorial/15_performance/">Intermediate V: performance</a></li></ul></li></ul></li><li><a class="toctext" href="../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Upgrading guide</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/upgrading_guide.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Upgrading guide</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Upgrading-guide-1" href="#Upgrading-guide-1">Upgrading guide</a></h1><p><code>SDDP.jl</code> under went a major re-write to be compatible with JuMP v0.19 and Julia v1.0.</p><p>Some of the highlights of the new release include</p><ul><li>Support for stagewise-independent noise in the constraint matrix</li><li>A way to simulate out-of-sample realizations of the stagewise-independent noise terms</li><li>Extensible ways to get information such as dual variables out of a simulation</li><li>Support for infinite horizon multistage stochastic programs</li><li>Extensible stopping rules</li><li>Extensible sampling schemes</li><li>Improved cut selection routines</li><li>Better checks for numerical issues</li><li>A much tidier (and simpler) implementation, with ample commenting throughout the code base</li></ul><h2><a class="nav-anchor" id="Syntax-changes-1" href="#Syntax-changes-1">Syntax changes</a></h2><p>The complete re-write has resulted in a painful upgrading process as users must simultaneously upgrade from Julia 0.6 to Julia 1.0, from JuMP 0.18 to JuMP 0.19, and from the old syntax of <code>SDDP.jl</code> to the new. In this section, we outline some of the larger changes. For more information, we recommend reading the updated tutorials, beginning with <a href="../tutorial/01_first_steps/#Basic-I:-first-steps-1">Basic I: first steps</a></p><h4><a class="nav-anchor" id="SDDPModel-1" href="#SDDPModel-1"><code>SDDPModel</code></a></h4><p><code>SDDPModel</code> has been replaced in favor of a more general approach to formulating multistage stochastic optimization problems.</p><p>For basic use-cases, <code>SDDPModel</code> has been replaced by <code>LinearPolicyGraph</code>.</p><pre><code class="language-julia">model = SDDPModel(stages = 3) do subproblem, t
+    # subproblem definition.
+end
+
+# becomes
+
+model = Kokako.LinearPolicyGraph(stages = 3) do subproblem, t
+    # subproblem definition.
+end</code></pre><p>If you used the <code>markov_transition</code> feature, <code>SDDPModel</code> has been replaced by <code>MarkovianPolicyGraph</code>.</p><pre><code class="language-julia">model = SDDPModel(
+      markov_transition = Array{Float64, 2}[
+          [ 1.0 ]&#39;,
+          [ 0.75 0.25 ],
+          [ 0.75 0.25 ; 0.25 0.75 ]
+      ]) do subproblem, t, i
+  # subproblem definition.
+end
+
+# becomes
+
+model = Kokako.MarkovianPolicyGraph(
+        transition_matrices = Array{Float64, 2}[
+            [ 1.0 ]&#39;,
+            [ 0.75 0.25 ],
+            [ 0.75 0.25 ; 0.25 0.75 ]
+        ]) do subproblem, node
+    t, i = node
+    # subproblem definition.
+end</code></pre><h4><a class="nav-anchor" id="solver-1" href="#solver-1"><code>solver =</code></a></h4><p>JuMP 0.19 changed the way that solvers are passed to JuMP models.</p><pre><code class="language-julia">SDDPModel(solver = GurobiSolver(OutputFlag = 0))
+
+# becomes
+
+LinearPolicyGraph(optimizer = with_optimizer(Gurobi.Optimizer, OutputFlag = 0))</code></pre><h4><a class="nav-anchor" id="@state-1" href="#@state-1"><code>@state</code></a></h4><p>We changed how to specify state variables.</p><pre><code class="language-julia">@state(subproblem, 0 &lt;= x &lt;= 1, x0==2)
+
+# becomes
+
+@variable(subproblem, 0 &lt;= x &lt;= 1, Kokako.State, initial_value = 2)</code></pre><p>In addition, instead of having to create an incoming state <code>x0</code> and an outgoing state <code>x</code>, we now refer to <code>x.in</code> and <code>x.out</code>. Here is another example:</p><pre><code class="language-julia">@state(subproblem, 0 &lt;= x[i=1:2] &lt;= 1, x0==i)
+
+# becomes
+
+@variable(subproblem, 0 &lt;= x[i=1:2] &lt;= 1, Kokako.State, initial_value = i)
+
+x0[1]
+
+# becomes
+
+x[1].in
+
+x[2]
+
+# becomes
+
+x[2].out</code></pre><h4><a class="nav-anchor" id="@rhsnoise-1" href="#@rhsnoise-1"><code>@rhsnoise</code></a></h4><p>We removed <code>@rhsnoise</code>. This results in more lines of code, but more flexibility.</p><pre><code class="language-julia">@rhsnoise(subproblem, ω = [1, 2, 3], 2x &lt;= ω)
+setnoiseprobability!(subproblem, [0.5, 0.2, 0.3])
+
+# becomes
+
+@variable(subproblem, ω)
+@constraint(subproblem, 2x &lt;= ω)
+Kokako.parameterize(subproblem, [1, 2, 3], [0.5, 0.2, 0.3]) do ϕ
+    JuMP.fix(ω, ϕ)
+end</code></pre><h4><a class="nav-anchor" id="@stageobjective-1" href="#@stageobjective-1"><code>@stageobjective</code></a></h4><p><code>@stageobjective</code> no longer accepts a random list of parameters. Use <a href="../apireference/#Kokako.parameterize"><code>Kokako.parameterize</code></a> instead.</p><pre><code class="language-julia">@stageobjective(subproblem, ω = [1, 2, 3], ω * x)
+setnoiseprobability!(subproblem, [0.5, 0.2, 0.3])
+
+# becomes
+
+Kokako.parameterize(subproblem, [1, 2, 3], [0.5, 0.2, 0.3]) do ω
+    @stageobjective(subproblem, ω * x)
+end</code></pre><h4><a class="nav-anchor" id="SDDP.solve-1" href="#SDDP.solve-1"><code>SDDP.solve</code></a></h4><p><code>SDDP.solve</code> has been replaced by <a href="../apireference/#Kokako.train"><code>Kokako.train</code></a>. See the docs for a complete list of the new options as most things have changed.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Parallel training has <em>not</em> (yet) been implemented.</p></div></div><h4><a class="nav-anchor" id="Plotting-1" href="#Plotting-1">Plotting</a></h4><p>Much of the syntax for plotting has changed. See <a href="../tutorial/05_plotting/#Basic-V:-plotting-1">Basic V: plotting</a> for the new syntax.</p><h4><a class="nav-anchor" id="Price-interpolation-1" href="#Price-interpolation-1">Price interpolation</a></h4><p>The syntax for models with stagewise-dependent objective processes has completely changed. See <a href="../tutorial/14_objective_states/#Intermediate-IV:-objective-states-1">Intermediate IV: objective states</a> for details.</p><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../tutorial/01_first_steps/"><span class="direction">Next</span><span class="title">Basic I: first steps</span></a></footer></article></body></html>

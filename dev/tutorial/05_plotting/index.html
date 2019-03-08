@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basic V: plotting · SDDP.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SDDP.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Tutorials</span><ul><li><span class="toctext">Basic</span><ul><li><a class="toctext" href="../01_first_steps/">Basic I: first steps</a></li><li><a class="toctext" href="../02_adding_uncertainty/">Basic II: adding uncertainty</a></li><li><a class="toctext" href="../03_objective_uncertainty/">Basic III: objective uncertainty</a></li><li><a class="toctext" href="../04_markov_uncertainty/">Basic IV: Markov uncertainty</a></li><li class="current"><a class="toctext" href>Basic V: plotting</a><ul class="internal"><li><a class="toctext" href="#Preliminaries-1">Preliminaries</a></li><li><a class="toctext" href="#Spaghetti-plots-1">Spaghetti plots</a></li><li><a class="toctext" href="#Publication-plots-1">Publication plots</a></li></ul></li><li><a class="toctext" href="../06_warnings/">Basic VI: words of warning</a></li><li><a class="toctext" href="../07_advanced_modelling/">Basic VII: modelling tips</a></li></ul></li><li><span class="toctext">Intermediate</span><ul><li><a class="toctext" href="../11_risk/">Intermediate I: risk</a></li><li><a class="toctext" href="../12_stopping_rules/">Intermediate II: stopping rules</a></li><li><a class="toctext" href="../13_generic_graphs/">Intermediate III: policy graphs</a></li><li><a class="toctext" href="../14_objective_states/">Intermediate IV: objective states</a></li><li><a class="toctext" href="../15_performance/">Intermediate V: performance</a></li></ul></li></ul></li><li><a class="toctext" href="../../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li>Basic</li><li><a href>Basic V: plotting</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/tutorial/05_plotting.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basic V: plotting</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basic-V:-plotting-1" href="#Basic-V:-plotting-1">Basic V: plotting</a></h1><p>In our previous tutorials, we formulated, solved, and simulated multistage stochastic optimization problems. However, we haven&#39;t really investigated what the solution looks like. Luckily, <code>SDDP.jl</code> includes a number of plotting tools to help us do that. In this tutorial, we explain the tools and make some pretty pictures.</p><h2><a class="nav-anchor" id="Preliminaries-1" href="#Preliminaries-1">Preliminaries</a></h2><p>First, we need to create a policy and simulate some trajectories. So, let&#39;s take the model from  <a href="../04_markov_uncertainty/#Basic-IV:-Markov-uncertainty-1">Basic IV: Markov uncertainty</a>, train it for 20 iterations, and then simulate 100 Monte Carlo realizations of the policy.</p><pre><code class="language-julia">using Kokako, GLPK
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basic V: plotting · SDDP.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SDDP.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><a class="toctext" href="../../upgrading_guide/">Upgrading guide</a></li><li><span class="toctext">Tutorials</span><ul><li><span class="toctext">Basic</span><ul><li><a class="toctext" href="../01_first_steps/">Basic I: first steps</a></li><li><a class="toctext" href="../02_adding_uncertainty/">Basic II: adding uncertainty</a></li><li><a class="toctext" href="../03_objective_uncertainty/">Basic III: objective uncertainty</a></li><li><a class="toctext" href="../04_markov_uncertainty/">Basic IV: Markov uncertainty</a></li><li class="current"><a class="toctext" href>Basic V: plotting</a><ul class="internal"><li><a class="toctext" href="#Preliminaries-1">Preliminaries</a></li><li><a class="toctext" href="#Spaghetti-plots-1">Spaghetti plots</a></li><li><a class="toctext" href="#Publication-plots-1">Publication plots</a></li></ul></li><li><a class="toctext" href="../06_warnings/">Basic VI: words of warning</a></li><li><a class="toctext" href="../07_advanced_modelling/">Basic VII: modelling tips</a></li></ul></li><li><span class="toctext">Intermediate</span><ul><li><a class="toctext" href="../11_risk/">Intermediate I: risk</a></li><li><a class="toctext" href="../12_stopping_rules/">Intermediate II: stopping rules</a></li><li><a class="toctext" href="../13_generic_graphs/">Intermediate III: policy graphs</a></li><li><a class="toctext" href="../14_objective_states/">Intermediate IV: objective states</a></li><li><a class="toctext" href="../15_performance/">Intermediate V: performance</a></li></ul></li></ul></li><li><a class="toctext" href="../../apireference/">Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li>Basic</li><li><a href>Basic V: plotting</a></li></ul><a class="edit-page" href="https://github.com/odow/Kokako.jl/blob/master/docs/src/tutorial/05_plotting.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basic V: plotting</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basic-V:-plotting-1" href="#Basic-V:-plotting-1">Basic V: plotting</a></h1><p>In our previous tutorials, we formulated, solved, and simulated multistage stochastic optimization problems. However, we haven&#39;t really investigated what the solution looks like. Luckily, <code>SDDP.jl</code> includes a number of plotting tools to help us do that. In this tutorial, we explain the tools and make some pretty pictures.</p><h2><a class="nav-anchor" id="Preliminaries-1" href="#Preliminaries-1">Preliminaries</a></h2><p>First, we need to create a policy and simulate some trajectories. So, let&#39;s take the model from  <a href="../04_markov_uncertainty/#Basic-IV:-Markov-uncertainty-1">Basic IV: Markov uncertainty</a>, train it for 20 iterations, and then simulate 100 Monte Carlo realizations of the policy.</p><pre><code class="language-julia">using Kokako, GLPK
 Ω = [
     (inflow = 0.0, fuel_multiplier = 1.5),
     (inflow = 50.0, fuel_multiplier = 1.0),
@@ -29,7 +29,7 @@ model = Kokako.MarkovianPolicyGraph(
     end
 end
 
-Kokako.train(model, iteration_limit = 20, perform_numerical_stability_check = false)
+Kokako.train(model, iteration_limit = 20, run_numerical_stability_report = false)
 
 simulations = Kokako.simulate(
     model, 100,
@@ -39,33 +39,33 @@ println(&quot;Completed $(length(simulations)) simulations.&quot;)
 
 # output
 
-----------------------------------------------------
+-------------------------------------------------------
          SDDP.jl (c) Oscar Dowson, 2017-19
 
- Iteration   Simulation      Bound        Time (s)
-         1   2.25000e+04   5.58840e+03   7.99000e-01
-         2   2.85682e+04   7.97534e+03   8.09000e-01
-         3   2.55645e+04   8.07292e+03   8.11000e-01
-         4   1.31250e+04   8.07292e+03   8.13000e-01
-         5   5.00000e+03   8.07292e+03   8.14000e-01
-         6   1.12500e+04   8.07292e+03   8.15000e-01
-         7   1.12500e+04   8.07292e+03   8.17000e-01
-         8   1.87500e+03   8.07292e+03   8.18000e-01
-         9   1.87500e+03   8.07292e+03   8.20000e-01
-        10   1.87500e+03   8.07292e+03   8.21000e-01
-        11   9.37500e+03   8.07292e+03   8.23000e-01
-        12   5.00000e+03   8.07292e+03   8.24000e-01
-        13   1.25000e+04   8.07292e+03   8.26000e-01
-        14   1.87500e+03   8.07292e+03   8.27000e-01
-        15   1.87500e+03   8.07292e+03   8.29000e-01
-        16   1.87500e+03   8.07292e+03   8.30000e-01
-        17   5.00000e+03   8.07292e+03   8.32000e-01
-        18   1.87500e+03   8.07292e+03   8.33000e-01
-        19   2.43750e+04   8.07292e+03   8.35000e-01
-        20   1.12500e+04   8.07292e+03   8.36000e-01
+ Iteration    Simulation       Bound         Time (s)
+        1    0.000000e+00   7.196558e+03   7.990000e-01
+        2    7.169118e+03   8.024230e+03   8.090000e-01
+        3    1.875000e+03   8.024230e+03   8.110001e-01
+        4    1.312500e+04   8.024230e+03   8.120000e-01
+        5    9.146739e+03   8.072917e+03   8.140001e-01
+        6    1.250000e+04   8.072917e+03   8.150001e-01
+        7    1.250000e+04   8.072917e+03   8.160000e-01
+        8    1.875000e+03   8.072917e+03   8.180001e-01
+        9    1.875000e+03   8.072917e+03   8.190000e-01
+       10    9.375000e+03   8.072917e+03   8.199999e-01
+       11    3.375000e+04   8.072917e+03   8.220000e-01
+       12    1.125000e+04   8.072917e+03   8.230000e-01
+       13    2.437500e+04   8.072917e+03   8.250000e-01
+       14    2.250000e+04   8.072917e+03   8.270001e-01
+       15    1.875000e+03   8.072917e+03   8.280001e-01
+       16    5.000000e+03   8.072917e+03   8.299999e-01
+       17    1.312500e+04   8.072917e+03   8.310001e-01
+       18    5.000000e+03   8.072917e+03   8.320000e-01
+       19    1.625000e+04   8.072917e+03   8.340001e-01
+       20    1.875000e+03   8.072917e+03   8.350000e-01
 
 Terminating training with status: iteration_limit
-----------------------------------------------------
+-------------------------------------------------------
 Completed 100 simulations.</code></pre><p>Great! Now we have some data in <code>simulations</code> to visualize.</p><h2><a class="nav-anchor" id="Spaghetti-plots-1" href="#Spaghetti-plots-1">Spaghetti plots</a></h2><p>The first plotting utility we discuss is a <em>spaghetti</em> plot (you&#39;ll understand the name when you see the graph).</p><p>To create a spaghetti plot, begin by creating a new <a href="../../apireference/#Kokako.SpaghettiPlot"><code>Kokako.SpaghettiPlot</code></a> instance as follows:</p><pre><code class="language-julia-repl">julia&gt; plt = Kokako.SpaghettiPlot(simulations)
 A spaghetti plot with 100 scenarios and 3 stages.</code></pre><p>We can add plots to <code>plt</code> using the <a href="../../apireference/#Kokako.add_spaghetti"><code>Kokako.add_spaghetti</code></a> function.</p><pre><code class="language-julia-repl">julia&gt; Kokako.add_spaghetti(plt; title = &quot;Reservoir volume&quot;) do data
            return data[:volume].out
