@@ -123,17 +123,18 @@ Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false
 
 # output
 
-
+----------------------------------------------------
          SDDP.jl (c) Oscar Dowson, 2017-19
 
  Iteration   Simulation      Bound        Time (s)
-         1  6.500000e+00  3.000000e+00  9.999275e-04
-         2  3.500000e+00  3.500000e+00  9.999275e-04
-         3  3.500000e+00  3.500000e+00  9.999275e-04
-         4  3.500000e+00  3.500000e+00  9.999275e-04
-         5  3.500000e+00  3.500000e+00  1.999855e-03
+         1   6.50000e+00   3.00000e+00   0.00000e+00
+         2   3.50000e+00   3.50000e+00   1.00017e-03
+         3   3.50000e+00   3.50000e+00   1.00017e-03
+         4   3.50000e+00   3.50000e+00   2.00009e-03
+         5   3.50000e+00   3.50000e+00   2.00009e-03
 
 Terminating training with status: iteration_limit
+----------------------------------------------------
 ```
 
 Now consider the case when we set the `lower_bound` to `10.0`:
@@ -159,17 +160,18 @@ Kokako.train(model, iteration_limit = 5, perform_numerical_stability_check=false
 
 # output
 
-
+----------------------------------------------------
          SDDP.jl (c) Oscar Dowson, 2017-19
 
  Iteration   Simulation      Bound        Time (s)
-         1  6.500000e+00  1.100000e+01  0.000000e+00
-         2  5.500000e+00  1.100000e+01  1.000166e-03
-         3  5.500000e+00  1.100000e+01  1.000166e-03
-         4  5.500000e+00  1.100000e+01  1.000166e-03
-         5  5.500000e+00  1.100000e+01  2.000093e-03
+         1   6.50000e+00   1.10000e+01   0.00000e+00
+         2   5.50000e+00   1.10000e+01   0.00000e+00
+         3   5.50000e+00   1.10000e+01   9.99928e-04
+         4   5.50000e+00   1.10000e+01   9.99928e-04
+         5   5.50000e+00   1.10000e+01   9.99928e-04
 
 Terminating training with status: iteration_limit
+----------------------------------------------------
 ```
 
 How do we tell which is more appropriate? There are a few clues that you should

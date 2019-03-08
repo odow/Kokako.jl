@@ -120,7 +120,7 @@ A policy graph with 5 nodes.
 As in the previous three tutorials, we train the policy:
 ```jldoctest tutorial_four
 julia> Kokako.train(model; iteration_limit = 10)
-
+----------------------------------------------------
          SDDP.jl (c) Oscar Dowson, 2017-19
 
 Numerical stability report
@@ -130,18 +130,19 @@ Numerical stability report
   Non-zero RHS range        [2e+02, 2e+02]
 
  Iteration   Simulation      Bound        Time (s)
-         1  3.000000e+04  3.753370e+03  3.999949e-03
-         2  2.503511e+04  7.975336e+03  7.999897e-03
-         3  1.875000e+03  8.072917e+03  1.099992e-02
-         4  5.000000e+03  8.072917e+03  1.399994e-02
-         5  1.875000e+03  8.072917e+03  1.599979e-02
-         6  1.875000e+04  8.072917e+03  1.899981e-02
-         7  1.875000e+03  8.072917e+03  2.099991e-02
-         8  5.000000e+03  8.072917e+03  3.699994e-02
-         9  1.875000e+03  8.072917e+03  4.299998e-02
-        10  5.000000e+03  8.072917e+03  4.600000e-02
+         1   7.50000e+03   5.58840e+03   9.99928e-04
+         2   5.00000e+03   7.97534e+03   3.00002e-03
+         3   1.31250e+04   8.07292e+03   3.99995e-03
+         4   1.87500e+03   8.07292e+03   6.00004e-03
+         5   1.25000e+04   8.07292e+03   6.99997e-03
+         6   5.00000e+03   8.07292e+03   9.00006e-03
+         7   1.87500e+03   8.07292e+03   9.99999e-03
+         8   5.00000e+03   8.07292e+03   1.09999e-02
+         9   5.00000e+03   8.07292e+03   1.30000e-02
+        10   1.12500e+04   8.07292e+03   1.39999e-02
 
 Terminating training with status: iteration_limit
+----------------------------------------------------
 ```
 
 Instead of performing a Monte Carlo simulation like the previous tutorials, we
